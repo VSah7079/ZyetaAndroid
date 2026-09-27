@@ -2022,6 +2022,22 @@
       "new_values": null,
       "ip_address": "::ffff:10.87.221.201",
       "timestamp": "2026-09-27T08:59:01.758Z"
+    },
+    {
+      "id": 39,
+      "created_at": "2026-09-27T09:09:54.850Z",
+      "updated_at": "2026-09-27T09:09:54.850Z",
+      "user_id": 1,
+      "user_name": "Vikram Malhotra",
+      "user_role": "Super Admin",
+      "action_type": "LOGIN",
+      "module": "Auth",
+      "affected_record_id": "1",
+      "details": "User superadmin logged in successfully",
+      "old_values": null,
+      "new_values": null,
+      "ip_address": "::ffff:10.87.221.201",
+      "timestamp": "2026-09-27T09:09:54.850Z"
     }
   ]
 }
