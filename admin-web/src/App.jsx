@@ -15,6 +15,7 @@ import { Visitors } from './pages/Visitors';
 import { Vehicles } from './pages/Vehicles';
 import { Reports } from './pages/Reports';
 import { AuditLogs } from './pages/AuditLogs';
+import { SuperAdmin } from './pages/SuperAdmin';
 
 const MainLayout = () => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -35,6 +36,8 @@ const MainLayout = () => {
 
   const renderActivePage = () => {
     switch (activeTab) {
+      case 'superadmin':
+        return <SuperAdmin />;
       case 'dashboard':
         return <Dashboard onNavigate={setActiveTab} onOpenScanner={() => setIsScannerOpen(true)} />;
       case 'gate':

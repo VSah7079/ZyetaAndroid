@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 
 class MaterialScreen extends StatefulWidget {
-  const MaterialScreen({super.key});
+  final bool showAppBar;
+  const MaterialScreen({super.key, this.showAppBar = true});
 
   @override
   State<MaterialScreen> createState() => _MaterialScreenState();
@@ -35,6 +37,129 @@ class _MaterialScreenState extends State<MaterialScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _showMaterialDCPass(Map<String, dynamic> m) {
+    final dcNumber = m['dc_number'] ?? 'DC-2026-4401';
+    final isReturnable = m['is_returnable'] == 1 || m['is_returnable'] == true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.6), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                blurRadius: 25,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.inventory_2, color: Color(0xFF06B6D4), size: 20),
+                      SizedBox(width: 6),
+                      Text(
+                        'MATERIAL DC PASS',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: isReturnable ? Colors.orange.withValues(alpha: 0.2) : Colors.cyan.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      isReturnable ? 'RETURNABLE' : 'NON-RETURN',
+                      style: TextStyle(
+                        color: isReturnable ? Colors.orangeAccent : Colors.cyanAccent,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                m['material_name'] ?? 'Material Shipment',
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Qty: ${m['quantity']} ${m['unit']} • ${m['vendor_name'] ?? 'Vendor'}',
+                style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
+                ),
+                child: Column(
+                  children: [
+                    QrImageView(
+                      data: dcNumber,
+                      version: QrVersions.auto,
+                      size: 115.0,
+                      backgroundColor: Colors.white,
+                      eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
+                      dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Colors.black),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dcNumber,
+                      style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Vehicle: ${m['vehicle_number'] ?? 'N/A'} • Driver: ${m['driver_name'] ?? 'N/A'}',
+                style: const TextStyle(color: Colors.white54, fontSize: 10),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Close Challan', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _openReturnModal(Map<String, dynamic> item) {
@@ -351,17 +476,19 @@ class _MaterialScreenState extends State<MaterialScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
-        elevation: 0,
-        title: const Text('Material Gate Pass (DC)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70),
-            onPressed: _fetchMaterials,
-          ),
-        ],
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              backgroundColor: const Color(0xFF0F172A),
+              elevation: 0,
+              title: const Text('Material Gate Pass (DC)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white70),
+                  onPressed: _fetchMaterials,
+                ),
+              ],
+            )
+          : null,
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFFF59E0B),
         icon: const Icon(Icons.add, color: Colors.white),
@@ -566,7 +693,21 @@ class _MaterialScreenState extends State<MaterialScreen> {
                                           ),
                                       ],
                                     ),
-                                  ]
+                                  ],
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 36,
+                                    child: ElevatedButton.icon(
+                                      icon: const Icon(Icons.qr_code_2, size: 16, color: Colors.black87),
+                                      label: const Text('View DC Pass QR', style: TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF06B6D4),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      onPressed: () => _showMaterialDCPass(m),
+                                    ),
+                                  ),
                                 ],
                               ),
                             );

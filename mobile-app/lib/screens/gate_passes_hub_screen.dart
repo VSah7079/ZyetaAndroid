@@ -50,9 +50,9 @@ class _GatePassesHubScreenState extends State<GatePassesHubScreen> with SingleTi
       body: TabBarView(
         controller: _tabController,
         children: const [
-          VisitorScreen(),
-          MaterialScreen(),
-          VehicleScreen(),
+          VisitorScreen(showAppBar: false),
+          MaterialScreen(showAppBar: false),
+          VehicleScreen(showAppBar: false),
         ],
       ),
     );

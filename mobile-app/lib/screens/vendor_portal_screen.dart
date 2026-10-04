@@ -116,9 +116,9 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   child: TabBarView(
                     controller: _tabController,
                     children: const [
-                      EmployeeScreen(),
-                      PermitScreen(),
-                      MaterialScreen(),
+                      EmployeeScreen(showAppBar: false),
+                      PermitScreen(showAppBar: false),
+                      MaterialScreen(showAppBar: false),
                     ],
                   ),
                 ),

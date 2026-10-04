@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import 'employee_screen.dart';
+import 'permit_screen.dart';
+import 'gate_passes_hub_screen.dart';
 
 class VendorScreen extends StatefulWidget {
   const VendorScreen({super.key});
@@ -264,82 +267,212 @@ class _VendorScreenState extends State<VendorScreen> {
                           itemBuilder: (context, idx) {
                             final v = _vendors[idx];
 
-                            return Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(12),
+                            return InkWell(
+                              onTap: () => _showVendorDossierModal(v),
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(Icons.business, color: Color(0xFF06B6D4), size: 24),
                                         ),
-                                        child: const Icon(Icons.business, color: Color(0xFF06B6D4), size: 24),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              v['company_name'] ?? 'Contractor',
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              '${v['vendor_code'] ?? 'VND'} • ${v['trade_scope'] ?? 'General'}',
-                                              style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12, fontWeight: FontWeight.w600),
-                                            ),
-                                          ],
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                v['company_name'] ?? 'Contractor',
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                '${v['vendor_code'] ?? 'VND'} • ${v['trade_scope'] ?? 'General'}',
+                                                style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12, fontWeight: FontWeight.w600),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Divider(color: Colors.white10, height: 1),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'Contact: ${v['contact_person'] ?? 'N/A'}',
-                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                      ),
-                                      if (v['phone'] != null)
+                                        const Icon(Icons.chevron_right, color: Colors.white38, size: 20),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    const Divider(color: Colors.white10, height: 1),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
                                         Text(
-                                          '${v['phone']}',
+                                          'Contact: ${v['contact_person'] ?? 'N/A'}',
                                           style: const TextStyle(color: Colors.white70, fontSize: 12),
                                         ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 10),
-                                  // Stats badges
-                                  Row(
-                                    children: [
-                                      _buildStatPill('👷 Workers', '${v['employee_count'] ?? 0}', Colors.blueAccent),
-                                      const SizedBox(width: 8),
-                                      _buildStatPill('● Inside', '${v['inside_count'] ?? 0}', Colors.greenAccent),
-                                      const SizedBox(width: 8),
-                                      _buildStatPill('📋 Permits', '${v['active_permits'] ?? 0}', const Color(0xFFF59E0B)),
-                                    ],
-                                  ),
-                                ],
+                                        if (v['phone'] != null)
+                                          Text(
+                                            '${v['phone']}',
+                                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    // Stats badges
+                                    Row(
+                                      children: [
+                                        _buildStatPill('👷 Workers', '${v['employee_count'] ?? 0}', Colors.blueAccent),
+                                        const SizedBox(width: 8),
+                                        _buildStatPill('● Inside', '${v['inside_count'] ?? 0}', Colors.greenAccent),
+                                        const SizedBox(width: 8),
+                                        _buildStatPill('📋 Permits', '${v['active_permits'] ?? 0}', const Color(0xFFF59E0B)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
                       ),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showVendorDossierModal(Map<String, dynamic> v) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.business, color: Color(0xFF06B6D4), size: 28),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(v['company_name'] ?? 'Contractor', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      Text('${v['vendor_code'] ?? 'VND'} • ${v['trade_scope'] ?? 'General'}', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12)),
+                    ],
+                  ),
+                ),
+                IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+              child: Column(
+                children: [
+                  _buildDetailRow('Representative', v['contact_person'] ?? 'N/A'),
+                  _buildDetailRow('Contact Phone', v['phone'] ?? 'N/A'),
+                  _buildDetailRow('Official Email', v['email'] ?? 'N/A'),
+                  _buildDetailRow('GSTIN / Tax ID', v['gstin'] ?? '29ABCDE1234F1Z5'),
+                  _buildDetailRow('PF / ESIC Code', v['pf_code'] ?? 'KN/BLR/1029384/000'),
+                  _buildDetailRow('Safety Insurance', v['insurance_validity'] ?? 'Valid till 2027-03-31'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('INTERCONNECTED MODULE SHORTCUTS', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeScreen()));
+                    },
+                    icon: const Icon(Icons.people, size: 16, color: Color(0xFF6366F1)),
+                    label: const Text('Workers Hub', style: TextStyle(color: Color(0xFF6366F1), fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF6366F1)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PermitScreen()));
+                    },
+                    icon: const Icon(Icons.assignment, size: 16, color: Color(0xFFF59E0B)),
+                    label: const Text('PTW Permits', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFF59E0B)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen(initialTab: 1)));
+                },
+                icon: const Icon(Icons.inventory_2, size: 16, color: Color(0xFF10B981)),
+                label: const Text('View Material Delivery Passes (DC)', style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF10B981)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 12)),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );

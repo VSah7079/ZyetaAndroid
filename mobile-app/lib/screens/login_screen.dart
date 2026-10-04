@@ -47,8 +47,130 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
       );
     } else if (mounted) {
-      setState(() => _errorMessage = 'Invalid login or server unreachable');
+      setState(() => _errorMessage = 'Invalid login credentials or server unreachable');
     }
+  }
+
+  void _showServerConfigDialog() {
+    final serverController = TextEditingController(text: ApiService.baseUrl);
+    bool isTesting = false;
+    String? testStatus;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1E293B),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.dns, color: Color(0xFF6366F1), size: 22),
+                SizedBox(width: 8),
+                Text('Server Configuration', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Configure the backend API URL for this mobile terminal:',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: serverController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'http://10.64.56.201:5000/api',
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    prefixIcon: const Icon(Icons.link, color: Colors.white54, size: 20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Quick Presets:', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _buildPresetChip('📱 Wi-Fi IP (Current)', 'http://10.64.56.201:5000/api', serverController, setDialogState),
+                    _buildPresetChip('💻 Localhost', 'http://127.0.0.1:5000/api', serverController, setDialogState),
+                    _buildPresetChip('🤖 Android Emulator', 'http://10.0.2.2:5000/api', serverController, setDialogState),
+                  ],
+                ),
+                if (testStatus != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    testStatus!,
+                    style: TextStyle(
+                      color: testStatus!.contains('✅') ? Colors.greenAccent : Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isTesting
+                    ? null
+                    : () async {
+                        setDialogState(() {
+                          isTesting = true;
+                          testStatus = 'Testing connection...';
+                        });
+                        final ok = await ApiService.testConnection(serverController.text.trim());
+                        setDialogState(() {
+                          isTesting = false;
+                          testStatus = ok ? '✅ Connected successfully!' : '❌ Failed to reach server (Will use offline demo mode)';
+                        });
+                      },
+                child: isTesting
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Text('Test Connection', style: TextStyle(color: Color(0xFF06B6D4))),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ApiService.setBaseUrl(serverController.text.trim());
+                  setState(() {});
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Server URL set to: ${ApiService.baseUrl}'),
+                      backgroundColor: const Color(0xFF6366F1),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save & Apply', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPresetChip(String label, String url, TextEditingController controller, StateSetter setDialogState) {
+    return ActionChip(
+      label: Text(label, style: const TextStyle(fontSize: 11, color: Colors.white70)),
+      backgroundColor: const Color(0xFF0F172A),
+      side: const BorderSide(color: Color(0xFF334155)),
+      onPressed: () {
+        setDialogState(() {
+          controller.text = url;
+        });
+      },
+    );
   }
 
   @override
@@ -58,10 +180,39 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Top Server Status Indicator Button
+                Align(
+                  alignment: Alignment.topRight,
+                  child: InkWell(
+                    onTap: _showServerConfigDialog,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.dns, size: 14, color: Color(0xFF06B6D4)),
+                          const SizedBox(width: 6),
+                          Text(
+                            ApiService.baseUrl.replaceFirst('http://', '').replaceFirst('/api', ''),
+                            style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
                 // Logo Icon
                 Container(
                   width: 80,
@@ -100,13 +251,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 const Text(
-                  'Security & Workforce Mobile Terminal',
-                  style: TextStyle(color: Colors.white54, fontSize: 13),
+                  'Workforce, Vendor, Safety & Gate Management System',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white54, fontSize: 12),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 if (_errorMessage != null)
                   Container(
@@ -117,18 +270,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
+                        Row(
+                          children: [
+                            const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: _showServerConfigDialog,
+                          child: const Text(
+                            '⚙️ Tap here to check Server IP / Offline mode',
+                            style: TextStyle(color: Color(0xFF06B6D4), fontSize: 12, decoration: TextDecoration.underline),
+                          ),
                         ),
                       ],
                     ),
                   ),
 
-                // Form
+                // Form Fields
                 TextField(
                   controller: _userController,
                   style: const TextStyle(color: Colors.white),
@@ -169,37 +335,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                        : const Text('Sign In to Terminal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
 
                 const SizedBox(height: 24),
-                const Text('FAST ROLE PRESETS (TAP TO LOGIN)', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold)),
+                const Text('FAST ROLE PRESETS (ONE-TAP DEMO LOGIN)', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 const SizedBox(height: 12),
 
+                // 5 ROLES PRESET BUTTONS
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _handleLogin('superadmin', 'admin123'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFF59E0B)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: const Text('👑 Super Admin', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: _buildRoleButton(
+                        '👑 Super Admin',
+                        const Color(0xFFF59E0B),
+                        () => _handleLogin('superadmin', 'admin123'),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _handleLogin('admin', 'admin123'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF6366F1)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: const Text('🏢 Site Admin', style: TextStyle(color: Color(0xFF6366F1), fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: _buildRoleButton(
+                        '🏢 Site Admin',
+                        const Color(0xFF6366F1),
+                        () => _handleLogin('admin', 'admin123'),
                       ),
                     ),
                   ],
@@ -208,26 +367,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _handleLogin('vendor_infra', 'vendor123'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF06B6D4)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: const Text('🏗️ Vendor Portal', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: _buildRoleButton(
+                        '⛑️ Safety Officer (HSE)',
+                        const Color(0xFFF97316),
+                        () => _handleLogin('safety_officer', 'safety123'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildRoleButton(
+                        '🏗️ Vendor Portal',
+                        const Color(0xFF06B6D4),
+                        () => _handleLogin('vendor_infra', 'vendor123'),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _handleLogin('security_gate1', 'security123'),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF10B981)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: const Text('🛡️ Security Guard', style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: _buildRoleButton(
+                        '🛡️ Security Guard',
+                        const Color(0xFF10B981),
+                        () => _handleLogin('security_gate1', 'security123'),
                       ),
                     ),
                   ],
@@ -237,6 +400,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildRoleButton(String label, Color color, VoidCallback onTap) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color.withValues(alpha: 0.7)),
+        backgroundColor: color.withValues(alpha: 0.08),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(vertical: 11),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
 }

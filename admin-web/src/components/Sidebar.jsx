@@ -22,16 +22,17 @@ export const Sidebar = ({ activeTab, setActiveTab }) => {
   const role = user?.role || 'Admin';
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Super Admin', 'Admin', 'Vendor', 'Security'] },
+    { id: 'superadmin', label: '👑 Super Admin Hub', icon: Shield, roles: ['Super Admin'] },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['Super Admin', 'Admin', 'Safety Officer', 'Vendor', 'Security'] },
     { id: 'gate', label: 'Gate Operations', icon: DoorOpen, roles: ['Super Admin', 'Admin', 'Security'] },
-    { id: 'employees', label: role === 'Vendor' ? 'My Workforce' : 'Employees', icon: Users, roles: ['Super Admin', 'Admin', 'Vendor'] },
+    { id: 'employees', label: role === 'Vendor' ? 'My Workforce' : 'Employees', icon: Users, roles: ['Super Admin', 'Admin', 'Safety Officer', 'Vendor'] },
     { id: 'vendors', label: 'Contractors / Vendors', icon: Building2, roles: ['Super Admin', 'Admin'] },
-    { id: 'attendance', label: 'Attendance Roster', icon: Clock, roles: ['Super Admin', 'Admin', 'Vendor'] },
-    { id: 'permits', label: 'Permits & Safety', icon: FileCheck, roles: ['Super Admin', 'Admin', 'Vendor', 'Security'] },
+    { id: 'attendance', label: 'Attendance Roster', icon: Clock, roles: ['Super Admin', 'Admin', 'Safety Officer', 'Vendor'] },
+    { id: 'permits', label: 'Permits & Safety (PTW)', icon: FileCheck, roles: ['Super Admin', 'Admin', 'Safety Officer', 'Vendor', 'Security'] },
     { id: 'materials', label: 'Materials & DC Pass', icon: Package, roles: ['Super Admin', 'Admin', 'Security', 'Vendor'] },
     { id: 'visitors', label: 'Visitor Pass Kiosk', icon: UserCheck, roles: ['Super Admin', 'Admin', 'Security'] },
     { id: 'vehicles', label: 'Vehicles Register', icon: Truck, roles: ['Super Admin', 'Admin', 'Security'] },
-    { id: 'reports', label: 'Reports & Export', icon: BarChart3, roles: ['Super Admin', 'Admin'] },
+    { id: 'reports', label: 'Reports & Export', icon: BarChart3, roles: ['Super Admin', 'Admin', 'Safety Officer'] },
     { id: 'audit', label: 'Audit Trail Logs', icon: ShieldAlert, roles: ['Super Admin', 'Admin'] },
   ];
 

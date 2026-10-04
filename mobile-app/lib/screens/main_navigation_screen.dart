@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'security_dashboard_screen.dart';
+import 'safety_officer_screen.dart';
 import 'employee_screen.dart';
 import 'permit_screen.dart';
 import 'gate_passes_hub_screen.dart';
@@ -13,6 +14,8 @@ import 'super_admin_screen.dart';
 import 'vendor_portal_screen.dart';
 import 'reports_screen.dart';
 import 'material_screen.dart';
+import 'emergency_muster_screen.dart';
+import 'toolbox_talk_screen.dart';
 import 'login_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -34,72 +37,92 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final role = ApiService.currentUser?.role ?? 'Super Admin';
-    final isSuperAdmin = role == 'Super Admin';
-    final isAdmin = role == 'Admin';
-    final isVendor = role == 'Vendor';
-    final isSecurity = role == 'Security';
+    final user = ApiService.currentUser;
+    final role = user?.role ?? 'Super Admin';
+    final isSuperAdmin = user?.isSuperAdmin ?? true;
 
-    // Build Role-Specific Screens & Bottom Navigation
-    List<Widget> screens;
-    List<BottomNavigationBarItem> navItems;
+    // Build Dynamic Screens & Bottom Navigation items based on assigned permissions
+    final List<Widget> screens = [];
+    final List<BottomNavigationBarItem> navItems = [];
 
-    if (isVendor) {
-      screens = const [
-        VendorPortalScreen(),
-        EmployeeScreen(),
-        PermitScreen(),
-        MaterialScreen(),
-      ];
-      navItems = const [
-        BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'My Portal'),
-        BottomNavigationBarItem(icon: Icon(Icons.badge_outlined), activeIcon: Icon(Icons.badge), label: 'My Workers'),
-        BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'My Permits'),
-        BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'Material DC'),
-      ];
-    } else if (isSecurity) {
-      screens = const [
-        SecurityDashboardScreen(),
-        QRScannerScreen(),
-        GatePassesHubScreen(),
-        InsideHeadcountScreen(),
-      ];
-      navItems = const [
-        BottomNavigationBarItem(icon: Icon(Icons.shield_outlined), activeIcon: Icon(Icons.shield), label: 'Terminal'),
-        BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner_outlined), activeIcon: Icon(Icons.qr_code_scanner), label: 'Scanner'),
-        BottomNavigationBarItem(icon: Icon(Icons.door_sliding_outlined), activeIcon: Icon(Icons.door_sliding), label: 'Passes Hub'),
-        BottomNavigationBarItem(icon: Icon(Icons.groups_outlined), activeIcon: Icon(Icons.groups), label: 'Headcount'),
-      ];
-    } else {
-      // Super Admin & Site Admin
-      screens = const [
+    // 1. Super Admin Full Access
+    if (isSuperAdmin) {
+      screens.addAll(const [
+        SuperAdminScreen(),
         SecurityDashboardScreen(),
         EmployeeScreen(),
         PermitScreen(),
         GatePassesHubScreen(),
-        AttendanceScreen(),
-      ];
-      navItems = const [
+      ]);
+      navItems.addAll(const [
+        BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), activeIcon: Icon(Icons.admin_panel_settings), label: 'Admin Hub'),
         BottomNavigationBarItem(icon: Icon(Icons.shield_outlined), activeIcon: Icon(Icons.shield), label: 'Terminal'),
         BottomNavigationBarItem(icon: Icon(Icons.badge_outlined), activeIcon: Icon(Icons.badge), label: 'Workers'),
         BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Permits'),
         BottomNavigationBarItem(icon: Icon(Icons.door_sliding_outlined), activeIcon: Icon(Icons.door_sliding), label: 'Passes'),
-        BottomNavigationBarItem(icon: Icon(Icons.how_to_reg_outlined), activeIcon: Icon(Icons.how_to_reg), label: 'Muster'),
-      ];
+      ]);
+    } else {
+      // Granular Role-Based Permissions Check
+      if (user?.can('safety') == true && role == 'Safety Officer') {
+        screens.add(const SafetyOfficerScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.health_and_safety_outlined), activeIcon: Icon(Icons.health_and_safety), label: 'HSE Command'));
+      } else if (user?.can('gate') == true) {
+        screens.add(const SecurityDashboardScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.shield_outlined), activeIcon: Icon(Icons.shield), label: 'Terminal'));
+      } else if (role == 'Vendor') {
+        screens.add(const VendorPortalScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'My Portal'));
+      }
+
+      if (user?.can('employees') == true) {
+        screens.add(const EmployeeScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.badge_outlined), activeIcon: Icon(Icons.badge), label: 'Workers'));
+      }
+
+      if (user?.can('permits') == true) {
+        screens.add(const PermitScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Permits'));
+      }
+
+      if (user?.can('materials') == true && role == 'Vendor') {
+        screens.add(const MaterialScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'Material DC'));
+      } else if (user?.can('visitors') == true || user?.can('materials') == true || user?.can('vehicles') == true) {
+        screens.add(const GatePassesHubScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.door_sliding_outlined), activeIcon: Icon(Icons.door_sliding), label: 'Passes'));
+      }
+
+      if (user?.can('attendance') == true && screens.length < 5) {
+        screens.add(const AttendanceScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.how_to_reg_outlined), activeIcon: Icon(Icons.how_to_reg), label: 'Attendance'));
+      }
+
+      if (user?.can('headcount') == true && screens.length < 5 && role == 'Security') {
+        screens.add(const InsideHeadcountScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.groups_outlined), activeIcon: Icon(Icons.groups), label: 'Headcount'));
+      }
     }
 
-    // Safety check for index
+    // Fallback if no specific tab matched
+    if (screens.isEmpty) {
+      screens.add(const SecurityDashboardScreen());
+      navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Home'));
+    }
+
+    // Safety index check
     if (_currentIndex >= screens.length) {
       _currentIndex = 0;
     }
 
     Color roleColor = isSuperAdmin
         ? const Color(0xFFF59E0B)
-        : isAdmin
+        : role == 'Admin'
             ? const Color(0xFF6366F1)
-            : isVendor
-                ? const Color(0xFF06B6D4)
-                : const Color(0xFF10B981);
+            : role == 'Safety Officer'
+                ? const Color(0xFFF97316)
+                : role == 'Vendor'
+                    ? const Color(0xFF06B6D4)
+                    : const Color(0xFF10B981);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
@@ -108,159 +131,142 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Role-Aware Drawer Header
+            // Drawer Header with User Role & Permissions Badge
             UserAccountsDrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [roleColor.withValues(alpha: 0.8), const Color(0xFF0F172A)],
+                  colors: [roleColor.withValues(alpha: 0.85), const Color(0xFF0F172A)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
               currentAccountPicture: Container(
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white24,
-                ),
+                decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white24),
                 child: Icon(
                   isSuperAdmin
                       ? Icons.admin_panel_settings
-                      : isAdmin
+                      : role == 'Admin'
                           ? Icons.business
-                          : isVendor
-                              ? Icons.storefront
-                              : Icons.security,
+                          : role == 'Safety Officer'
+                              ? Icons.health_and_safety
+                              : role == 'Vendor'
+                                  ? Icons.storefront
+                                  : Icons.security,
                   color: Colors.white,
                   size: 38,
                 ),
               ),
               accountName: Text(
-                ApiService.currentUser?.fullName ?? 'Zyeta User',
+                user?.fullName ?? 'Zyeta User',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               accountEmail: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black38,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                    decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(4)),
                     child: Text(
-                      'ROLE: ${role.toUpperCase()}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      'ROLE: ${role.toUpperCase()} ${isSuperAdmin ? '(MASTER ROOT)' : ''}',
+                      style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // --- VENDOR-SPECIFIC MENU ---
-            if (isVendor) ...[
-              _buildDrawerTile(Icons.storefront, '🏗️ My Company Portal', () {
+            // --- SUPER ADMIN MASTER MODULE ---
+            if (isSuperAdmin || user?.can('superadmin') == true)
+              _buildDrawerTile(Icons.admin_panel_settings, '👑 Super Admin Control Suite', () {
                 Navigator.pop(context);
-                setState(() => _currentIndex = 0);
-              }, isSelected: _currentIndex == 0),
-              _buildDrawerTile(Icons.badge, '👷 My Deployed Workers', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 1);
-              }, isSelected: _currentIndex == 1),
-              _buildDrawerTile(Icons.assignment, '📋 My Work Permits (PTW)', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 2);
-              }, isSelected: _currentIndex == 2),
-              _buildDrawerTile(Icons.inventory_2, '📦 My Material Delivery Passes', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 3);
-              }, isSelected: _currentIndex == 3),
-            ],
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SuperAdminScreen()));
+              }),
 
-            // --- SECURITY-SPECIFIC MENU ---
-            if (isSecurity) ...[
+            // --- PERMITTED MODULES (CLEANLY FILTERED BASED ON PERMISSIONS) ---
+            if (isSuperAdmin || user?.can('gate') == true)
               _buildDrawerTile(Icons.dashboard, '🛡️ Gate Security Terminal', () {
                 Navigator.pop(context);
-                setState(() => _currentIndex = 0);
-              }, isSelected: _currentIndex == 0),
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SecurityDashboardScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('gate') == true)
               _buildDrawerTile(Icons.qr_code_scanner, '📷 Camera QR Scanner', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 1);
-              }, isSelected: _currentIndex == 1),
-              _buildDrawerTile(Icons.door_sliding, '🚪 Gate Passes (Visitors / DC / Vehicle)', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 2);
-              }, isSelected: _currentIndex == 2),
-              _buildDrawerTile(Icons.groups, '🟢 Live Inside Headcount', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 3);
-              }, isSelected: _currentIndex == 3),
-            ],
-
-            // --- ADMIN & SUPER ADMIN MENU ---
-            if (isAdmin || isSuperAdmin) ...[
-              _buildDrawerTile(Icons.dashboard, '🛡️ Site Terminal & KPIs', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 0);
-              }, isSelected: _currentIndex == 0),
-              _buildDrawerTile(Icons.badge, '👷 Workers & ID Passes', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 1);
-              }, isSelected: _currentIndex == 1),
-              _buildDrawerTile(Icons.assignment, '📋 Work Permits (PTW)', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 2);
-              }, isSelected: _currentIndex == 2),
-              _buildDrawerTile(Icons.door_sliding, '🚪 Gate Passes Hub', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 3);
-              }, isSelected: _currentIndex == 3),
-              _buildDrawerTile(Icons.how_to_reg, '📊 Attendance & Muster Roll', () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 4);
-              }, isSelected: _currentIndex == 4),
-
-              const Divider(color: Colors.white12),
-
-              // Super Admin Exclusive
-              if (isSuperAdmin) ...[
-                _buildDrawerTile(Icons.admin_panel_settings, '👑 Super Admin Suite (Users)', () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SuperAdminScreen()));
-                }),
-                _buildDrawerTile(Icons.storefront, '🏗️ Contractor / Vendor Portal', () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorPortalScreen()));
-                }),
-              ],
-
-              _buildDrawerTile(Icons.analytics, '📊 Reports & Analytics', () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
-              }),
-
-              _buildDrawerTile(Icons.business, 'Contractors & Vendors Directory', () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorScreen()));
-              }),
-
-              _buildDrawerTile(Icons.groups, 'Live Inside Headcount', () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen()));
-              }),
-
-              _buildDrawerTile(Icons.qr_code_scanner, 'Camera QR Scanner', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const QRScannerScreen()));
               }),
 
-              _buildDrawerTile(Icons.history_edu, 'System Audit Trail', () {
+            if (isSuperAdmin || user?.can('safety') == true)
+              _buildDrawerTile(Icons.health_and_safety, '⛑️ HSE Safety Command Hub', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SafetyOfficerScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('employees') == true)
+              _buildDrawerTile(Icons.badge, '👷 Workforce & ID Passes', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('permits') == true)
+              _buildDrawerTile(Icons.assignment, '📋 Work Permits (PTW)', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PermitScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('visitors') == true || user?.can('materials') == true || user?.can('vehicles') == true)
+              _buildDrawerTile(Icons.door_sliding, '🚪 Gate Passes Hub', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('vendors') == true)
+              _buildDrawerTile(Icons.business, '🏗️ Contractors & Vendors', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorScreen()));
+              }),
+
+            if (role == 'Vendor')
+              _buildDrawerTile(Icons.storefront, '🏢 Vendor Self-Service Portal', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorPortalScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('attendance') == true)
+              _buildDrawerTile(Icons.how_to_reg, '📊 Attendance & Muster Roll', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('headcount') == true)
+              _buildDrawerTile(Icons.groups, '🟢 Live Inside Headcount', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('reports') == true)
+              _buildDrawerTile(Icons.analytics, '📈 Reports & Analytics', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+              }),
+
+            if (isSuperAdmin || user?.can('audit') == true)
+              _buildDrawerTile(Icons.history_edu, '📜 System Audit Trail', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AuditLogsScreen()));
               }),
-            ],
+
+            _buildDrawerTile(Icons.record_voice_over, '🗣️ Daily Toolbox Talks (TBT)', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ToolboxTalkScreen()));
+            }),
+
+            _buildDrawerTile(Icons.emergency, '🚨 Emergency Muster & Evacuation', () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
+            }),
 
             const Divider(color: Colors.white12),
 
-            // Logout / Switch Role
+            // Logout / Switch User Account
             ListTile(
               leading: const Icon(Icons.switch_account, color: Color(0xFF6366F1)),
               title: const Text('Switch Role / Logout', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold)),

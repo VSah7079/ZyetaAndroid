@@ -6,6 +6,8 @@ class UserModel {
   final String fullName;
   final String? phone;
   final int? vendorId;
+  final String status;
+  final List<String> permissions;
 
   UserModel({
     required this.id,
@@ -15,9 +17,37 @@ class UserModel {
     required this.fullName,
     this.phone,
     this.vendorId,
+    this.status = 'Active',
+    this.permissions = const [],
   });
 
+  bool get isSuperAdmin => role == 'Super Admin' || permissions.contains('all');
+
+  bool can(String perm) {
+    if (isSuperAdmin) return true;
+    return permissions.contains(perm) || permissions.contains('all');
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    List<String> perms = [];
+    if (json['permissions'] != null) {
+      perms = List<String>.from(json['permissions']);
+    } else {
+      // Default fallback permissions per role if not explicitly provided
+      final r = json['role'] ?? '';
+      if (r == 'Super Admin') {
+        perms = ['all'];
+      } else if (r == 'Admin') {
+        perms = ['employees', 'vendors', 'gate', 'permits', 'safety', 'visitors', 'materials', 'vehicles', 'attendance', 'headcount', 'reports'];
+      } else if (r == 'Safety Officer') {
+        perms = ['safety', 'permits', 'employees', 'attendance', 'headcount', 'reports'];
+      } else if (r == 'Vendor') {
+        perms = ['employees', 'permits', 'materials', 'attendance'];
+      } else if (r == 'Security') {
+        perms = ['gate', 'visitors', 'materials', 'vehicles', 'headcount', 'permits'];
+      }
+    }
+
     return UserModel(
       id: json['id'] ?? 0,
       username: json['username'] ?? '',
@@ -26,8 +56,22 @@ class UserModel {
       fullName: json['full_name'] ?? '',
       phone: json['phone'],
       vendorId: json['vendor_id'],
+      status: json['status'] ?? 'Active',
+      permissions: perms,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'username': username,
+        'email': email,
+        'role': role,
+        'full_name': fullName,
+        'phone': phone,
+        'vendor_id': vendorId,
+        'status': status,
+        'permissions': permissions,
+      };
 }
 
 class VerificationResult {

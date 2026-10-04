@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'emergency_muster_screen.dart';
 
 class InsideHeadcountScreen extends StatefulWidget {
   const InsideHeadcountScreen({super.key});
@@ -11,6 +12,9 @@ class InsideHeadcountScreen extends StatefulWidget {
 class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
   List<dynamic> _insideList = [];
   bool _isLoading = true;
+  String _filter = 'ALL';
+  String _search = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -48,8 +52,28 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
     }
   }
 
+  List<dynamic> get _filteredList {
+    return _insideList.where((item) {
+      final type = (item['type'] ?? 'Employee').toString().toLowerCase();
+      if (_filter == 'WORKERS' && !type.contains('emp') && !type.contains('worker')) return false;
+      if (_filter == 'VISITORS' && !type.contains('vis')) return false;
+      if (_filter == 'VEHICLES' && !type.contains('veh') && !type.contains('driver')) return false;
+
+      if (_search.isNotEmpty) {
+        final q = _search.toLowerCase();
+        final name = (item['name'] ?? '').toString().toLowerCase();
+        final code = (item['code'] ?? '').toString().toLowerCase();
+        final vendor = (item['vendor'] ?? '').toString().toLowerCase();
+        if (!name.contains(q) && !code.contains(q) && !vendor.contains(q)) return false;
+      }
+      return true;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredList;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
       appBar: AppBar(
@@ -58,6 +82,13 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
         title: const Text('Live Inside Headcount', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
+            tooltip: 'Emergency Muster Roll',
+            icon: const Icon(Icons.emergency, color: Colors.redAccent),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _fetchInside,
           ),
@@ -65,39 +96,85 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
       ),
       body: Column(
         children: [
-          // Headcount Banner
+          // Headcount Banner with Muster Link
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             color: const Color(0xFF0F172A),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('CURRENTLY ON PREMISES', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_insideList.length} Persons Inside',
-                      style: const TextStyle(color: Color(0xFF10B981), fontSize: 22, fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('CURRENTLY ON PREMISES', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_insideList.length} Persons Inside',
+                          style: const TextStyle(color: Color(0xFF10B981), fontSize: 22, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.emergency, color: Colors.redAccent, size: 16),
+                            SizedBox(width: 6),
+                            Text('Muster Call', style: TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.4)),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search inside person, ID, contractor...',
+                    hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                    suffixIcon: _search.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, color: Colors.white54, size: 16),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _search = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.circle, color: Colors.greenAccent, size: 8),
-                      SizedBox(width: 6),
-                      Text('LIVE SYNCED', style: TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                  onChanged: (val) => setState(() => _search = val.trim()),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildFilterChip('ALL', 'All Inside (${_insideList.length})'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip('WORKERS', 'Workers'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip('VISITORS', 'Visitors'),
+                    const SizedBox(width: 6),
+                    _buildFilterChip('VEHICLES', 'Drivers'),
+                  ],
                 ),
               ],
             ),
@@ -107,18 +184,25 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
-                : _insideList.isEmpty
-                    ? const Center(
-                        child: Text('Premises clear. Nobody currently inside.', style: TextStyle(color: Colors.white54)),
+                : filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check_circle_outline, size: 48, color: Colors.white24),
+                            const SizedBox(height: 10),
+                            const Text('No persons found matching criteria', style: TextStyle(color: Colors.white54)),
+                          ],
+                        ),
                       )
                     : RefreshIndicator(
                         onRefresh: () async => _fetchInside(),
                         child: ListView.separated(
                           padding: const EdgeInsets.all(14),
-                          itemCount: _insideList.length,
+                          itemCount: filtered.length,
                           separatorBuilder: (_, __) => const SizedBox(height: 10),
                           itemBuilder: (context, idx) {
-                            final item = _insideList[idx];
+                            final item = filtered[idx];
 
                             return Container(
                               padding: const EdgeInsets.all(14),
@@ -176,6 +260,18 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFilterChip(String key, String label) {
+    final isSelected = _filter == key;
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : Colors.white70, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      selected: isSelected,
+      selectedColor: const Color(0xFF10B981),
+      backgroundColor: const Color(0xFF1E293B),
+      side: BorderSide(color: isSelected ? const Color(0xFF10B981) : Colors.white12),
+      onSelected: (_) => setState(() => _filter = key),
     );
   }
 }

@@ -14,6 +14,7 @@ const vehicleController = require('../controllers/vehicleController');
 const dashboardController = require('../controllers/dashboardController');
 const reportController = require('../controllers/reportController');
 const notificationController = require('../controllers/notificationController');
+const safetyController = require('../controllers/safetyController');
 
 // --- 1. Auth Endpoints ---
 router.post('/auth/login', authController.login);
@@ -52,10 +53,10 @@ router.post('/attendance/manual', authenticateToken, authorizeRoles('Super Admin
 // --- 7. Permits ---
 router.get('/permits', authenticateToken, permitController.getPermits);
 router.get('/permits/:id', authenticateToken, permitController.getPermitById);
-router.post('/permits', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Vendor'), permitController.createPermit);
-router.put('/permits/:id/approve', authenticateToken, authorizeRoles('Super Admin', 'Admin'), permitController.approvePermit);
-router.put('/permits/:id/reject', authenticateToken, authorizeRoles('Super Admin', 'Admin'), permitController.rejectPermit);
-router.put('/permits/:id/verify-gate', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security'), permitController.verifyPermitGate);
+router.post('/permits', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Vendor', 'Safety Officer'), permitController.createPermit);
+router.put('/permits/:id/approve', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), permitController.approvePermit);
+router.put('/permits/:id/reject', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), permitController.rejectPermit);
+router.put('/permits/:id/verify-gate', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security', 'Safety Officer'), permitController.verifyPermitGate);
 
 // --- 8. Materials ---
 router.get('/materials', authenticateToken, materialController.getMaterials);
@@ -72,12 +73,17 @@ router.get('/vehicles', authenticateToken, vehicleController.getVehicles);
 router.post('/vehicles', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security'), vehicleController.createVehicle);
 
 // --- 11. Reports & Audit Logs ---
-router.get('/reports/data', authenticateToken, authorizeRoles('Super Admin', 'Admin'), reportController.getReportData);
-router.get('/audit/logs', authenticateToken, authorizeRoles('Super Admin', 'Admin'), reportController.getAuditLogs);
+router.get('/reports/data', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), reportController.getReportData);
+router.get('/audit/logs', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), reportController.getAuditLogs);
 
 // --- 12. Notifications ---
 router.get('/notifications', authenticateToken, notificationController.getNotifications);
 router.put('/notifications/:id/read', authenticateToken, notificationController.markAsRead);
 router.put('/notifications/read-all', authenticateToken, notificationController.markAllAsRead);
+
+// --- 13. Safety Punches (Red / Yellow / Green) ---
+router.get('/safety/punches', authenticateToken, safetyController.getPunches);
+router.post('/safety/punches', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), safetyController.createPunch);
+router.delete('/safety/punches/:id', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), safetyController.deletePunch);
 
 module.exports = router;

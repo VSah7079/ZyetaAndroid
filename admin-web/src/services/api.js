@@ -118,5 +118,13 @@ export const api = {
   // Notifications
   getNotifications: () => request('/notifications'),
   markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'PUT' }),
-  markAllNotificationsRead: () => request('/notifications/read-all', { method: 'PUT' })
+  markAllNotificationsRead: () => request('/notifications/read-all', { method: 'PUT' }),
+
+  // Safety Punches (Red / Yellow / Green)
+  getSafetyPunches: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/safety/punches${query ? '?' + query : ''}`);
+  },
+  createSafetyPunch: (data) => request('/safety/punches', { method: 'POST', body: JSON.stringify(data) }),
+  deleteSafetyPunch: (id) => request(`/safety/punches/${id}`, { method: 'DELETE' })
 };

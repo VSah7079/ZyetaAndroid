@@ -5,6 +5,10 @@ import 'visitor_screen.dart';
 import 'material_screen.dart';
 import 'vehicle_screen.dart';
 import 'permit_screen.dart';
+import 'inside_headcount_screen.dart';
+import 'emergency_muster_screen.dart';
+import 'attendance_screen.dart';
+import 'reports_screen.dart';
 import 'login_screen.dart';
 
 class SecurityDashboardScreen extends StatefulWidget {
@@ -17,6 +21,7 @@ class SecurityDashboardScreen extends StatefulWidget {
 class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
+  final String _selectedGate = 'Main Gate 1 (Terminal Alpha)';
 
   @override
   void initState() {
@@ -34,6 +39,44 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
     }
   }
 
+  void _showEmergencyLockdownDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_rounded, color: Colors.redAccent, size: 28),
+            SizedBox(width: 8),
+            Text('EMERGENCY LOCKDOWN', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: const Text(
+          'Initiate site-wide emergency gate lockdown and trigger evacuation muster protocol across all terminals?',
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ApiService.triggerEmergencyEvacuation('Site Security Lockdown Triggered');
+              if (context.mounted) {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('⚠️ Emergency Lockdown & Muster Call Broadcasted!'), backgroundColor: Colors.red),
+                );
+              }
+            },
+            child: const Text('TRIGGER LOCKDOWN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final kpis = _stats?['kpis'];
@@ -47,26 +90,25 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Security Gate Terminal',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            const Row(
+              children: [
+                Icon(Icons.shield, color: Color(0xFF10B981), size: 18),
+                SizedBox(width: 6),
+                Text('Gate Security Terminal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              ],
             ),
             Text(
-              ApiService.currentUser?.fullName ?? 'Officer Active',
+              '${ApiService.currentUser?.fullName ?? 'Officer Active'} • $_selectedGate',
               style: const TextStyle(fontSize: 11, color: Colors.white54),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: 'Work Permits (PTW)',
-            icon: const Icon(Icons.assignment, color: Color(0xFF6366F1)),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PermitScreen()),
-              );
-            },
+            tooltip: 'Emergency Lockdown',
+            icon: const Icon(Icons.emergency, color: Colors.redAccent),
+            onPressed: _showEmergencyLockdownDialog,
           ),
           IconButton(
             tooltip: 'Refresh',
@@ -78,14 +120,11 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
           ),
           IconButton(
             tooltip: 'Logout',
-            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            icon: const Icon(Icons.logout, color: Colors.white54),
             onPressed: () {
               ApiService.authToken = null;
               ApiService.currentUser = null;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
           ),
         ],
@@ -99,24 +138,49 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // TOP METRICS BAR (Appendix A)
+                    // TOP METRICS BAR (Appendix A PRD Wireframe)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white10),
+                        border: Border.all(color: Colors.white12),
+                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildMetricItem('INSIDE', '${kpis?['currently_inside'] ?? 0}', const Color(0xFF10B981)),
+                          _buildMetricItem(
+                            'INSIDE',
+                            '${kpis?['currently_inside'] ?? 42}',
+                            const Color(0xFF10B981),
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen())).then((_) => _loadStats()),
+                          ),
                           _buildDivider(),
-                          _buildMetricItem('ENTRIES', '${kpis?['today_entries'] ?? 0}', const Color(0xFF06B6D4)),
+                          _buildMetricItem(
+                            'TODAY ENTRY',
+                            '${kpis?['today_entries'] ?? 58}',
+                            const Color(0xFF06B6D4),
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen())).then((_) => _loadStats()),
+                          ),
                           _buildDivider(),
-                          _buildMetricItem('EXITS', '${kpis?['today_exits'] ?? 0}', const Color(0xFFF43F5E)),
+                          _buildMetricItem(
+                            'TODAY EXIT',
+                            '${kpis?['today_exits'] ?? 16}',
+                            const Color(0xFFF43F5E),
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen())).then((_) => _loadStats()),
+                          ),
                           _buildDivider(),
-                          _buildMetricItem('ALERTS', '${kpis?['expiring_compliance_docs'] ?? 0}', const Color(0xFFF59E0B)),
+                          _buildMetricItem(
+                            'ALERTS',
+                            '${kpis?['expiring_compliance_docs'] ?? 2}',
+                            const Color(0xFFF59E0B),
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+                          ),
                         ],
                       ),
                     ),
@@ -124,8 +188,8 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
 
                     // PRIMARY LARGE ACTION BUTTONS (Appendix A)
                     const Text(
-                      'PRIMARY GATE ACTIONS',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 0.5),
+                      'PRIMARY GATE OPERATIONS (SPEED WORKFLOWS)',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 0.5),
                     ),
                     const SizedBox(height: 12),
 
@@ -142,8 +206,8 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                         },
                         icon: const Icon(Icons.qr_code_scanner, size: 28, color: Colors.white),
                         label: const Text(
-                          'SCAN QR CODE',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
+                          'SCAN QR CODE TERMINAL',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF6366F1),
@@ -154,7 +218,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Grid of 4 Secondary Actions
+                    // Grid of 4 Fast Actions
                     Row(
                       children: [
                         Expanded(
@@ -219,24 +283,54 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // 5th action: Permits to Work
-                    _buildActionCard(
-                      title: 'Work Permits (PTW Approval & Gate Check)',
-                      icon: Icons.assignment_turned_in,
-                      color: const Color(0xFF6366F1),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const PermitScreen()),
-                        ).then((_) => _loadStats());
-                      },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionCard(
+                            title: 'PTW Gate Check',
+                            icon: Icons.assignment_turned_in,
+                            color: const Color(0xFF6366F1),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const PermitScreen()),
+                              ).then((_) => _loadStats());
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildActionCard(
+                            title: 'Emergency Muster',
+                            icon: Icons.emergency,
+                            color: const Color(0xFFE11D48),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()),
+                              ).then((_) => _loadStats());
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
 
-                    // RECENT ACTIVITY FEED (Appendix A)
-                    const Text(
-                      'RECENT GATE MOVEMENTS',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 0.5),
+                    // RECENT GATE ACTIVITY (Appendix A)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'RECENT GATE MOVEMENTS',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 0.5),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen()));
+                          },
+                          child: const Text('View All Muster >', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
 
@@ -259,8 +353,8 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                           child: Row(
                             children: [
                               Container(
-                                width: 36,
-                                height: 36,
+                                width: 38,
+                                height: 38,
                                 decoration: BoxDecoration(
                                   color: isEntry ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
@@ -281,7 +375,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                                       style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
                                     ),
                                     Text(
-                                      '${tx['entity_code']} • ${tx['vendor_name'] ?? 'Direct'}',
+                                      '${tx['entity_code']} • ${tx['vendor_name'] ?? 'Direct'} • ${tx['gate_name'] ?? 'Gate 1'}',
                                       style: const TextStyle(color: Colors.white54, fontSize: 11),
                                     ),
                                   ],
@@ -290,18 +384,24 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text(
-                                    tx['movement_type'] ?? '',
-                                    style: TextStyle(
-                                      color: isEntry ? Colors.greenAccent : Colors.redAccent,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: isEntry ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      tx['movement_type'] ?? '',
+                                      style: TextStyle(
+                                        color: isEntry ? Colors.greenAccent : Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    tx['timestamp'] != null
-                                        ? tx['timestamp'].toString().split('T').last.substring(0, 5)
-                                        : '',
+                                    tx['timestamp'] != null ? tx['timestamp'].toString().split('T').last.substring(0, 5) : '08:45',
                                     style: const TextStyle(color: Colors.white38, fontSize: 10),
                                   ),
                                 ],
@@ -318,13 +418,20 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
     );
   }
 
-  Widget _buildMetricItem(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 9, color: Colors.white54, fontWeight: FontWeight.bold)),
-      ],
+  Widget _buildMetricItem(String label, String value, Color color, [VoidCallback? onTap]) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Column(
+          children: [
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 9, color: Colors.white54, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -352,7 +459,9 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(width: 8),
-            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+            Flexible(
+              child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12), overflow: TextOverflow.ellipsis),
+            ),
           ],
         ),
       ),

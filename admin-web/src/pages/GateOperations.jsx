@@ -171,6 +171,42 @@ export const GateOperations = ({ onOpenScanner }) => {
           </button>
         </div>
 
+        {/* Quick Test Presets */}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>Fast Presets:</span>
+          {[
+            { label: '👷 EMP-101 (Worker)', code: 'EMP-101' },
+            { label: '⚠️ EMP-102 (Flagged)', code: 'EMP-102' },
+            { label: '👤 VIS-8801 (Visitor)', code: 'VIS-8801' },
+            { label: '📦 DC-2026-4401 (Material DC)', code: 'DC-2026-4401' },
+            { label: '🚗 KA 04 E 9921 (Truck)', code: 'KA 04 E 9921' },
+            { label: '📋 PTW-2026-001 (Hot Work)', code: 'PTW-2026-001' },
+          ].map((preset) => (
+            <button
+              key={preset.code}
+              type="button"
+              onClick={() => {
+                setManualCode(preset.code);
+                api.verifyQR(preset.code).then(res => {
+                  if (res.success) setVerifyData(res);
+                }).catch(err => setVerifyError(err.message));
+              }}
+              style={{
+                fontSize: '0.75rem',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
         {/* Error / Success feedback */}
         {verifyError && (
           <div style={{ marginTop: '12px', padding: '10px 14px', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.3)', borderRadius: 'var(--radius-md)', color: '#fb7185', fontSize: '0.85rem' }}>

@@ -30,7 +30,8 @@ async function seed() {
     { id: 1, name: 'Super Admin', description: 'Complete system-wide access and master configuration', permissions: ['all'] },
     { id: 2, name: 'Admin', description: 'Workforce, vendor, permits and reports management', permissions: ['employees', 'vendors', 'attendance', 'permits', 'materials', 'visitors', 'vehicles', 'reports'] },
     { id: 3, name: 'Vendor', description: 'Contractor portal for employee onboarding and permit requests', permissions: ['my_employees', 'my_permits', 'my_attendance', 'my_documents'] },
-    { id: 4, name: 'Security', description: 'Gate operations, QR verification, entry/exit logs', permissions: ['scan_qr', 'gate_entry', 'gate_exit', 'visitors', 'materials', 'vehicles'] }
+    { id: 4, name: 'Security', description: 'Gate operations, QR verification, entry/exit logs', permissions: ['scan_qr', 'gate_entry', 'gate_exit', 'visitors', 'materials', 'vehicles'] },
+    { id: 5, name: 'Safety Officer', description: 'Permit-to-work safety review, HSE audits, PPE inspections & hazard alerts', permissions: ['permits', 'safety_inspections', 'safety_hazards', 'attendance', 'reports'] }
   ];
   roles.forEach(r => db.roles.create(r));
 
@@ -148,6 +149,19 @@ async function seed() {
     role: 'Security',
     full_name: 'Commander R. K. Singh',
     phone: '+91 9122334455',
+    site_id: 1,
+    status: 'Active'
+  });
+
+  const safetyHash = bcrypt.hashSync('safety123', salt);
+  db.users.create({
+    id: 5,
+    username: 'safety_officer',
+    email: 'safety@zyeta.com',
+    password_hash: safetyHash,
+    role: 'Safety Officer',
+    full_name: 'Er. Rajesh Varma (HSE & Safety Head)',
+    phone: '+91 9988776655',
     site_id: 1,
     status: 'Active'
   });

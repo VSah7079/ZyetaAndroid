@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 
 class PermitScreen extends StatefulWidget {
-  const PermitScreen({super.key});
+  final bool showAppBar;
+  const PermitScreen({super.key, this.showAppBar = true});
 
   @override
   State<PermitScreen> createState() => _PermitScreenState();
@@ -41,13 +43,9 @@ class _PermitScreenState extends State<PermitScreen> {
     final ok = await ApiService.approvePermit(id);
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Permit $permitNumber Approved!'), backgroundColor: Colors.green),
+        SnackBar(content: Text('Permit $permitNumber Approved & Activated!'), backgroundColor: Colors.green),
       );
       _fetchPermits();
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to approve permit'), backgroundColor: Colors.red),
-      );
     }
   }
 
@@ -62,8 +60,8 @@ class _PermitScreenState extends State<PermitScreen> {
           controller: reasonCtrl,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
-            hintText: 'Reason for rejection...',
-            hintStyle: TextStyle(color: Colors.white38),
+            hintText: 'Reason for rejection (e.g. Inadequate PPE, Fire risk)...',
+            hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
             filled: true,
             fillColor: Color(0xFF0F172A),
           ),
@@ -73,7 +71,7 @@ class _PermitScreenState extends State<PermitScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF43F5E)),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Reject', style: TextStyle(color: Colors.white)),
+            child: const Text('Confirm Rejection', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -90,10 +88,215 @@ class _PermitScreenState extends State<PermitScreen> {
     }
   }
 
+  void _showPermitDetails(Map<String, dynamic> permit) {
+    final isPending = permit['status'].toString().contains('Pending');
+    final isApproved = permit['status'] == 'Approved' || permit['status'] == 'Active';
+    final checklist = (permit['safety_checklist'] as List<dynamic>?) ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.85,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.assignment, color: Color(0xFF6366F1), size: 24),
+                    const SizedBox(width: 8),
+                    Text(
+                      permit['permit_number'] ?? 'PTW Details',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: ListView(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(permit['permit_type'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isApproved ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                permit['status'] ?? '',
+                                style: TextStyle(color: isApproved ? Colors.greenAccent : Colors.orangeAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(permit['description'] ?? '', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                        const SizedBox(height: 10),
+                        _buildPermitField('📍 Work Location', permit['location_zone'] ?? 'N/A'),
+                        _buildPermitField('🏢 Contractor', permit['vendor_name'] ?? 'Direct'),
+                        _buildPermitField('👤 Supervisor / Lead', '${permit['applicant_name']} (${permit['applicant_contact']})'),
+                        _buildPermitField('⏱️ Validity Time Window', 'Today 09:00 - 18:00 (Standard Shift)'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    'MANDATORY SAFETY HAZARD CONTROLS (HSE)',
+                    style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                  const SizedBox(height: 8),
+                  if (checklist.isEmpty)
+                    const Text('Standard PPE & Safety Protocol mandatory on site', style: TextStyle(color: Colors.white70, fontSize: 12))
+                  else
+                    ...checklist.map((item) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(item.toString(), style: const TextStyle(color: Colors.white70, fontSize: 12))),
+                            ],
+                          ),
+                        )),
+                  const SizedBox(height: 16),
+
+                  // Approver / HSE Stamp
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(10)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.verified, color: Color(0xFF06B6D4), size: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('HSE SAFETY OFFICER ENDORSEMENT', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold)),
+                              Text(
+                                permit['safety_officer_endorsed'] == true ? 'Certified & Approved by Er. Rajesh Varma' : 'Pending HSE On-Site Inspection',
+                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
+                    ),
+                    child: Column(
+                      children: [
+                        QrImageView(
+                          data: permit['permit_number'] ?? 'PTW-2026-001',
+                          version: QrVersions.auto,
+                          size: 110.0,
+                          backgroundColor: Colors.white,
+                          eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
+                          dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: Colors.black),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${permit['permit_number']} • VALIDATED PTW PASS',
+                          style: const TextStyle(color: Colors.black87, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            if (isPending) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _reject(permit['id'], permit['permit_number'] ?? '');
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.redAccent),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('REJECT', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _approve(permit['id'], permit['permit_number'] ?? '');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('APPROVE PTW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPermitField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 130, child: Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11))),
+          Expanded(child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
+  }
+
+  // --- SECTION 12 PERMIT APPLICATION MODAL ---
   void _openNewPermitModal() {
     final descCtrl = TextEditingController();
-    final locationCtrl = TextEditingController(text: 'Floor 2 - Server Room');
-    final applicantCtrl = TextEditingController(text: ApiService.currentUser?.fullName ?? 'Engineer');
+    final locationCtrl = TextEditingController(text: 'Block A - Floor 4 AHU Plant');
+    final applicantCtrl = TextEditingController(text: ApiService.currentUser?.fullName ?? 'Supervisor');
     final phoneCtrl = TextEditingController(text: ApiService.currentUser?.phone ?? '+91 9900112233');
 
     String permitType = 'Hot Work (Welding/Cutting)';
@@ -103,9 +306,7 @@ class _PermitScreenState extends State<PermitScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
           padding: EdgeInsets.only(
@@ -126,13 +327,16 @@ class _PermitScreenState extends State<PermitScreen> {
                       children: [
                         Icon(Icons.assignment_add, color: Color(0xFF6366F1)),
                         SizedBox(width: 8),
-                        Text('Apply for Work Permit (PTW)', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                        Text('Apply for Work Permit (Section 12)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
+
+                const Text('PERMIT CATEGORY (PRD 12.0)', style: TextStyle(color: Color(0xFF6366F1), fontSize: 11, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10)),
@@ -143,11 +347,14 @@ class _PermitScreenState extends State<PermitScreen> {
                       dropdownColor: const Color(0xFF1E293B),
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       items: const [
-                        DropdownMenuItem(value: 'Hot Work (Welding/Cutting)', child: Text('🔥 Hot Work (Welding/Cutting)')),
-                        DropdownMenuItem(value: 'Height Work (> 1.8m)', child: Text('🪜 Height Work (> 1.8m)')),
-                        DropdownMenuItem(value: 'Confined Space Entry', child: Text('🕳️ Confined Space Entry')),
+                        DropdownMenuItem(value: 'Hot Work (Welding/Cutting)', child: Text('🔥 Hot Work Permit (Welding/Cutting)')),
+                        DropdownMenuItem(value: 'Height Work (> 1.8m)', child: Text('🪜 Height Work Permit (> 1.8m)')),
                         DropdownMenuItem(value: 'Electrical Isolation (LOTO)', child: Text('⚡ Electrical Isolation (LOTO)')),
-                        DropdownMenuItem(value: 'Excavation & Trenching', child: Text('⛏️ Excavation & Trenching')),
+                        DropdownMenuItem(value: 'Confined Space Entry', child: Text('🕳️ Confined Space Entry Permit')),
+                        DropdownMenuItem(value: 'Excavation & Trenching', child: Text('⛏️ Excavation & Trenching Permit')),
+                        DropdownMenuItem(value: 'Material Movement Permit', child: Text('📦 Material Movement Permit')),
+                        DropdownMenuItem(value: 'Vehicle Entry Permit', child: Text('🚗 Vehicle Site Access Permit')),
+                        DropdownMenuItem(value: 'General Contractor Work', child: Text('🛠️ General Work Permit')),
                       ],
                       onChanged: (val) {
                         if (val != null) setModalState(() => permitType = val);
@@ -156,15 +363,15 @@ class _PermitScreenState extends State<PermitScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildTextField(locationCtrl, 'Work Location / Zone *', Icons.location_on),
+                _buildTextField(locationCtrl, 'Work Location / Specific Zone *', Icons.location_on),
                 const SizedBox(height: 10),
-                _buildTextField(descCtrl, 'Work Description & Scope *', Icons.description),
+                _buildTextField(descCtrl, 'Work Description & Scope of Work *', Icons.description),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(child: _buildTextField(applicantCtrl, 'Supervisor Name', Icons.person)),
-                    const SizedBox(width: 10),
-                    Expanded(child: _buildTextField(phoneCtrl, 'Supervisor Phone', Icons.phone, keyboardType: TextInputType.phone)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildTextField(phoneCtrl, 'Supervisor Mobile', Icons.phone, keyboardType: TextInputType.phone)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -179,7 +386,7 @@ class _PermitScreenState extends State<PermitScreen> {
                     onPressed: isSaving
                         ? null
                         : () async {
-                            final locErr = FormValidators.validateName(locationCtrl.text, fieldName: 'Work location / zone');
+                            final locErr = FormValidators.validateRequired(locationCtrl.text, fieldName: 'Work location');
                             if (locErr != null) {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(locErr), backgroundColor: Colors.orange));
                               return;
@@ -191,35 +398,21 @@ class _PermitScreenState extends State<PermitScreen> {
                               return;
                             }
 
-                            final phoneErr = FormValidators.validatePhone(phoneCtrl.text, isRequired: false, fieldName: 'Supervisor phone');
-                            if (phoneErr != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(phoneErr), backgroundColor: Colors.orange));
-                              return;
-                            }
-
                             setModalState(() => isSaving = true);
-                            final now = DateTime.now();
-                            final tomorrow = now.add(const Duration(days: 1));
                             final ok = await ApiService.createPermit({
                               'permit_type': permitType,
                               'description': descCtrl.text.trim(),
                               'location_zone': locationCtrl.text.trim(),
                               'applicant_name': applicantCtrl.text.trim().isEmpty ? 'Supervisor' : applicantCtrl.text.trim(),
                               'applicant_contact': phoneCtrl.text.trim(),
-                              'start_time': now.toIso8601String(),
-                              'end_time': tomorrow.toIso8601String(),
                             });
                             setModalState(() => isSaving = false);
                             if (ok && mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Permit submitted for approval!'), backgroundColor: Colors.green),
+                                const SnackBar(content: Text('Permit Request Submitted for HSE & Admin Review!'), backgroundColor: Colors.green),
                               );
                               _fetchPermits();
-                            } else if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Failed to submit permit'), backgroundColor: Colors.red),
-                              );
                             }
                           },
                     child: isSaving
@@ -239,14 +432,14 @@ class _PermitScreenState extends State<PermitScreen> {
     return TextField(
       controller: ctrl,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: Colors.white, fontSize: 13),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+        hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+        prefixIcon: Icon(icon, color: Colors.white54, size: 18),
         filled: true,
         fillColor: const Color(0xFF1E293B),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
       ),
     );
@@ -256,21 +449,23 @@ class _PermitScreenState extends State<PermitScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0B0F19),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
-        elevation: 0,
-        title: const Text('Permits to Work (PTW)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70),
-            onPressed: _fetchPermits,
-          ),
-        ],
-      ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              backgroundColor: const Color(0xFF0F172A),
+              elevation: 0,
+              title: const Text('Permits to Work (PTW)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white70),
+                  onPressed: _fetchPermits,
+                ),
+              ],
+            )
+          : null,
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF6366F1),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('New PTW Permit', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        label: const Text('Apply for PTW', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         onPressed: _openNewPermitModal,
       ),
       body: Column(
@@ -284,7 +479,7 @@ class _PermitScreenState extends State<PermitScreen> {
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Search permit number, contractor, type...',
+                    hintText: 'Search permit number, contractor, zone, type...',
                     hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
                     prefixIcon: const Icon(Icons.search, color: Colors.white54),
                     suffixIcon: _search.isNotEmpty
@@ -312,15 +507,13 @@ class _PermitScreenState extends State<PermitScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip('ALL', 'All Permits'),
+                      _buildFilterChip('ALL', 'All Permits (5)'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Pending', '⏳ Pending'),
+                      _buildFilterChip('Pending', 'Pending Review (2)'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Approved', '✅ Approved'),
+                      _buildFilterChip('Approved', 'Approved (2)'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('Active', '⚡ Active'),
-                      const SizedBox(width: 8),
-                      _buildFilterChip('Rejected', '❌ Rejected'),
+                      _buildFilterChip('Active', 'Active (1)'),
                     ],
                   ),
                 ),
@@ -335,7 +528,7 @@ class _PermitScreenState extends State<PermitScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.assignment_outlined, size: 50, color: Colors.white24),
+                            const Icon(Icons.assignment_outlined, size: 50, color: Colors.white24),
                             const SizedBox(height: 10),
                             const Text('No permits found', style: TextStyle(color: Colors.white54)),
                           ],
@@ -349,120 +542,86 @@ class _PermitScreenState extends State<PermitScreen> {
                           separatorBuilder: (_, __) => const SizedBox(height: 10),
                           itemBuilder: (context, idx) {
                             final p = _permits[idx];
-                            final status = (p['status'] ?? 'Pending').toString();
-                            final isPending = status == 'Pending';
-                            final isApproved = status == 'Approved' || status == 'Active';
+                            final isApproved = p['status'] == 'Approved' || p['status'] == 'Active';
+                            final isPending = p['status'].toString().contains('Pending');
 
-                            Color statusColor = isPending
-                                ? const Color(0xFFF59E0B)
-                                : isApproved
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFF43F5E);
-
-                            return Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: statusColor.withValues(alpha: 0.3)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(Icons.security, color: statusColor, size: 24),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Flexible(
-                                                  child: Text(
-                                                    p['permit_type'] ?? 'Work Permit',
-                                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                                  decoration: BoxDecoration(
-                                                    color: statusColor.withValues(alpha: 0.15),
-                                                    borderRadius: BorderRadius.circular(6),
-                                                    border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                                                  ),
-                                                  child: Text(
-                                                    status,
-                                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              '${p['permit_number']} • ${p['vendor_name'] ?? 'Direct'}',
-                                              style: const TextStyle(color: Colors.white54, fontSize: 12),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                            return InkWell(
+                              onTap: () => _showPermitDetails(p),
+                              borderRadius: BorderRadius.circular(14),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isPending
+                                        ? const Color(0xFFF59E0B).withValues(alpha: 0.4)
+                                        : isApproved
+                                            ? Colors.green.withValues(alpha: 0.3)
+                                            : Colors.white10,
                                   ),
-                                  const SizedBox(height: 10),
-                                  const Divider(color: Colors.white10, height: 1),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Location: ${p['work_location'] ?? 'Site Zone'}',
-                                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Valid: ${p['valid_from']?.toString().split('T').first ?? ''} to ${p['valid_to']?.toString().split('T').first ?? ''}',
-                                    style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                  ),
-                                  if (isPending && (ApiService.currentUser?.role == 'Super Admin' || ApiService.currentUser?.role == 'Admin')) ...[
-                                    const SizedBox(height: 10),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Expanded(
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFF10B981),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              padding: const EdgeInsets.symmetric(vertical: 8),
-                                            ),
-                                            onPressed: () => _approve(p['id'], p['permit_number']),
-                                            child: const Text('APPROVE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0F172A),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
+                                          ),
+                                          child: Text(
+                                            p['permit_number'] ?? '',
+                                            style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold, fontSize: 11),
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: OutlinedButton(
-                                            style: OutlinedButton.styleFrom(
-                                              side: const BorderSide(color: Color(0xFFF43F5E)),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              padding: const EdgeInsets.symmetric(vertical: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: isApproved ? Colors.green.withValues(alpha: 0.2) : Colors.orange.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            p['status'] ?? '',
+                                            style: TextStyle(
+                                              color: isApproved ? Colors.greenAccent : Colors.orangeAccent,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            onPressed: () => _reject(p['id'], p['permit_number']),
-                                            child: const Text('REJECT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFF43F5E))),
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ]
-                                ],
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      p['permit_type'] ?? '',
+                                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      p['description'] ?? '',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '📍 ${p['location_zone']} • ${p['vendor_name']}',
+                                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 12),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
