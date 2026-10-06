@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Bell, Building, Check, Sparkles } from 'lucide-react';
+import { QrCode, Bell, Building, Check, Sparkles, Menu } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-export const Header = ({ onOpenScanner }) => {
+export const Header = ({ onOpenScanner, onToggleSidebar }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -43,24 +43,30 @@ export const Header = ({ onOpenScanner }) => {
   };
 
   return (
-    <header style={{
-      height: '68px',
-      backgroundColor: '#0f172a',
-      borderBottom: '1px solid var(--border-color)',
-      padding: '0 28px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      position: 'sticky',
-      top: 0,
-      zIndex: 30
-    }}>
-      {/* Site Selector & Live Indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Building size={18} color="var(--accent-cyan)" />
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#fff' }}>
-            Bangalore Tech Park Campus (BLR-01)
+    <header className="app-header">
+      {/* Left: Mobile Toggle & Site Selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+        {/* Mobile Hamburger Toggle Button */}
+        <button 
+          className="mobile-menu-btn"
+          onClick={onToggleSidebar}
+          aria-label="Open Navigation Menu"
+          title="Open Menu"
+        >
+          <Menu size={20} />
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+          <Building size={16} color="var(--accent-cyan)" style={{ flexShrink: 0 }} />
+          <span style={{ 
+            fontSize: '0.85rem', 
+            fontWeight: 700, 
+            color: '#fff', 
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
+            <span className="hide-on-mobile">Bangalore Tech Park Campus </span>(BLR-01)
           </span>
         </div>
 
@@ -68,29 +74,31 @@ export const Header = ({ onOpenScanner }) => {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(16, 185, 129, 0.1)',
+          gap: '6px',
+          background: 'rgba(16, 185, 129, 0.12)',
           border: '1px solid rgba(16, 185, 129, 0.3)',
-          padding: '4px 12px',
-          borderRadius: 'var(--radius-full)'
+          padding: '3px 10px',
+          borderRadius: 'var(--radius-full)',
+          flexShrink: 0
         }}>
           <span className="pulse-dot"></span>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399' }}>
-            {insideCount} ON SITE NOW
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#34d399', whiteSpace: 'nowrap' }}>
+            {insideCount} <span className="hide-on-mobile">ON SITE</span>
           </span>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      {/* Right: Action Buttons */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
         {/* Quick QR Scanner Button */}
         <button
           onClick={onOpenScanner}
           className="btn btn-primary"
-          style={{ padding: '7px 14px', fontSize: '0.8rem' }}
+          style={{ padding: '6px 12px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+          title="Open Quick QR Scanner"
         >
           <QrCode size={16} />
-          <span>Quick QR Scan</span>
+          <span className="quick-scan-text">Quick QR Scan</span>
         </button>
 
         {/* Notifications Dropdown */}
@@ -102,16 +110,17 @@ export const Header = ({ onOpenScanner }) => {
               background: 'var(--bg-hover)',
               border: '1px solid var(--border-color)',
               color: 'var(--text-primary)',
-              width: '38px',
-              height: '38px',
+              width: '36px',
+              height: '36px',
               borderRadius: 'var(--radius-md)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer'
             }}
+            title="Notifications"
           >
-            <Bell size={18} />
+            <Bell size={17} />
             {unreadCount > 0 && (
               <span style={{
                 position: 'absolute',
@@ -119,7 +128,7 @@ export const Header = ({ onOpenScanner }) => {
                 right: '-4px',
                 background: '#f43f5e',
                 color: '#fff',
-                fontSize: '0.65rem',
+                fontSize: '0.62rem',
                 fontWeight: 800,
                 width: '18px',
                 height: '18px',
@@ -138,8 +147,9 @@ export const Header = ({ onOpenScanner }) => {
             <div style={{
               position: 'absolute',
               right: 0,
-              top: '48px',
-              width: '340px',
+              top: '46px',
+              width: '320px',
+              maxWidth: 'calc(100vw - 28px)',
               backgroundColor: '#111827',
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-lg)',
@@ -172,7 +182,7 @@ export const Header = ({ onOpenScanner }) => {
                 )}
               </div>
 
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
                 {notifications.length === 0 ? (
                   <p style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                     No notifications

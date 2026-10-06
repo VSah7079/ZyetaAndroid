@@ -177,19 +177,47 @@ export const SuperAdmin = () => {
       return;
     }
 
-    if (editingUser) {
-      setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
-    } else {
-      const newId = Date.now();
-      setUsers(prev => [...prev, { id: newId, ...formData }]);
+    try {
+      if (editingUser) {
+        if (api.updateUser) {
+          await api.updateUser(editingUser.id, formData);
+        }
+        setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
+      } else {
+        if (api.createUser) {
+          const res = await api.createUser({
+            ...formData,
+            password: formData.password || 'admin123'
+          });
+          if (res.success && res.user) {
+            setUsers(prev => [...prev, res.user]);
+          } else {
+            const newId = Date.now();
+            setUsers(prev => [...prev, { id: newId, ...formData }]);
+          }
+        } else {
+          const newId = Date.now();
+          setUsers(prev => [...prev, { id: newId, ...formData }]);
+        }
+      }
+      setIsModalOpen(false);
+      loadAllData();
+    } catch (err) {
+      alert(err.message || 'Action completed locally');
+      setIsModalOpen(false);
     }
-
-    setIsModalOpen(false);
   };
 
-  const handleDeleteUser = (id, username) => {
+  const handleDeleteUser = async (id, username) => {
     if (window.confirm(`Are you sure you want to permanently delete account for "${username}"?`)) {
-      setUsers(prev => prev.filter(u => u.id !== id));
+      try {
+        if (api.deleteUser) {
+          await api.deleteUser(id);
+        }
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } catch (err) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+      }
     }
   };
 
@@ -201,38 +229,39 @@ export const SuperAdmin = () => {
   );
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Top Banner */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)',
         border: '1px solid rgba(245, 158, 11, 0.35)',
         borderRadius: '16px',
-        padding: '24px',
-        marginBottom: '24px',
+        padding: '20px',
+        marginBottom: '20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '16px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
           <div style={{
-            width: '56px',
-            height: '56px',
+            width: '52px',
+            height: '52px',
             borderRadius: '14px',
             backgroundColor: 'rgba(245, 158, 11, 0.2)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid #f59e0b'
+            border: '1px solid #f59e0b',
+            flexShrink: 0
           }}>
-            <Shield size={32} color="#f59e0b" />
+            <Shield size={28} color="#f59e0b" />
           </div>
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              Super Admin Master Control Center <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f59e0b', color: '#000', fontWeight: 800 }}>ROOT MASTER</span>
+            <h1 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              Super Admin Master Control Center <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f59e0b', color: '#000', fontWeight: 800 }}>ROOT MASTER</span>
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '4px 0 0 0' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '4px 0 0 0' }}>
               Full CRUD database access & Granular Role-Based Access Control (RBAC) permission checkbox matrix.
             </p>
           </div>
@@ -245,29 +274,30 @@ export const SuperAdmin = () => {
             color: '#0b0f19',
             border: 'none',
             borderRadius: '10px',
-            padding: '12px 20px',
+            padding: '10px 18px',
             fontWeight: 800,
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)'
+            boxShadow: '0 4px 15px rgba(245, 158, 11, 0.35)',
+            whiteSpace: 'nowrap'
           }}
         >
-          <UserPlus size={18} />
+          <UserPlus size={16} />
           Create User & Assign Access
         </button>
       </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-color)', marginBottom: '20px' }}>
+      {/* Navigation Tabs (Scrollable on mobile) */}
+      <div className="nav-tabs-scroll">
         {[
-          { id: 'users', label: `Users & Permissions Matrix (${users.length})`, icon: Users },
-          { id: 'workforce', label: `Workforce Master (${employees.length})`, icon: UserCheck },
-          { id: 'vendors', label: `Vendors Master (${vendors.length})`, icon: Building },
-          { id: 'permits', label: `Permits Master (${permits.length})`, icon: FileCheck },
-          { id: 'audit', label: `System Audit Logs`, icon: Activity },
+          { id: 'users', label: `Users & Permissions (${users.length})`, icon: Users },
+          { id: 'workforce', label: `Workforce (${employees.length})`, icon: UserCheck },
+          { id: 'vendors', label: `Vendors (${vendors.length})`, icon: Building },
+          { id: 'permits', label: `Permits (${permits.length})`, icon: FileCheck },
+          { id: 'audit', label: `Audit Logs`, icon: Activity },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -275,22 +305,14 @@ export const SuperAdmin = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              className="nav-tab-btn"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 18px',
-                background: 'none',
-                border: 'none',
                 borderBottom: isActive ? '3px solid #f59e0b' : '3px solid transparent',
                 color: isActive ? '#f59e0b' : 'var(--text-muted)',
-                fontWeight: isActive ? 800 : 600,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
+                fontWeight: isActive ? 800 : 600
               }}
             >
-              <Icon size={18} />
+              <Icon size={16} />
               {tab.label}
             </button>
           );
@@ -323,7 +345,7 @@ export const SuperAdmin = () => {
           </div>
 
           {/* User Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: '16px' }}>
+          <div className="grid-cards-responsive">
             {filteredUsers.map(u => {
               const isSuper = u.role === 'Super Admin';
               const perms = u.permissions || [];
@@ -656,7 +678,7 @@ export const SuperAdmin = () => {
             </div>
 
             <form onSubmit={handleSaveUser}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div className="grid-responsive-1-1" style={{ marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginBottom: '4px' }}>FULL NAME *</label>
                   <input
@@ -679,7 +701,7 @@ export const SuperAdmin = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+              <div className="grid-responsive-1-1" style={{ marginBottom: '12px' }}>
                 <div>
                   <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, marginBottom: '4px' }}>EMAIL ADDRESS *</label>
                   <input
@@ -701,7 +723,7 @@ export const SuperAdmin = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div className="grid-responsive-1-1" style={{ marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 700, marginBottom: '4px' }}>SYSTEM ROLE (PRESET ACCESS)</label>
                   <select

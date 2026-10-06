@@ -21,6 +21,8 @@ router.post('/auth/login', authController.login);
 router.get('/auth/me', authenticateToken, authController.getMe);
 router.get('/auth/users', authenticateToken, authorizeRoles('Super Admin', 'Admin'), authController.getUsers);
 router.post('/auth/users', authenticateToken, authorizeRoles('Super Admin'), authController.createUser);
+router.put('/auth/users/:id', authenticateToken, authorizeRoles('Super Admin'), authController.updateUser);
+router.delete('/auth/users/:id', authenticateToken, authorizeRoles('Super Admin'), authController.deleteUser);
 router.get('/auth/roles', authenticateToken, authController.getRoles);
 
 // --- 2. Dashboard & KPIs ---

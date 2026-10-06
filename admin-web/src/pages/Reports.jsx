@@ -47,21 +47,21 @@ export const Reports = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Compliance & Operational Reports</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Compliance & Operational Reports</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Exportable workforce rosters, audit logs, turnstile transactions and expiry records
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleExportCSV} className="btn btn-primary">
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={handleExportCSV} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
             <Download size={16} />
             <span>Export CSV</span>
           </button>
-          <button onClick={handlePrint} className="btn btn-secondary">
+          <button onClick={handlePrint} className="btn btn-secondary" style={{ whiteSpace: 'nowrap' }}>
             <Printer size={16} />
             <span>Print Report</span>
           </button>

@@ -32,11 +32,12 @@ export const DigitalIdCard = ({ employee, isOpen, onClose }) => {
         </div>
 
         {/* Physical ID Card Preview Container */}
-        <div style={{ padding: '24px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ padding: '16px 10px', display: 'flex', justifyContent: 'center' }}>
           <div
             id="printable-id-card"
             style={{
-              width: '320px',
+              width: '100%',
+              maxWidth: '320px',
               height: '500px',
               background: 'linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)',
               borderRadius: '16px',

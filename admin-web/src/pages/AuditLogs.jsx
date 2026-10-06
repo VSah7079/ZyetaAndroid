@@ -29,16 +29,16 @@ export const AuditLogs = () => {
   }, [search, moduleFilter, actionFilter]);
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Enterprise Audit Trail & Compliance Log</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Enterprise Audit Trail & Compliance Log</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Tamper-evident logs of administrative actions, safety approvals, access decisions & changes
           </p>
         </div>
 
-        <button onClick={fetchLogs} className="btn btn-secondary" title="Refresh Logs">
+        <button onClick={fetchLogs} className="btn btn-secondary" title="Refresh Logs" style={{ whiteSpace: 'nowrap' }}>
           <RefreshCw size={16} />
           <span>Refresh</span>
         </button>

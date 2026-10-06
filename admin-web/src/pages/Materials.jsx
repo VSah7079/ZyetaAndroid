@@ -80,16 +80,16 @@ export const Materials = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Material & DC Gate Movement</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Material & DC Gate Movement</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Delivery Challan tracking, Returnable & Inward raw materials verification
           </p>
         </div>
 
-        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
+        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
           <Plus size={16} />
           <span>New Material Gate Pass</span>
         </button>
@@ -204,7 +204,7 @@ export const Materials = () => {
             </div>
 
             <form onSubmit={handleCreate} style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="grid-responsive-1-1">
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
                   <label className="form-label">Material Name *</label>
                   <input

@@ -50,16 +50,16 @@ export const Vehicles = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Commercial & Site Vehicle Register</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Commercial & Site Vehicle Register</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             PUC, Insurance, Fitness certificate verification & driver authorization
           </p>
         </div>
 
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+        <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
           <Plus size={16} />
           <span>Register Site Vehicle</span>
         </button>
@@ -141,7 +141,7 @@ export const Vehicles = () => {
             </div>
 
             <form onSubmit={handleCreate} style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="grid-responsive-1-1">
                 <div className="form-group">
                   <label className="form-label">Vehicle Registration Number *</label>
                   <input

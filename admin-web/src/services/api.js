@@ -34,6 +34,8 @@ export const api = {
   getMe: () => request('/auth/me'),
   getUsers: () => request('/auth/users'),
   createUser: (userData) => request('/auth/users', { method: 'POST', body: JSON.stringify(userData) }),
+  updateUser: (id, userData) => request(`/auth/users/${id}`, { method: 'PUT', body: JSON.stringify(userData) }),
+  deleteUser: (id) => request(`/auth/users/${id}`, { method: 'DELETE' }),
 
   // Dashboard
   getDashboardStats: () => request('/dashboard/stats'),

@@ -62,17 +62,17 @@ export const Attendance = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Daily Workforce Attendance Roster</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Daily Workforce Attendance Roster</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Automated gate turnstile punches, shift calculations and manual correction workflows
           </p>
         </div>
 
         {user?.role !== 'Vendor' && (
-          <button onClick={() => setShowMarkModal(true)} className="btn btn-primary">
+          <button onClick={() => setShowMarkModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
             <Edit3 size={16} />
             <span>Mark / Correct Attendance</span>
           </button>
@@ -81,7 +81,7 @@ export const Attendance = () => {
 
       {/* Summary Cards */}
       {summary && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' }}>
+        <div className="grid-responsive-4">
           <div className="glass-card" style={{ padding: '16px', borderLeft: '4px solid var(--accent-primary)' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>TOTAL REGISTERED</span>
             <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>{summary.total_active_workforce}</h3>

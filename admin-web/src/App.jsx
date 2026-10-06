@@ -21,6 +21,7 @@ const MainLayout = () => {
   const { user, isAuthenticated, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -34,12 +35,17 @@ const MainLayout = () => {
     return <Login />;
   }
 
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSidebarOpen(false);
+  };
+
   const renderActivePage = () => {
     switch (activeTab) {
       case 'superadmin':
         return <SuperAdmin />;
       case 'dashboard':
-        return <Dashboard onNavigate={setActiveTab} onOpenScanner={() => setIsScannerOpen(true)} />;
+        return <Dashboard onNavigate={handleTabChange} onOpenScanner={() => setIsScannerOpen(true)} />;
       case 'gate':
         return <GateOperations onOpenScanner={() => setIsScannerOpen(true)} />;
       case 'employees':
@@ -61,19 +67,27 @@ const MainLayout = () => {
       case 'audit':
         return <AuditLogs />;
       default:
-        return <Dashboard onNavigate={setActiveTab} onOpenScanner={() => setIsScannerOpen(true)} />;
+        return <Dashboard onNavigate={handleTabChange} onOpenScanner={() => setIsScannerOpen(true)} />;
     }
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)', position: 'relative', width: '100%', overflowX: 'hidden' }}>
       {/* Sidebar Navigation */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={handleTabChange}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Header onOpenScanner={() => setIsScannerOpen(true)} />
-        <main style={{ flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%', overflowX: 'hidden' }}>
+        <Header 
+          onOpenScanner={() => setIsScannerOpen(true)} 
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+        />
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
           {renderActivePage()}
         </main>
       </div>

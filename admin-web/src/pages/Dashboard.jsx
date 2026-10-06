@@ -51,33 +51,35 @@ export const Dashboard = ({ onNavigate, onOpenScanner }) => {
   const { kpis, hourly_traffic, vendor_distribution, recent_activity } = stats;
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Welcome Banner */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '24px',
+        flexWrap: 'wrap',
+        gap: '14px',
+        marginBottom: '20px',
         background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(6, 182, 212, 0.08))',
         border: '1px solid rgba(99, 102, 241, 0.25)',
-        padding: '20px 24px',
+        padding: '18px 20px',
         borderRadius: 'var(--radius-lg)'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.4rem)', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
             Welcome back, {user?.full_name || 'Administrator'}
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Site Operations & Workforce Access Control Center • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={onOpenScanner} className="btn btn-primary">
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={onOpenScanner} className="btn btn-primary" style={{ fontSize: '0.85rem' }}>
             <DoorOpen size={16} />
             <span>Open Gate Scanner</span>
           </button>
-          <button onClick={() => onNavigate('employees')} className="btn btn-secondary">
+          <button onClick={() => onNavigate('employees')} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
             <Users size={16} />
             <span>Manage Workforce</span>
           </button>
@@ -85,71 +87,66 @@ export const Dashboard = ({ onNavigate, onOpenScanner }) => {
       </div>
 
       {/* KPI Cards Grid (PRD Section 7.1) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-        gap: '16px',
-        marginBottom: '24px'
-      }}>
+      <div className="grid-kpis-responsive">
         {/* Currently Inside */}
-        <div className="glass-card" style={{ padding: '18px', borderLeft: '4px solid var(--accent-emerald)' }}>
+        <div className="glass-card" style={{ padding: '16px', borderLeft: '4px solid var(--accent-emerald)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CURRENTLY INSIDE</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CURRENTLY INSIDE</span>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }} className="pulse-dot" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{kpis.currently_inside}</h3>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#fff' }}>{kpis.currently_inside}</h3>
           <p style={{ fontSize: '0.72rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
             <Users size={13} /> Active personnel on site
           </p>
         </div>
 
         {/* Today's Entries */}
-        <div className="glass-card" style={{ padding: '18px' }}>
+        <div className="glass-card" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TODAY'S ENTRIES</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TODAY'S ENTRIES</span>
             <ArrowUpRight size={18} color="var(--accent-cyan)" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{kpis.today_entries}</h3>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#fff' }}>{kpis.today_entries}</h3>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>Gate Check-ins today</p>
         </div>
 
         {/* Today's Exits */}
-        <div className="glass-card" style={{ padding: '18px' }}>
+        <div className="glass-card" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TODAY'S EXITS</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TODAY'S EXITS</span>
             <ArrowDownRight size={18} color="var(--accent-rose)" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{kpis.today_exits}</h3>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#fff' }}>{kpis.today_exits}</h3>
           <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>Gate Check-outs today</p>
         </div>
 
         {/* Total Workforce */}
-        <div className="glass-card" style={{ padding: '18px' }}>
+        <div className="glass-card" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TOTAL WORKFORCE</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TOTAL WORKFORCE</span>
             <Users size={18} color="var(--accent-primary)" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{kpis.total_employees}</h3>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#fff' }}>{kpis.total_employees}</h3>
           <p style={{ fontSize: '0.72rem', color: '#a5b4fc', marginTop: '4px' }}>{kpis.active_employees} Active verified</p>
         </div>
 
         {/* Active Permits */}
-        <div className="glass-card" style={{ padding: '18px' }}>
+        <div className="glass-card" style={{ padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>SAFETY PERMITS</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>SAFETY PERMITS</span>
             <FileCheck size={18} color="var(--accent-amber)" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>{kpis.active_permits}</h3>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#fff' }}>{kpis.active_permits}</h3>
           <p style={{ fontSize: '0.72rem', color: '#fde047', marginTop: '4px' }}>{kpis.pending_permits} Pending approval</p>
         </div>
 
         {/* Expiring Compliance Alerts */}
-        <div className="glass-card" style={{ padding: '18px', borderLeft: kpis.expiring_compliance_docs > 0 ? '4px solid var(--accent-amber)' : 'none' }}>
+        <div className="glass-card" style={{ padding: '16px', borderLeft: kpis.expiring_compliance_docs > 0 ? '4px solid var(--accent-amber)' : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>COMPLIANCE ALERTS</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>COMPLIANCE ALERTS</span>
             <AlertTriangle size={18} color="#f59e0b" />
           </div>
-          <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: kpis.expiring_compliance_docs > 0 ? '#fbbf24' : '#fff' }}>
+          <h3 style={{ fontSize: '1.7rem', fontWeight: 800, color: kpis.expiring_compliance_docs > 0 ? '#fbbf24' : '#fff' }}>
             {kpis.expiring_compliance_docs}
           </h3>
           <p style={{ fontSize: '0.72rem', color: '#fde047', marginTop: '4px' }}>PVC / Medical expiring</p>
@@ -157,15 +154,15 @@ export const Dashboard = ({ onNavigate, onOpenScanner }) => {
       </div>
 
       {/* Middle Grid: Traffic Distribution & Vendor Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      <div className="grid-responsive-2">
         {/* Hourly Gate Movement Traffic */}
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="glass-panel" style={{ padding: '18px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <TrendingUp size={18} color="var(--accent-cyan)" />
               <span>Today's Gate Movement Flow (Hourly)</span>
             </h4>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '12px', fontSize: '0.72rem' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#38bdf8' }}>
                 <span style={{ width: '10px', height: '10px', backgroundColor: '#38bdf8', borderRadius: '2px' }} /> Inward Entries
               </span>
@@ -176,8 +173,9 @@ export const Dashboard = ({ onNavigate, onOpenScanner }) => {
           </div>
 
           {/* Simple Visual Bar Chart */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '160px', padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
-            {hourly_traffic.map((h) => {
+          <div style={{ overflowX: 'auto', paddingBottom: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '150px', minWidth: '320px', padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
+              {hourly_traffic.map((h) => {
               const maxVal = Math.max(1, ...hourly_traffic.map(x => Math.max(x.entries, x.exits)));
               const entryHeight = (h.entries / maxVal) * 120;
               const exitHeight = (h.exits / maxVal) * 120;
@@ -209,6 +207,7 @@ export const Dashboard = ({ onNavigate, onOpenScanner }) => {
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
 

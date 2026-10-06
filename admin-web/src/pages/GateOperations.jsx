@@ -100,31 +100,33 @@ export const GateOperations = ({ onOpenScanner }) => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Top Banner */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '24px',
+        flexWrap: 'wrap',
+        gap: '14px',
+        marginBottom: '20px',
         background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.08))',
         border: '1px solid rgba(16, 185, 129, 0.25)',
-        padding: '20px 24px',
+        padding: '18px 20px',
         borderRadius: 'var(--radius-lg)'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <DoorOpen size={24} color="#34d399" />
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.4rem)', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <DoorOpen size={22} color="#34d399" />
             <span>Site Gate Access & Security Command</span>
           </h2>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Real-time biometric/QR validation, presence state enforcement & duplicate entry prevention
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={onOpenScanner} className="btn btn-primary" style={{ padding: '10px 18px', fontSize: '0.9rem' }}>
-            <QrCode size={18} />
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={onOpenScanner} className="btn btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+            <QrCode size={16} />
             <span>Launch Camera Scanner</span>
           </button>
           <button onClick={fetchGateData} className="btn btn-secondary" title="Refresh Live Data">
@@ -134,13 +136,13 @@ export const GateOperations = ({ onOpenScanner }) => {
       </div>
 
       {/* Manual Quick Access Terminal Box */}
-      <div className="glass-panel" style={{ padding: '20px', marginBottom: '24px' }}>
-        <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#fff', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="glass-panel" style={{ padding: '18px', marginBottom: '20px' }}>
+        <h4 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#fff', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ShieldCheck size={18} color="var(--accent-primary)" />
           <span>Security Gate Terminal — Manual Verification & Override</span>
         </h4>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: '12px', alignItems: 'flex-end' }}>
+        <div className="gate-terminal-grid">
           <div>
             <label className="form-label">Gate Station</label>
             <select
@@ -272,7 +274,7 @@ export const GateOperations = ({ onOpenScanner }) => {
       </div>
 
       {/* Two Column Layout: Currently Inside Stream & Historical Transaction Log */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.6fr', gap: '20px' }}>
+      <div className="gate-live-grid">
         {/* Left: Currently Inside List */}
         <div className="glass-panel" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>

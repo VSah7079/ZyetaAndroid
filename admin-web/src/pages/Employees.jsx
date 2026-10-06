@@ -124,11 +124,11 @@ export const Employees = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>
             {user?.role === 'Vendor' ? 'Contractor Workforce Portal' : 'Employee & Contractor Master'}
           </h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -136,7 +136,7 @@ export const Employees = () => {
           </p>
         </div>
 
-        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
+        <button onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
           <UserPlus size={16} />
           <span>Register New Worker</span>
         </button>
@@ -309,7 +309,7 @@ export const Employees = () => {
             </div>
 
             <form onSubmit={handleCreateEmployee} style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+              <div className="grid-responsive-1-1" style={{ marginBottom: '14px' }}>
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
                   <input
@@ -448,7 +448,7 @@ export const Employees = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.8rem', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+              <div className="grid-responsive-1-1" style={{ gap: '10px', fontSize: '0.8rem', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
                 <div><strong>Mobile:</strong> {viewEmployeeDrawer.mobile}</div>
                 <div><strong>Blood Group:</strong> <span style={{ color: '#f43f5e' }}>{viewEmployeeDrawer.blood_group}</span></div>
                 <div><strong>Aadhaar:</strong> {viewEmployeeDrawer.aadhaar_no}</div>

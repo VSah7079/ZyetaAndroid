@@ -254,18 +254,18 @@ export const Permits = () => {
   const greenCount = punches.filter(p => p.color_type === 'GREEN').length;
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>HSE Safety & Permits Command</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>HSE Safety & Permits Command</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Digital permits-to-work, 3-color safety punch enforcement (🔴 Red / 🟡 Yellow / 🟢 Green), and live compliance
           </p>
         </div>
 
         {activeSubTab === 'permits' ? (
-          <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
+          <button onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
             <Plus size={16} />
             <span>Request New Permit</span>
           </button>
@@ -273,7 +273,7 @@ export const Permits = () => {
           <button
             onClick={() => setShowNewPunchModal(true)}
             className="btn"
-            style={{ backgroundColor: '#06b6d4', color: '#000', fontWeight: 700 }}
+            style={{ backgroundColor: '#06b6d4', color: '#000', fontWeight: 700, whiteSpace: 'nowrap' }}
           >
             <Camera size={16} />
             <span>Record Safety Punch</span>
@@ -281,8 +281,8 @@ export const Permits = () => {
         )}
       </div>
 
-      {/* SUB-TABS NAVIGATION */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+      {/* SUB-TABS NAVIGATION (Scrollable on mobile) */}
+      <div className="nav-tabs-scroll" style={{ paddingBottom: '8px' }}>
         <button
           onClick={() => setActiveSubTab('permits')}
           className="btn"
@@ -350,7 +350,7 @@ export const Permits = () => {
           </div>
 
           {/* Grid of Permits */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
+          <div className="grid-cards-responsive">
             {permits.map((p) => {
               let badgeClass = 'badge-pending';
               if (p.status === 'Active' || p.status === 'Approved') badgeClass = 'badge-active';
@@ -407,7 +407,7 @@ export const Permits = () => {
       {activeSubTab === 'punches' && (
         <div>
           {/* Summary Badges Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+          <div className="grid-responsive-4" style={{ gap: '14px', marginBottom: '20px' }}>
             <div className="glass-panel" style={{ padding: '14px 18px', borderLeft: '4px solid #64748b' }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>TOTAL PUNCHES</div>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{punches.length}</div>
@@ -428,7 +428,7 @@ export const Permits = () => {
 
           {/* Filter and Search Toolbar */}
           <div className="glass-panel" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '260px', position: 'relative' }}>
+            <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
               <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
@@ -440,7 +440,7 @@ export const Permits = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {['ALL', 'RED', 'YELLOW', 'GREEN'].map((c) => {
                 let colorHex = '#64748b';
                 let label = `All (${punches.length})`;
@@ -470,7 +470,7 @@ export const Permits = () => {
           </div>
 
           {/* Grid of Safety Punches */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '20px' }}>
+          <div className="grid-cards-responsive">
             {filteredPunches.map((p) => {
               let accent = '#ef4444';
               let badgeTitle = '🔴 CRITICAL STOP-WORK';

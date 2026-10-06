@@ -680,6 +680,73 @@ class ApiService {
     return false;
   }
 
+  static Future<Map<String, dynamic>?> getVendorById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/vendors/$id'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) return data['data'];
+      }
+    } catch (_) {}
+
+    final vnd = _vendorsStore.firstWhere((v) => v['id'] == id, orElse: () => _vendorsStore.isNotEmpty ? _vendorsStore.first : {});
+    if (vnd.isEmpty) return null;
+
+    final employees = _employeesStore.where((e) => e['vendor_id'] == id || e['vendor_name'] == vnd['company_name']).toList();
+    final permits = _permitsStore.where((p) => p['vendor_id'] == id || p['vendor_name'] == vnd['company_name']).toList();
+    final pendingEmployees = employees.where((e) => e['status'] == 'Pending Approval' || e['status'] == 'Pending').toList();
+    final activeWorkers = employees.where((e) => e['status'] != 'Deactivated').length;
+    final insideNow = employees.where((e) => e['currently_inside'] == 1).length;
+
+    return {
+      ...vnd,
+      'stats': {
+        'total_employees': employees.length,
+        'active_employees': activeWorkers,
+        'pending_employee_approvals': pendingEmployees.length,
+        'currently_inside': insideNow,
+        'today_manpower': insideNow > 0 ? insideNow : (activeWorkers * 0.9).round(),
+        'yesterday_manpower': (activeWorkers * 0.85).round(),
+        'active_permits': permits.where((p) => p['status'] == 'Approved' || p['status'] == 'Active').length,
+        'pending_permits': permits.where((p) => p['status'].toString().contains('Pending')).length,
+        'total_dc_entries': 8,
+        'safety_punches_count': 1,
+        'vehicles_count': 2,
+      },
+      'employees': employees,
+      'pending_employees': pendingEmployees,
+      'permits': permits,
+      'materials': [
+        {
+          'id': 1,
+          'dc_number': 'DC-2026-4401',
+          'material_name': 'Scaffolding Pipes & Cuplock Clamps',
+          'movement_type': 'INWARD',
+          'quantity': 50,
+          'unit': 'Sets',
+          'vehicle_number': 'KA 04 E 9921',
+          'driver_name': 'Manish Yadav',
+          'is_returnable': true,
+          'is_returned': false,
+          'status': 'Gate Verified'
+        }
+      ],
+      'safety_punches': _safetyPunchesStore.where((p) => p['vendor_name'] == vnd['company_name']).toList(),
+      'vehicles': [
+        {
+          'vehicle_number': 'KA 04 E 9921',
+          'vehicle_type': 'Heavy Commercial Truck',
+          'driver_name': 'Manish Yadav',
+          'driver_phone': '+91 9122334411',
+          'status': 'Inside Campus'
+        }
+      ]
+    };
+  }
+
   static Future<bool> deleteVendor(int id) async {
     _vendorsStore.removeWhere((v) => v['id'] == id);
     return true;

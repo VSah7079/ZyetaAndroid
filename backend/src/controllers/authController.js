@@ -128,6 +128,76 @@ const createUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email, password, role, full_name, phone, vendor_id, status, permissions } = req.body;
+
+    const user = db.users.findById(Number(id));
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const updates = {};
+    if (email) updates.email = email;
+    if (role) updates.role = role;
+    if (full_name) updates.full_name = full_name;
+    if (phone !== undefined) updates.phone = phone;
+    if (vendor_id !== undefined) updates.vendor_id = vendor_id;
+    if (status) updates.status = status;
+    if (permissions) updates.permissions = permissions;
+    if (password) {
+      const salt = bcrypt.genSaltSync(10);
+      updates.password_hash = bcrypt.hashSync(password, salt);
+    }
+
+    const updatedUser = db.users.update(Number(id), updates);
+
+    logAudit({
+      userId: req.user.id,
+      userName: req.user.full_name,
+      userRole: req.user.role,
+      actionType: 'UPDATE',
+      module: 'Users',
+      affectedRecordId: Number(id),
+      details: `Updated user account ${user.username} (${updatedUser.role})`,
+      ipAddress: req.ip
+    });
+
+    const { password_hash: _, ...safeUser } = updatedUser;
+    res.json({ success: true, user: safeUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = db.users.findById(Number(id));
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    db.users.delete(Number(id));
+
+    logAudit({
+      userId: req.user.id,
+      userName: req.user.full_name,
+      userRole: req.user.role,
+      actionType: 'DELETE',
+      module: 'Users',
+      affectedRecordId: Number(id),
+      details: `Deleted user account ${user.username}`,
+      ipAddress: req.ip
+    });
+
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getRoles = async (req, res) => {
   try {
     const roles = db.roles.find();
@@ -142,5 +212,7 @@ module.exports = {
   getMe,
   getUsers,
   createUser,
+  updateUser,
+  deleteUser,
   getRoles
 };

@@ -64,16 +64,16 @@ export const Visitors = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+    <div className="page-container">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>Visitor Pass & Kiosk Management</h2>
+          <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.3rem)', fontWeight: 800, color: '#fff' }}>Visitor Pass & Kiosk Management</h2>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Digital visitor badges, host pre-approval, vehicle logs and departure tracking
           </p>
         </div>
 
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+        <button onClick={() => setShowModal(true)} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
           <Plus size={16} />
           <span>Register New Visitor</span>
         </button>
@@ -181,7 +181,7 @@ export const Visitors = () => {
             </div>
 
             <form onSubmit={handleRegister} style={{ padding: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="grid-responsive-1-1">
                 <div className="form-group">
                   <label className="form-label">Visitor Full Name *</label>
                   <input

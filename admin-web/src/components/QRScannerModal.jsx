@@ -117,7 +117,7 @@ export const QRScannerModal = ({ isOpen, onClose, onMovementRecorded }) => {
 
         <div style={{ padding: '20px' }}>
           {/* Gate Selection & Scan Input */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px', marginBottom: '16px' }}>
+          <div className="grid-responsive-1-1" style={{ marginBottom: '16px' }}>
             <div>
               <label className="form-label">Active Gate</label>
               <select
@@ -305,7 +305,7 @@ export const QRScannerModal = ({ isOpen, onClose, onMovementRecorded }) => {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="grid-responsive-1-1" style={{ marginTop: '16px', gap: '10px' }}>
                 <button
                   onClick={() => handleExecuteMovement('ENTRY')}
                   className="btn btn-success"
