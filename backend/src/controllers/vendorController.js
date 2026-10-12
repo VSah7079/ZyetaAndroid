@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const bcrypt = require('bcryptjs');
 const { logAudit } = require('../middleware/audit');
 
 const getVendors = async (req, res) => {
@@ -131,6 +132,28 @@ const createVendor = async (req, res) => {
       status: 'Active'
     });
 
+    // Auto-generate username and password for Vendor Login
+    const baseUsername = data.username || data.company_name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 12);
+    const username = `vendor_${baseUsername}`;
+    const password = data.password || `Zyeta@${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const existingUser = db.users.findOne((u) => u.username.toLowerCase() === username.toLowerCase());
+    let userAccount;
+    if (!existingUser) {
+      userAccount = db.users.create({
+        username,
+        password_hash: bcrypt.hashSync(password, 10),
+        full_name: data.owner_name || data.company_name,
+        email: data.email || `${username}@vendor.zyeta.com`,
+        phone: data.phone || '',
+        role: 'Vendor',
+        vendor_id: newVendor.id,
+        status: 'Active',
+        permissions: ['employees', 'permits', 'materials', 'attendance'],
+        site_id: 1
+      });
+    }
+
     logAudit({
       userId: req.user.id,
       userName: req.user.full_name,
@@ -138,11 +161,22 @@ const createVendor = async (req, res) => {
       actionType: 'CREATE',
       module: 'Vendor',
       affectedRecordId: newVendor.id,
-      details: `Created contractor vendor ${newVendor.company_name} (${newVendor.vendor_id})`,
+      details: `Created contractor vendor ${newVendor.company_name} (${newVendor.vendor_id}) with login user @${username}`,
       ipAddress: req.ip
     });
 
-    res.status(201).json({ success: true, message: 'Vendor created successfully', data: newVendor });
+    res.status(201).json({
+      success: true,
+      message: 'Vendor created and login credentials generated successfully',
+      data: {
+        ...newVendor,
+        credentials: {
+          username,
+          password,
+          role: 'Vendor'
+        }
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

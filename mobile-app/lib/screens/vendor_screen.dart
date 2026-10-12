@@ -184,7 +184,7 @@ class _VendorScreenState extends State<VendorScreen> {
                               'email': emailCtrl.text.trim(),
                             });
                             setModalState(() => isSaving = false);
-                            if (ok && mounted) {
+                            if (ok != null && mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Contractor onboarded successfully!'), backgroundColor: Colors.green),

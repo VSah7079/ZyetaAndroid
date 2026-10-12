@@ -3,7 +3,7 @@ import {
   Building2, Plus, Phone, Mail, FileText, CheckCircle2, XCircle, AlertTriangle,
   Users, Calendar, Clock, Truck, Package, ShieldAlert, ShieldCheck, Flame,
   Check, X, RefreshCw, ChevronDown, UserCheck, ArrowUpRight, TrendingUp, TrendingDown,
-  MapPin, Hash, Award, AlertCircle
+  MapPin, Hash, Award, AlertCircle, Copy, Key
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -21,6 +21,7 @@ export const Vendors = () => {
   const [showPermitModal, setShowPermitModal] = useState(false);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
 
   // Forms State
   const [vendorForm, setVendorForm] = useState({
@@ -31,7 +32,9 @@ export const Vendors = () => {
     address: '',
     gst_pan: '',
     contract_start: new Date().toISOString().split('T')[0],
-    contract_end: '2027-12-31'
+    contract_end: '2027-12-31',
+    username: '',
+    password: ''
   });
 
   const [workerForm, setWorkerForm] = useState({
@@ -122,13 +125,19 @@ export const Vendors = () => {
     fetchVendorDetails(val);
   };
 
-  // Vendor Onboarding
+  // Vendor Onboarding with credentials generation
   const handleCreateVendor = async (e) => {
     e.preventDefault();
     try {
       const res = await api.createVendor(vendorForm);
       if (res.success) {
         setShowVendorModal(false);
+        if (res.data?.credentials) {
+          setCreatedCredentials({
+            company_name: vendorForm.company_name,
+            ...res.data.credentials
+          });
+        }
         setVendorForm({
           company_name: '',
           owner_name: '',
@@ -137,7 +146,9 @@ export const Vendors = () => {
           address: '',
           gst_pan: '',
           contract_start: new Date().toISOString().split('T')[0],
-          contract_end: '2027-12-31'
+          contract_end: '2027-12-31',
+          username: '',
+          password: ''
         });
         await fetchVendors(res.data?.id ? String(res.data.id) : null);
       }
@@ -344,10 +355,10 @@ export const Vendors = () => {
             </div>
             <div>
               <h2 style={{ fontSize: 'clamp(1.1rem, 2.2vw, 1.35rem)', fontWeight: 800, color: '#fff', margin: 0 }}>
-                Contractor Command Center & Approvals
+                Site Admin: Contractor Command Center
               </h2>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
-                Site Admin oversight: Select registered contractor for real-time manpower, workforce approvals, PTW & DC movement
+                Select contractor for live manpower telemetry, 1-click approvals, PTWs & material DC entry
               </p>
             </div>
           </div>
@@ -1346,7 +1357,7 @@ export const Vendors = () => {
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                 <Building2 size={18} color="#06b6d4" />
-                Onboard Contractor / Vendor
+                Onboard Contractor & Generate Login Credentials
               </h3>
               <button onClick={() => setShowVendorModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>✕</button>
             </div>
@@ -1361,7 +1372,16 @@ export const Vendors = () => {
                     className="form-control"
                     placeholder="e.g. Apex MEP Solutions Pvt Ltd"
                     value={vendorForm.company_name}
-                    onChange={(e) => setVendorForm({ ...vendorForm, company_name: e.target.value })}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const clean = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 10);
+                      setVendorForm({
+                        ...vendorForm,
+                        company_name: name,
+                        username: vendorForm.username || `vendor_${clean}`,
+                        password: vendorForm.password || `Zyeta@${Math.floor(1000 + Math.random() * 9000)}`
+                      });
+                    }}
                   />
                 </div>
 
@@ -1423,22 +1443,24 @@ export const Vendors = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Contract Start Date</label>
+                  <label className="form-label">Portal Username</label>
                   <input
-                    type="date"
+                    type="text"
                     className="form-control"
-                    value={vendorForm.contract_start}
-                    onChange={(e) => setVendorForm({ ...vendorForm, contract_start: e.target.value })}
+                    placeholder="vendor_apexmep"
+                    value={vendorForm.username}
+                    onChange={(e) => setVendorForm({ ...vendorForm, username: e.target.value })}
                   />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Contract End Date</label>
+                  <label className="form-label">Portal Password</label>
                   <input
-                    type="date"
+                    type="text"
                     className="form-control"
-                    value={vendorForm.contract_end}
-                    onChange={(e) => setVendorForm({ ...vendorForm, contract_end: e.target.value })}
+                    placeholder="Zyeta@8899"
+                    value={vendorForm.password}
+                    onChange={(e) => setVendorForm({ ...vendorForm, password: e.target.value })}
                   />
                 </div>
               </div>
@@ -1448,10 +1470,59 @@ export const Vendors = () => {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Save Contractor
+                  Save Contractor & Generate Login
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CREDENTIALS SUCCESS POPUP */}
+      {createdCredentials && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '480px' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#34d399', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <CheckCircle2 size={20} color="#34d399" />
+                Contractor Login Created!
+              </h3>
+              <button onClick={() => setCreatedCredentials(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '20px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '16px' }}>
+                Login account for <strong>{createdCredentials.company_name}</strong> has been created. Share these credentials for Vendor Self-Service Portal:
+              </p>
+
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '14px', borderRadius: '8px', border: '1px solid rgba(6,182,212,0.3)', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Username:</span>
+                  <strong className="mono" style={{ color: '#38bdf8' }}>{createdCredentials.username}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Password:</span>
+                  <strong className="mono" style={{ color: '#34d399' }}>{createdCredentials.password}</strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`Username: ${createdCredentials.username}\nPassword: ${createdCredentials.password}`);
+                    alert('Credentials copied to clipboard!');
+                  }}
+                  className="btn btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Copy size={14} /> Copy
+                </button>
+                <button type="button" onClick={() => setCreatedCredentials(null)} className="btn btn-primary">
+                  Done
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

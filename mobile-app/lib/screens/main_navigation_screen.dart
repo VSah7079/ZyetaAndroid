@@ -7,6 +7,7 @@ import 'permit_screen.dart';
 import 'gate_passes_hub_screen.dart';
 import 'attendance_screen.dart';
 import 'vendor_screen.dart';
+import 'site_admin_screen.dart';
 import 'inside_headcount_screen.dart';
 import 'audit_logs_screen.dart';
 import 'qr_scanner_screen.dart';
@@ -63,7 +64,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ]);
     } else {
       // Granular Role-Based Permissions Check
-      if (user?.can('safety') == true && role == 'Safety Officer') {
+      if (role == 'Admin' || (user?.can('vendors') == true && role != 'Vendor' && role != 'Security' && role != 'Safety Officer')) {
+        screens.add(const SiteAdminScreen());
+        navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.business_outlined), activeIcon: Icon(Icons.business), label: 'Site Admin'));
+      } else if (user?.can('safety') == true && role == 'Safety Officer') {
         screens.add(const SafetyOfficerScreen());
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.health_and_safety_outlined), activeIcon: Icon(Icons.health_and_safety), label: 'HSE Command'));
       } else if (user?.can('gate') == true) {
@@ -74,12 +78,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront), label: 'My Portal'));
       }
 
-      if (user?.can('employees') == true) {
+      if (user?.can('employees') == true && screens.length < 5) {
         screens.add(const EmployeeScreen());
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.badge_outlined), activeIcon: Icon(Icons.badge), label: 'Workers'));
       }
 
-      if (user?.can('permits') == true) {
+      if (user?.can('permits') == true && screens.length < 5) {
         screens.add(const PermitScreen());
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.assignment_outlined), activeIcon: Icon(Icons.assignment), label: 'Permits'));
       }
@@ -87,7 +91,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       if (user?.can('materials') == true && role == 'Vendor') {
         screens.add(const MaterialScreen());
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.inventory_2_outlined), activeIcon: Icon(Icons.inventory_2), label: 'Material DC'));
-      } else if (user?.can('visitors') == true || user?.can('materials') == true || user?.can('vehicles') == true) {
+      } else if ((user?.can('visitors') == true || user?.can('materials') == true || user?.can('vehicles') == true) && screens.length < 5) {
         screens.add(const GatePassesHubScreen());
         navItems.add(const BottomNavigationBarItem(icon: Icon(Icons.door_sliding_outlined), activeIcon: Icon(Icons.door_sliding), label: 'Passes'));
       }
@@ -218,8 +222,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen()));
               }),
 
+            if (isSuperAdmin || role == 'Admin' || user?.can('vendors') == true)
+              _buildDrawerTile(Icons.business_center, '🏛️ Site Admin Contractor Command', () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SiteAdminScreen()));
+              }),
+
             if (isSuperAdmin || user?.can('vendors') == true)
-              _buildDrawerTile(Icons.business, '🏗️ Contractors & Vendors', () {
+              _buildDrawerTile(Icons.business, '🏗️ Contractors & Vendors Roster', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorScreen()));
               }),

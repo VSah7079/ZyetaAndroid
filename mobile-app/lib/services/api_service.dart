@@ -640,23 +640,32 @@ class ApiService {
     return _vendorsStore;
   }
 
-  static Future<bool> createVendor(Map<String, dynamic> payload) async {
+  static Future<Map<String, dynamic>?> createVendor(Map<String, dynamic> payload) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/vendors'),
         headers: headers,
         body: jsonEncode(payload),
       ).timeout(const Duration(seconds: 4));
-      if (response.statusCode == 201 || response.statusCode == 200) return true;
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'] ?? {'success': true};
+        }
+      }
     } catch (_) {}
 
     final newId = (_vendorsStore.map((v) => v['id'] as int).reduce((a, b) => a > b ? a : b)) + 1;
+    final baseUsername = payload['username'] ?? (payload['company_name'] ?? 'vendor').toString().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
+    final username = 'vendor_${baseUsername.length > 12 ? baseUsername.substring(0, 12) : baseUsername}';
+    final password = payload['password'] ?? 'Zyeta@${1000 + newId}';
+
     final vnd = {
       'id': newId,
       'vendor_id': payload['vendor_code'] ?? 'VND-${1000 + newId}',
       'company_name': payload['company_name'] ?? 'New Contractor',
       'owner_name': payload['contact_person'] ?? 'Owner',
-      'email': payload['email'] ?? 'vendor@corp.com',
+      'email': payload['email'] ?? '$username@vendor.zyeta.com',
       'phone': payload['phone'] ?? '+91 9900000000',
       'address': payload['address'] ?? 'Bangalore Industrial Area',
       'gst_pan': '29ABCDE${1000 + newId}F1Z5',
@@ -666,9 +675,27 @@ class ApiService {
       'employee_count': 10,
       'active_permits': 0,
       'compliance_alerts': 0,
+      'credentials': {
+        'username': username,
+        'password': password,
+      }
     };
     _vendorsStore.add(vnd);
-    return true;
+
+    // Also register user for login
+    _usersStore.add({
+      'id': _usersStore.length + 10,
+      'username': username,
+      'full_name': payload['contact_person'] ?? payload['company_name'] ?? 'Contractor Admin',
+      'email': payload['email'] ?? '$username@vendor.zyeta.com',
+      'role': 'Vendor',
+      'vendor_id': newId,
+      'phone': payload['phone'] ?? '',
+      'status': 'Active',
+      'permissions': ['employees', 'permits', 'materials', 'attendance'],
+    });
+
+    return vnd;
   }
 
   static Future<bool> updateVendor(int id, Map<String, dynamic> updates) async {
