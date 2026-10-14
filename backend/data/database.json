@@ -2465,6 +2465,54 @@
       "new_values": null,
       "ip_address": "::1",
       "timestamp": "2026-10-06T06:45:48.383Z"
+    },
+    {
+      "id": 65,
+      "created_at": "2026-10-12T12:07:47.342Z",
+      "updated_at": "2026-10-12T12:07:47.342Z",
+      "user_id": 4,
+      "user_name": "Commander R. K. Singh",
+      "user_role": "Security",
+      "action_type": "LOGIN",
+      "module": "Auth",
+      "affected_record_id": "4",
+      "details": "User security_gate1 logged in successfully",
+      "old_values": null,
+      "new_values": null,
+      "ip_address": "::ffff:127.0.0.1",
+      "timestamp": "2026-10-12T12:07:47.342Z"
+    },
+    {
+      "id": 66,
+      "created_at": "2026-10-12T12:12:37.993Z",
+      "updated_at": "2026-10-12T12:12:37.993Z",
+      "user_id": 4,
+      "user_name": "Commander R. K. Singh",
+      "user_role": "Security",
+      "action_type": "LOGIN",
+      "module": "Auth",
+      "affected_record_id": "4",
+      "details": "User security_gate1 logged in successfully",
+      "old_values": null,
+      "new_values": null,
+      "ip_address": "::ffff:127.0.0.1",
+      "timestamp": "2026-10-12T12:12:37.991Z"
+    },
+    {
+      "id": 67,
+      "created_at": "2026-10-12T12:13:05.870Z",
+      "updated_at": "2026-10-12T12:13:05.870Z",
+      "user_id": 4,
+      "user_name": "Commander R. K. Singh",
+      "user_role": "Security",
+      "action_type": "LOGIN",
+      "module": "Auth",
+      "affected_record_id": "4",
+      "details": "User security_gate1 logged in successfully",
+      "old_values": null,
+      "new_values": null,
+      "ip_address": "::ffff:127.0.0.1",
+      "timestamp": "2026-10-12T12:13:05.868Z"
     }
   ]
 }

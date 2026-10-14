@@ -456,9 +456,11 @@ class _PermitScreenState extends State<PermitScreen> {
               title: const Text('Permits to Work (PTW)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               actions: [
                 IconButton(
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Colors.white70),
                   onPressed: _fetchPermits,
                 ),
+                const LogoutIconButton(),
               ],
             )
           : null,

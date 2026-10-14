@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import '../screens/login_screen.dart';
+
 class FormValidators {
   static final RegExp _phoneRegex = RegExp(r'^[6-9]\d{9}$');
   static final RegExp _emailRegex = RegExp(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$');
@@ -88,5 +92,157 @@ class FormValidators {
       return 'Password must be at least $minLength characters';
     }
     return null;
+  }
+}
+
+class AuthUtils {
+  /// Opens a modern dark confirmation dialog before logging out the active user.
+  static Future<bool?> showLogoutDialog(BuildContext context) async {
+    final user = ApiService.currentUser;
+
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
+          ),
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Confirm Logout',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (user != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: const Color(0xFF6366F1),
+                        child: Text(
+                          (user.fullName.isNotEmpty ? user.fullName[0] : 'U').toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user.fullName,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${user.role} • ${user.username}',
+                              style: const TextStyle(color: Colors.white60, fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              const Text(
+                'Are you sure you want to log out from this session? You will be returned to the login screen.',
+                style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white60,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(ctx).pop(true);
+                performLogout(context);
+              },
+              icon: const Icon(Icons.logout, size: 16, color: Colors.white),
+              label: const Text('Log Out', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Clears credentials and redirects safely to LoginScreen
+  static void performLogout(BuildContext context) {
+    ApiService.logout();
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+}
+
+/// Standard reusable Logout Icon Button for AppBars
+class LogoutIconButton extends StatelessWidget {
+  final Color? color;
+  final double size;
+  final String tooltip;
+
+  const LogoutIconButton({
+    super.key,
+    this.color = Colors.white70,
+    this.size = 20,
+    this.tooltip = 'Log Out',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.logout_rounded, color: color, size: size),
+      tooltip: tooltip,
+      onPressed: () => AuthUtils.showLogoutDialog(context),
+    );
   }
 }

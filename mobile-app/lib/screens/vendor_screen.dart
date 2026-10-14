@@ -53,10 +53,12 @@ class _VendorScreenState extends State<VendorScreen> {
   }
 
   void _approveWorker(int empId) async {
-    final ok = await ApiService.updateEmployee(empId, {'status': 'Active'});
+    final userRole = ApiService.currentUser?.role ?? 'Admin';
+    final stage = userRole == 'Super Admin' ? 'super_admin' : (userRole == 'Safety Officer' ? 'safety' : 'admin');
+    final ok = await ApiService.approveEmployeeStage(empId: empId, stage: stage, action: 'Approved');
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Worker approved & gate badge activated!'), backgroundColor: Colors.green),
+        SnackBar(content: Text('✓ Worker cleared for [$stage] clearance!'), backgroundColor: Colors.green),
       );
       if (_selectedVendorId != null) _fetchVendorDetails(_selectedVendorId!);
       _fetchVendors(_selectedVendorId);
@@ -626,9 +628,11 @@ class _VendorScreenState extends State<VendorScreen> {
         title: const Text('Site Admin: Contractor Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: () => _fetchVendors(_selectedVendorId),
           ),
+          const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

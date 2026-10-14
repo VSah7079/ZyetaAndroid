@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -144,9 +145,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
             onPressed: () => _simulateExport('xlsx'),
           ),
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _fetchReport,
           ),
+          const LogoutIconButton(),
         ],
       ),
       body: Column(

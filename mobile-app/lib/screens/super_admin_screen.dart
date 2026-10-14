@@ -584,9 +584,11 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
         ),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _loadAllMasterData,
           ),
+          const LogoutIconButton(),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -756,6 +758,16 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     );
   }
 
+  void _authorizeWorkerBadge(int empId) async {
+    final ok = await ApiService.approveEmployeeStage(empId: empId, stage: 'super_admin', action: 'Approved');
+    if (ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✓ Super Admin Badge Issued & Digital Turnstile Pass Activated!'), backgroundColor: Colors.green),
+      );
+      _loadAllMasterData();
+    }
+  }
+
   // --- TAB 2: WORKFORCE MASTER ---
   Widget _buildWorkforceTab() {
     return ListView.separated(
@@ -764,34 +776,66 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
       separatorBuilder: (_, __) => const SizedBox(height: 10),
       itemBuilder: (context, idx) {
         final emp = _employees[idx];
+        final isPending = emp['status'] == 'Pending ID Clearance' || emp['status'] == 'Pending Approval';
+        final stage = emp['approval_stage'] ?? 'Pending Admin';
+
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
-          child: Row(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: isPending ? const Color(0xFFF59E0B).withValues(alpha: 0.4) : Colors.white10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(image: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'), fit: BoxFit.cover),
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(image: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'), fit: BoxFit.cover),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(emp['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name']})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 11)),
+                        Text('Aadhaar: ${emp['aadhaar_no']} • Medical: ${emp['medical_validity']}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Color(0xFF6366F1), size: 20),
+                    onPressed: () => _openEditWorkerModal(emp),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              if (isPending) ...[
+                const SizedBox(height: 8),
+                const Divider(color: Colors.white10, height: 1),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(emp['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name']})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 11)),
-                    Text('Aadhaar: ${emp['aadhaar_no']} • Medical: ${emp['medical_validity']}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    Text('Stage: $stage', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      icon: const Icon(Icons.verified, size: 14, color: Colors.white),
+                      label: const Text('Authorize & Issue ID', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      onPressed: () => _authorizeWorkerBadge(emp['id']),
+                    ),
                   ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.edit, color: Color(0xFF6366F1), size: 20),
-                onPressed: () => _openEditWorkerModal(emp),
-              ),
+              ],
             ],
           ),
         );

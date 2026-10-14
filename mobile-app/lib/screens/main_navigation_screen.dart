@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 import 'security_dashboard_screen.dart';
 import 'safety_officer_screen.dart';
 import 'employee_screen.dart';
@@ -17,7 +18,6 @@ import 'reports_screen.dart';
 import 'material_screen.dart';
 import 'emergency_muster_screen.dart';
 import 'toolbox_talk_screen.dart';
-import 'login_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final int initialIndex;
@@ -278,16 +278,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
             // Logout / Switch User Account
             ListTile(
-              leading: const Icon(Icons.switch_account, color: Color(0xFF6366F1)),
-              title: const Text('Switch Role / Logout', style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold)),
+              leading: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
+              title: const Text('Switch Role / Logout', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
               onTap: () {
-                ApiService.authToken = null;
-                ApiService.currentUser = null;
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
+                Navigator.pop(context); // Close drawer first
+                AuthUtils.showLogoutDialog(context);
               },
             ),
           ],

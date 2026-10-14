@@ -32,6 +32,7 @@ router.get('/dashboard/stats', authenticateToken, dashboardController.getDashboa
 router.get('/employees', authenticateToken, employeeController.getEmployees);
 router.get('/employees/:id', authenticateToken, employeeController.getEmployeeById);
 router.post('/employees', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Vendor'), employeeController.createEmployee);
+router.put('/employees/:id/approve-stage', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Safety Officer'), employeeController.approveEmployeeStage);
 router.put('/employees/:id', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Vendor'), employeeController.updateEmployee);
 router.delete('/employees/:id', authenticateToken, authorizeRoles('Super Admin', 'Admin'), employeeController.deleteEmployee);
 
@@ -50,6 +51,8 @@ router.get('/gate/transactions', authenticateToken, gateController.getTransactio
 // --- 6. Attendance ---
 router.get('/attendance', authenticateToken, attendanceController.getAttendance);
 router.get('/attendance/summary', authenticateToken, attendanceController.getAttendanceSummary);
+router.get('/attendance/analytics', authenticateToken, attendanceController.getAttendanceAnalytics);
+router.get('/attendance/export', authenticateToken, attendanceController.exportAttendanceCSV);
 router.post('/attendance/manual', authenticateToken, authorizeRoles('Super Admin', 'Admin'), attendanceController.markManualAttendance);
 
 // --- 7. Permits ---

@@ -682,9 +682,11 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
               title: const Text('Workforce & ID Passes', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               actions: [
                 IconButton(
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Colors.white70),
                   onPressed: _fetchEmployees,
                 ),
+                const LogoutIconButton(),
               ],
             )
           : null,

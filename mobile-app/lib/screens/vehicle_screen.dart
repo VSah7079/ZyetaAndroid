@@ -352,9 +352,11 @@ class _VehicleScreenState extends State<VehicleScreen> {
               title: const Text('Vehicle Check & Compliance', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               actions: [
                 IconButton(
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Colors.white70),
                   onPressed: _fetchVehicles,
                 ),
+                const LogoutIconButton(),
               ],
             )
           : null,

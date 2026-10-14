@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 
 class AuditLogsScreen extends StatefulWidget {
   const AuditLogsScreen({super.key});
@@ -63,9 +64,11 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
         title: const Text('System Audit Trail', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _fetchLogs,
           ),
+          const LogoutIconButton(),
         ],
       ),
       body: Column(

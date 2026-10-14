@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 
 class ToolboxTalkScreen extends StatefulWidget {
   const ToolboxTalkScreen({super.key});
@@ -151,7 +152,8 @@ class _ToolboxTalkScreenState extends State<ToolboxTalkScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh, color: Colors.white70), onPressed: _loadTalks),
+          IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh, color: Colors.white70), onPressed: _loadTalks),
+          const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

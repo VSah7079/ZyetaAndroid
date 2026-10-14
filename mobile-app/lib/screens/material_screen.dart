@@ -483,9 +483,11 @@ class _MaterialScreenState extends State<MaterialScreen> {
               title: const Text('Material Gate Pass (DC)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               actions: [
                 IconButton(
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Colors.white70),
                   onPressed: _fetchMaterials,
                 ),
+                const LogoutIconButton(),
               ],
             )
           : null,

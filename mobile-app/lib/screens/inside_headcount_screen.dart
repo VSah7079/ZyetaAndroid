@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 import 'emergency_muster_screen.dart';
 
 class InsideHeadcountScreen extends StatefulWidget {
@@ -89,9 +90,11 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> {
             },
           ),
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _fetchInside,
           ),
+          const LogoutIconButton(),
         ],
       ),
       body: Column(

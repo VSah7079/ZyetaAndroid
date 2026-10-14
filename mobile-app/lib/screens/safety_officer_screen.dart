@@ -20,6 +20,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
   List<dynamic> _inspections = [];
   List<dynamic> _hazards = [];
   List<dynamic> _punches = [];
+  List<dynamic> _pendingSafetyEmployees = [];
   String _selectedPunchColorFilter = 'ALL';
   String _punchSearchQuery = '';
 
@@ -36,6 +37,19 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
     super.dispose();
   }
 
+  void _clearWorkerSafety(int empId, String action) async {
+    final ok = await ApiService.approveEmployeeStage(empId: empId, stage: 'safety', action: action);
+    if (ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(action == 'Approved' ? '✓ Worker Medical & Safety Cleared (HSE Endorsed)!' : 'Worker clearance rejected'),
+          backgroundColor: action == 'Approved' ? Colors.green : Colors.orange,
+        ),
+      );
+      _loadSafetyData();
+    }
+  }
+
   void _loadSafetyData() async {
     setState(() => _isLoading = true);
     final kpis = await ApiService.getSafetyKPIs();
@@ -46,6 +60,14 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
       colorType: _selectedPunchColorFilter,
       search: _punchSearchQuery.isEmpty ? null : _punchSearchQuery,
     );
+    final allEmps = await ApiService.getEmployees();
+    final pendingSafety = allEmps.where((e) {
+      if (e['status'] == 'Pending ID Clearance' || e['status'] == 'Pending Approval') {
+        final approvals = e['approvals'] as Map<String, dynamic>? ?? {};
+        return approvals['safety']?['status'] != 'Approved';
+      }
+      return false;
+    }).toList();
 
     if (mounted) {
       setState(() {
@@ -54,6 +76,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
         _inspections = inspections;
         _hazards = hazards;
         _punches = punches;
+        _pendingSafetyEmployees = pendingSafety;
         _isLoading = false;
       });
     }
@@ -1098,6 +1121,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _loadSafetyData,
           ),
+          const LogoutIconButton(),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -1191,6 +1215,119 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
             ),
           ),
           const SizedBox(height: 16),
+
+          // WORKER MEDICAL & SAFETY CLEARANCE QUEUE (SAFETY WALA)
+          if (_pendingSafetyEmployees.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.health_and_safety, color: Color(0xFFF59E0B), size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'WORKER MEDICAL & HSE CLEARANCES',
+                            style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(10)),
+                        child: Text('${_pendingSafetyEmployees.length} Pending', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 10)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Review contractor worker medical fitness certificates & PPE compliance for ID pass generation.',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                  const SizedBox(height: 12),
+                  ..._pendingSafetyEmployees.map((emp) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                                      Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name']})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 11)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(8)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Blood: ${emp['blood_group'] ?? 'O+'}', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                                  Text('Medical: ${emp['medical_cert'] ?? 'Fit'}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
+                                  Text('Exp: ${emp['medical_validity'] ?? '2027'}', style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.redAccent),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  ),
+                                  onPressed: () => _clearWorkerSafety(emp['id'], 'Rejected'),
+                                  child: const Text('Reject Medical', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF10B981),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  ),
+                                  icon: const Icon(Icons.check_circle, size: 14, color: Colors.white),
+                                  label: const Text('Clear Safety & Medical (HSE)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  onPressed: () => _clearWorkerSafety(emp['id'], 'Approved'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+              ),
+            ),
+          ],
 
           // SAFETY PUNCH SYSTEM HIGHLIGHT CARD (RED / YELLOW / GREEN)
           Container(

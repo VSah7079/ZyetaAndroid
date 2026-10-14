@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
 import 'qr_scanner_screen.dart';
 import 'visitor_screen.dart';
 import 'material_screen.dart';
@@ -9,7 +10,6 @@ import 'inside_headcount_screen.dart';
 import 'emergency_muster_screen.dart';
 import 'attendance_screen.dart';
 import 'reports_screen.dart';
-import 'login_screen.dart';
 
 class SecurityDashboardScreen extends StatefulWidget {
   const SecurityDashboardScreen({super.key});
@@ -118,15 +118,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> {
               _loadStats();
             },
           ),
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout, color: Colors.white54),
-            onPressed: () {
-              ApiService.authToken = null;
-              ApiService.currentUser = null;
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-            },
-          ),
+          const LogoutIconButton(),
         ],
       ),
       body: _isLoading

@@ -157,7 +157,29 @@ const createEmployee = async (req, res) => {
       police_verification_expiry: data.police_verification_expiry || '2027-12-31',
       profile_photo: data.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       qr_code_data: qrCodeData,
-      status: req.user.role === 'Vendor' ? 'Pending Approval' : 'Active',
+      status: req.user.role === 'Vendor' ? 'Pending ID Clearance' : 'Active',
+      id_card_status: req.user.role === 'Vendor' ? 'Awaiting Approvals' : 'Issued',
+      approval_stage: req.user.role === 'Vendor' ? 'Pending Admin' : 'Completed',
+      approvals: {
+        admin: {
+          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
+          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
+          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
+          remarks: req.user.role === 'Vendor' ? 'Awaiting KYC & Contract verification' : 'Pre-approved'
+        },
+        safety: {
+          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
+          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
+          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
+          remarks: req.user.role === 'Vendor' ? 'Awaiting Medical & Safety induction clearance' : 'Pre-cleared'
+        },
+        super_admin: {
+          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
+          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
+          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
+          remarks: req.user.role === 'Vendor' ? 'Awaiting Super Admin final ID badge issuance' : 'Badge Generated'
+        }
+      },
       currently_inside: 0,
       created_by: req.user.id
     });
@@ -188,15 +210,132 @@ const createEmployee = async (req, res) => {
       ipAddress: req.ip
     });
 
+    // 1. Notify Site Admin
     notify({
       recipientRole: 'Admin',
-      title: 'New Employee Registered',
-      message: `${newEmp.full_name} (${newEmp.employee_id}) registered under ${vendorObj ? vendorObj.company_name : 'Direct'}.`,
-      eventType: 'NEW_EMPLOYEE',
+      title: 'New Worker Registered - Admin Clearance Required',
+      message: `${newEmp.full_name} (${newEmp.employee_id}) registered under ${vendorObj ? vendorObj.company_name : 'Direct'}. Verify Aadhaar & employment contract.`,
+      eventType: 'NEW_EMPLOYEE_ADMIN_CLEARANCE',
       relatedId: newEmp.id
     });
 
-    res.status(201).json({ success: true, message: 'Employee created successfully', data: newEmp });
+    // 2. Notify Safety Officer (Safety Wala)
+    notify({
+      recipientRole: 'Safety Officer',
+      title: 'Worker Medical & Safety Clearance Request',
+      message: `${newEmp.full_name} requires HSE clearance (Medical fitness cert & safety induction check).`,
+      eventType: 'NEW_EMPLOYEE_SAFETY_CLEARANCE',
+      relatedId: newEmp.id
+    });
+
+    // 3. Notify Super Admin
+    notify({
+      recipientRole: 'Super Admin',
+      title: 'Worker ID Generation Request Queued',
+      message: `ID badge issuance queued for ${newEmp.full_name} (${vendorObj ? vendorObj.company_name : 'Direct'}).`,
+      eventType: 'NEW_EMPLOYEE_SUPER_ADMIN_QUEUE',
+      relatedId: newEmp.id
+    });
+
+    res.status(201).json({ success: true, message: 'Employee created successfully & sent for multi-tier clearance', data: newEmp });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const approveEmployeeStage = async (req, res) => {
+  try {
+    const emp = db.employees.findById(req.params.id);
+    if (!emp) {
+      return res.status(404).json({ success: false, message: 'Employee not found' });
+    }
+
+    const { stage, action, remarks } = req.body; // stage: 'admin' | 'safety' | 'super_admin', action: 'Approved' | 'Rejected'
+    if (!stage || !action) {
+      return res.status(400).json({ success: false, message: 'Stage and action are required' });
+    }
+
+    const approvals = emp.approvals || {
+      admin: { status: 'Pending' },
+      safety: { status: 'Pending' },
+      super_admin: { status: 'Pending' }
+    };
+
+    if (stage === 'admin') {
+      approvals.admin = {
+        status: action,
+        approved_by: req.user.full_name,
+        approved_at: new Date().toISOString(),
+        remarks: remarks || (action === 'Approved' ? 'Identity & Contract Verified' : 'KYC Rejected')
+      };
+    } else if (stage === 'safety') {
+      approvals.safety = {
+        status: action,
+        approved_by: req.user.full_name,
+        approved_at: new Date().toISOString(),
+        remarks: remarks || (action === 'Approved' ? 'Medical Fitness & PPE Cleared' : 'Safety/Medical Incomplete')
+      };
+    } else if (stage === 'super_admin') {
+      approvals.super_admin = {
+        status: action,
+        approved_by: req.user.full_name,
+        approved_at: new Date().toISOString(),
+        remarks: remarks || (action === 'Approved' ? 'Digital ID Pass Authorized & Activated' : 'ID Request Rejected')
+      };
+    }
+
+    let nextStage = emp.approval_stage || 'Pending Admin';
+    let status = emp.status;
+    let idCardStatus = emp.id_card_status || 'Awaiting Approvals';
+
+    if (action === 'Rejected') {
+      status = 'Rejected';
+      idCardStatus = 'Rejected';
+      nextStage = 'Rejected';
+    } else {
+      const adminOk = approvals.admin?.status === 'Approved';
+      const safetyOk = approvals.safety?.status === 'Approved';
+      const superOk = approvals.super_admin?.status === 'Approved';
+
+      if (adminOk && safetyOk && superOk) {
+        status = 'Active';
+        idCardStatus = 'Issued';
+        nextStage = 'Completed';
+      } else if (adminOk && safetyOk) {
+        nextStage = 'Pending Super Admin';
+        idCardStatus = 'Awaiting Super Admin Badge Issue';
+      } else if (adminOk) {
+        nextStage = 'Pending Safety';
+        idCardStatus = 'Awaiting Safety Clearance';
+      } else {
+        nextStage = 'Pending Admin';
+        idCardStatus = 'Awaiting Admin Verification';
+      }
+    }
+
+    const updated = db.employees.update(emp.id, {
+      approvals,
+      approval_stage: nextStage,
+      status,
+      id_card_status: idCardStatus
+    });
+
+    logAudit({
+      userId: req.user.id,
+      userName: req.user.full_name,
+      userRole: req.user.role,
+      actionType: 'WORKER_ID_APPROVAL_STAGE',
+      module: 'Employee ID Approval',
+      affectedRecordId: emp.id,
+      details: `${req.user.role} (${req.user.full_name}) marked stage "${stage}" as ${action} for ${emp.full_name} (${emp.employee_id})`,
+      ipAddress: req.ip
+    });
+
+    res.json({
+      success: true,
+      message: `Worker ID clearance stage [${stage}] set to ${action}`,
+      data: updated
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -262,6 +401,7 @@ module.exports = {
   getEmployees,
   getEmployeeById,
   createEmployee,
+  approveEmployeeStage,
   updateEmployee,
   deleteEmployee
 };

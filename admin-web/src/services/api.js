@@ -48,6 +48,7 @@ export const api = {
   getEmployeeById: (id) => request(`/employees/${id}`),
   createEmployee: (data) => request('/employees', { method: 'POST', body: JSON.stringify(data) }),
   updateEmployee: (id, data) => request(`/employees/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  approveEmployeeStage: (id, stage, action, remarks) => request(`/employees/${id}/approve-stage`, { method: 'PUT', body: JSON.stringify({ stage, action, remarks }) }),
   deleteEmployee: (id) => request(`/employees/${id}`, { method: 'DELETE' }),
 
   // Vendors
@@ -71,6 +72,14 @@ export const api = {
     return request(`/attendance${query ? '?' + query : ''}`);
   },
   getAttendanceSummary: () => request('/attendance/summary'),
+  getAttendanceAnalytics: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/attendance/analytics${query ? '?' + query : ''}`);
+  },
+  exportAttendanceCSV: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/attendance/export${query ? '?' + query : ''}`);
+  },
   markManualAttendance: (data) => request('/attendance/manual', { method: 'POST', body: JSON.stringify(data) }),
 
   // Permits

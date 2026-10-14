@@ -397,9 +397,11 @@ class _VisitorScreenState extends State<VisitorScreen> {
               title: const Text('Visitor Pass Management', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
               actions: [
                 IconButton(
+                  tooltip: 'Refresh',
                   icon: const Icon(Icons.refresh, color: Colors.white70),
                   onPressed: _fetchVisitors,
                 ),
+                const LogoutIconButton(),
               ],
             )
           : null,

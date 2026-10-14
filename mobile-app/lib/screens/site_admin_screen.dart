@@ -58,12 +58,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     }
   }
 
-  // 1-Click Approve Worker
+  // 1-Click Approve Worker (Admin Clearance)
   void _approveWorker(int empId) async {
-    final ok = await ApiService.updateEmployee(empId, {'status': 'Active'});
+    final ok = await ApiService.approveEmployeeStage(empId: empId, stage: 'admin', action: 'Approved');
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✓ Worker approved & gate badge activated!'), backgroundColor: Colors.green),
+        const SnackBar(content: Text('✓ Worker passed Admin KYC Clearance! Forwarded to Safety Officer.'), backgroundColor: Colors.green),
       );
       if (_selectedVendorId != null) _fetchVendorDetails(_selectedVendorId!);
       _fetchVendors(_selectedVendorId);
@@ -604,9 +604,11 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
         title: const Text('Site Admin: Contractor Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: () => _fetchVendors(_selectedVendorId),
           ),
+          const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

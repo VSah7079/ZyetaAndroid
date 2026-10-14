@@ -177,9 +177,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         title: const Text('Attendance & Muster Roll', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           IconButton(
+            tooltip: 'Refresh',
             icon: const Icon(Icons.refresh, color: Colors.white70),
             onPressed: _loadData,
           ),
+          const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

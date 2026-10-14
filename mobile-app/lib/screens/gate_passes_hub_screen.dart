@@ -1,3 +1,4 @@
+import '../utils/validators.dart';
 import 'package:flutter/material.dart';
 import 'visitor_screen.dart';
 import 'material_screen.dart';
@@ -34,6 +35,9 @@ class _GatePassesHubScreenState extends State<GatePassesHubScreen> with SingleTi
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         title: const Text('Gate Passes Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+        actions: const [
+          LogoutIconButton(),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: const Color(0xFF6366F1),

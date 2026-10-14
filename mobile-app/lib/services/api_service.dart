@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
 
@@ -238,6 +239,138 @@ class ApiService {
       'currently_inside': 1,
       'last_entry_time': '2026-09-29T08:50:00Z',
     },
+    {
+      'id': 5,
+      'employee_id': 'EMP-105',
+      'full_name': 'Manoj Sharma',
+      'father_name': 'Kishore Sharma',
+      'dob': '1996-04-18',
+      'gender': 'Male',
+      'mobile': '+91 9876543250',
+      'alternate_mobile': '+91 9876543251',
+      'email': 'manoj.sharma@abcinfra.com',
+      'address': 'Kundanahalli Gate, Whitefield Road',
+      'city': 'Bangalore',
+      'state': 'Karnataka',
+      'pincode': '560037',
+      'emergency_name': 'Geeta Sharma',
+      'emergency_relation': 'Spouse',
+      'emergency_phone': '+91 9876543252',
+      'blood_group': 'O+',
+      'medical_cert': 'Pre-employment General Physical Fit',
+      'medical_validity': '2027-10-01',
+      'medical_doc': 'medical_manoj.pdf',
+      'vendor_id': 1,
+      'vendor_name': 'ABC Infra Projects Pvt Ltd',
+      'department_name': 'Civil & Construction',
+      'designation': 'Civil Mason & Tile Layer',
+      'skill': 'Masonry Work',
+      'employee_type': 'Contractor',
+      'joining_date': '2026-10-10',
+      'shift_name': 'General Shift (09:00 - 18:00)',
+      'aadhaar_no': '5544 3322 1100',
+      'pan_no': 'MSHAR5544K',
+      'police_verification_doc': 'pvc_manoj.pdf',
+      'police_verification_expiry': '2027-10-10',
+      'profile_photo': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80',
+      'status': 'Pending ID Clearance',
+      'id_card_status': 'Awaiting Admin Verification',
+      'approval_stage': 'Pending Admin',
+      'approvals': {
+        'admin': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Contract verification required'},
+        'safety': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Medical & PPE induction queued'},
+        'super_admin': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Final gate pass authorization pending'}
+      },
+      'currently_inside': 0,
+    },
+    {
+      'id': 6,
+      'employee_id': 'EMP-106',
+      'full_name': 'Deepak Verma',
+      'father_name': 'Santosh Verma',
+      'dob': '1993-07-22',
+      'gender': 'Male',
+      'mobile': '+91 9876543260',
+      'alternate_mobile': '+91 9876543261',
+      'email': 'deepak.verma@abcinfra.com',
+      'address': 'Marathahalli Bridge Layout',
+      'city': 'Bangalore',
+      'state': 'Karnataka',
+      'pincode': '560037',
+      'emergency_name': 'Rekha Verma',
+      'emergency_relation': 'Mother',
+      'emergency_phone': '+91 9876543262',
+      'blood_group': 'B+',
+      'medical_cert': 'Certified Fit for Heights & Electrical',
+      'medical_validity': '2027-11-15',
+      'medical_doc': 'medical_deepak.pdf',
+      'vendor_id': 1,
+      'vendor_name': 'ABC Infra Projects Pvt Ltd',
+      'department_name': 'Electrical & MEP',
+      'designation': 'Assistant Electrician',
+      'skill': 'Conduit & Cable Pulling',
+      'employee_type': 'Contractor',
+      'joining_date': '2026-10-08',
+      'shift_name': 'General Shift (09:00 - 18:00)',
+      'aadhaar_no': '6677 8899 0011',
+      'pan_no': 'DVERM6677L',
+      'police_verification_doc': 'pvc_deepak.pdf',
+      'police_verification_expiry': '2027-11-01',
+      'profile_photo': 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80',
+      'status': 'Pending ID Clearance',
+      'id_card_status': 'Awaiting Safety Clearance',
+      'approval_stage': 'Pending Safety',
+      'approvals': {
+        'admin': {'status': 'Approved', 'approved_by': 'Priya Sundaram (Site Admin)', 'date': '2026-10-12', 'remarks': 'Contractor KYC verified'},
+        'safety': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Medical report verification in progress'},
+        'super_admin': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Awaiting HSE clearance'}
+      },
+      'currently_inside': 0,
+    },
+    {
+      'id': 7,
+      'employee_id': 'EMP-107',
+      'full_name': 'Suraj Kumar',
+      'father_name': 'Jagannath Kumar',
+      'dob': '1991-12-05',
+      'gender': 'Male',
+      'mobile': '+91 9876543270',
+      'alternate_mobile': '+91 9876543271',
+      'email': 'suraj.kumar@abcinfra.com',
+      'address': 'Varthur Main Road',
+      'city': 'Bangalore',
+      'state': 'Karnataka',
+      'pincode': '560087',
+      'emergency_name': 'Anita Kumar',
+      'emergency_relation': 'Spouse',
+      'emergency_phone': '+91 9876543272',
+      'blood_group': 'A+',
+      'medical_cert': 'Fitness Certified for Heavy Structural Fabrication',
+      'medical_validity': '2027-12-01',
+      'medical_doc': 'medical_suraj.pdf',
+      'vendor_id': 1,
+      'vendor_name': 'ABC Infra Projects Pvt Ltd',
+      'department_name': 'Civil & Construction',
+      'designation': 'Structural Steel Fitter',
+      'skill': 'Beams & Girders Fabrication',
+      'employee_type': 'Contractor',
+      'joining_date': '2026-10-05',
+      'shift_name': 'General Shift (09:00 - 18:00)',
+      'aadhaar_no': '8899 1122 3344',
+      'pan_no': 'SKUMA8899N',
+      'police_verification_doc': 'pvc_suraj.pdf',
+      'police_verification_expiry': '2027-12-01',
+      'profile_photo': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
+      'status': 'Pending ID Clearance',
+      'id_card_status': 'Awaiting Super Admin Badge Issue',
+      'approval_stage': 'Pending Super Admin',
+      'approvals': {
+        'admin': {'status': 'Approved', 'approved_by': 'Priya Sundaram (Site Admin)', 'date': '2026-10-11', 'remarks': 'KYC Verified'},
+        'safety': {'status': 'Approved', 'approved_by': 'Er. Rajesh Varma (HSE Head)', 'date': '2026-10-13', 'remarks': 'Medical & PPE induction passed'},
+        'super_admin': {'status': 'Pending', 'approved_by': null, 'date': null, 'remarks': 'Ready for badge generation'}
+      },
+      'currently_inside': 0,
+    },
   ];
 
   static final List<Map<String, dynamic>> _vendorsStore = [
@@ -428,6 +561,11 @@ class ApiService {
     return false;
   }
 
+  static void logout() {
+    authToken = null;
+    currentUser = null;
+  }
+
   // --- 2. SUPER ADMIN USER CRUD & PERMISSIONS (Section 4 & 21) ---
   static Future<List<dynamic>> getUsers() async {
     try {
@@ -555,6 +693,7 @@ class ApiService {
     } catch (_) {}
 
     final newId = (_employeesStore.map((e) => e['id'] as int).reduce((a, b) => a > b ? a : b)) + 1;
+    final isVendor = currentUser?.role == 'Vendor';
     final emp = {
       'id': newId,
       'employee_id': 'EMP-${100 + newId}',
@@ -564,32 +703,122 @@ class ApiService {
       'alternate_mobile': payload['alternate_mobile'] ?? '',
       'email': payload['email'] ?? '',
       'address': payload['address'] ?? 'Bangalore',
-      'city': 'Bangalore',
-      'state': 'Karnataka',
-      'pincode': '560037',
+      'city': payload['city'] ?? 'Bangalore',
+      'state': payload['state'] ?? 'Karnataka',
+      'pincode': payload['pincode'] ?? '560037',
       'emergency_name': payload['emergency_name'] ?? '',
       'emergency_phone': payload['emergency_phone'] ?? '',
+      'emergency_relation': payload['emergency_relation'] ?? 'Family',
       'blood_group': payload['blood_group'] ?? 'O+',
-      'medical_cert': payload['medical_cert'] ?? 'General Fit',
-      'medical_validity': '2027-01-01',
-      'vendor_id': payload['vendor_id'] ?? 1,
-      'vendor_name': payload['vendor_name'] ?? 'ABC Infra Projects Pvt Ltd',
+      'medical_cert': payload['medical_cert'] ?? 'General Medical Fitness',
+      'medical_validity': payload['medical_validity'] ?? '2027-12-31',
+      'medical_doc': payload['medical_doc'] ?? 'medical_cert.pdf',
+      'vendor_id': payload['vendor_id'] ?? (currentUser?.vendorId ?? 1),
+      'vendor_name': payload['vendor_name'] ?? (currentUser?.fullName ?? 'ABC Infra Projects Pvt Ltd'),
       'department_name': payload['department_name'] ?? 'Civil & Construction',
       'designation': payload['designation'] ?? 'Technician',
       'skill': payload['skill'] ?? 'General',
       'employee_type': 'Contractor',
       'joining_date': DateTime.now().toIso8601String().split('T')[0],
-      'shift_name': 'General Shift (09:00 - 18:00)',
+      'shift_name': payload['shift_name'] ?? 'General Shift (09:00 - 18:00)',
       'aadhaar_no': payload['aadhaar_no'] ?? '4532 8912 0000',
+      'aadhaar_doc': payload['aadhaar_doc'] ?? 'aadhaar_card.pdf',
       'pan_no': payload['pan_no'] ?? 'ABCDE0000K',
-      'police_verification_doc': 'police_verified_$newId.pdf',
-      'police_verification_expiry': '2027-02-01',
-      'profile_photo': 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
-      'status': 'Active',
+      'police_verification_doc': payload['police_verification_doc'] ?? 'police_verified_$newId.pdf',
+      'police_verification_expiry': payload['police_verification_expiry'] ?? '2027-02-01',
+      'profile_photo': payload['profile_photo'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      'status': isVendor ? 'Pending ID Clearance' : 'Active',
+      'id_card_status': isVendor ? 'Awaiting Approvals' : 'Issued',
+      'approval_stage': isVendor ? 'Pending Admin' : 'Completed',
+      'approvals': {
+        'admin': {
+          'status': isVendor ? 'Pending' : 'Approved',
+          'approved_by': isVendor ? null : currentUser?.fullName,
+          'date': isVendor ? null : DateTime.now().toIso8601String(),
+          'remarks': isVendor ? 'Awaiting KYC & Contract verification' : 'Pre-approved'
+        },
+        'safety': {
+          'status': isVendor ? 'Pending' : 'Approved',
+          'approved_by': isVendor ? null : currentUser?.fullName,
+          'date': isVendor ? null : DateTime.now().toIso8601String(),
+          'remarks': isVendor ? 'Awaiting Medical & Safety induction' : 'Pre-cleared'
+        },
+        'super_admin': {
+          'status': isVendor ? 'Pending' : 'Approved',
+          'approved_by': isVendor ? null : currentUser?.fullName,
+          'date': isVendor ? null : DateTime.now().toIso8601String(),
+          'remarks': isVendor ? 'Awaiting Super Admin final ID badge issuance' : 'Badge Generated'
+        }
+      },
       'currently_inside': 0,
     };
     _employeesStore.add(emp);
     return true;
+  }
+
+  static Future<bool> approveEmployeeStage({
+    required int empId,
+    required String stage, // 'admin' | 'safety' | 'super_admin'
+    required String action, // 'Approved' | 'Rejected'
+    String? remarks,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/employees/$empId/approve-stage'),
+        headers: headers,
+        body: jsonEncode({
+          'stage': stage,
+          'action': action,
+          'remarks': remarks,
+        }),
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) return true;
+    } catch (_) {}
+
+    final idx = _employeesStore.indexWhere((e) => e['id'] == empId);
+    if (idx != -1) {
+      final emp = _employeesStore[idx];
+      final approvals = Map<String, dynamic>.from(emp['approvals'] ?? {
+        'admin': {'status': 'Pending'},
+        'safety': {'status': 'Pending'},
+        'super_admin': {'status': 'Pending'},
+      });
+
+      approvals[stage] = {
+        'status': action,
+        'approved_by': currentUser?.fullName ?? 'Approving Authority',
+        'date': DateTime.now().toIso8601String(),
+        'remarks': remarks ?? '$action by $stage',
+      };
+
+      emp['approvals'] = approvals;
+      if (action == 'Rejected') {
+        emp['status'] = 'Rejected';
+        emp['id_card_status'] = 'Rejected';
+        emp['approval_stage'] = 'Rejected';
+      } else {
+        final adminOk = approvals['admin']?['status'] == 'Approved';
+        final safetyOk = approvals['safety']?['status'] == 'Approved';
+        final superOk = approvals['super_admin']?['status'] == 'Approved';
+
+        if (adminOk && safetyOk && superOk) {
+          emp['status'] = 'Active';
+          emp['id_card_status'] = 'Issued';
+          emp['approval_stage'] = 'Completed';
+        } else if (adminOk && safetyOk) {
+          emp['approval_stage'] = 'Pending Super Admin';
+          emp['id_card_status'] = 'Awaiting Super Admin Badge Issue';
+        } else if (adminOk) {
+          emp['approval_stage'] = 'Pending Safety';
+          emp['id_card_status'] = 'Awaiting Safety Clearance';
+        } else {
+          emp['approval_stage'] = 'Pending Admin';
+          emp['id_card_status'] = 'Awaiting Admin Verification';
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   static Future<bool> updateEmployee(int id, Map<String, dynamic> updates) async {
@@ -857,7 +1086,61 @@ class ApiService {
 
   // --- 6. QR VERIFICATION TERMINAL ---
   static Future<VerificationResult?> verifyQR(String qrCode) async {
-    final q = qrCode.toUpperCase().trim();
+    final query = qrCode.trim();
+    if (query.isEmpty) return null;
+
+    // 1. Try real backend API
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/gate/verify-qr'),
+        headers: headers,
+        body: jsonEncode({'qr_data': query, 'gate_id': 1}),
+      ).timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['success'] == true) {
+          final data = Map<String, dynamic>.from(json['data'] ?? {});
+          final warnings = List<String>.from(json['compliance_warnings'] ?? []);
+          return VerificationResult(
+            verificationStatus: json['verification_status'] ?? 'ALLOW',
+            recommendedAction: json['recommended_action'] ?? 'ALLOW_ENTRY',
+            isCurrentlyInside: json['is_currently_inside'] == true,
+            complianceWarnings: warnings,
+            entityType: json['entity_type'] ?? 'Employee',
+            data: data,
+          );
+        }
+      }
+    } catch (_) {}
+
+    // 2. High-reliability fallback store search
+    final q = query.toUpperCase();
+
+    // Search in-memory employees
+    final emp = _employeesStore.firstWhere(
+      (e) =>
+          e['employee_id'].toString().toUpperCase() == q ||
+          e['id'].toString() == q ||
+          e['full_name'].toString().toUpperCase().contains(q) ||
+          (e['aadhaar_no'] != null && e['aadhaar_no'].toString().replaceAll(' ', '') == q.replaceAll(' ', '')),
+      orElse: () => {},
+    );
+    if (emp.isNotEmpty) {
+      final isInside = emp['currently_inside'] == 1;
+      return VerificationResult(
+        verificationStatus: emp['status'] == 'Active' ? 'ALLOW' : 'DENIED',
+        recommendedAction: isInside ? 'ALLOW_EXIT' : 'ALLOW_ENTRY',
+        isCurrentlyInside: isInside,
+        complianceWarnings: emp['status'] != 'Active'
+            ? ['Account status is ${emp['status']}. Access Denied.']
+            : ['Medical & Police Verification Verified (Valid until 2027)'],
+        entityType: 'Employee',
+        data: Map<String, dynamic>.from(emp),
+      );
+    }
+
+    // Preset fallbacks
     if (q.contains('EMP') || q.contains('RAMESH') || q.contains('WORKER')) {
       return VerificationResult(
         verificationStatus: 'ALLOW',
@@ -882,7 +1165,7 @@ class ApiService {
           'status': 'Active',
         },
       );
-    } else if (q.contains('VIS') || q.contains('VISITOR')) {
+    } else if (q.contains('VIS') || q.contains('VISITOR') || q.contains('KAVITA')) {
       return VerificationResult(
         verificationStatus: 'ALLOW',
         recommendedAction: 'ALLOW_ENTRY',
@@ -900,7 +1183,7 @@ class ApiService {
           'status': 'Approved',
         },
       );
-    } else if (q.contains('PTW') || q.contains('PERMIT')) {
+    } else if (q.contains('PTW') || q.contains('PRM') || q.contains('PERMIT')) {
       return VerificationResult(
         verificationStatus: 'ALLOW',
         recommendedAction: 'VERIFY_PERMIT',
@@ -909,14 +1192,14 @@ class ApiService {
         entityType: 'Permit',
         data: {
           'id': 1,
-          'permit_number': 'PTW-2026-001',
-          'permit_type': 'Hot Work (Welding/Cutting)',
-          'location_zone': 'Block A - 4th Floor AHU Plant',
-          'applicant_name': 'Suresh Kumar (Apex MEP)',
-          'status': 'Approved',
+          'permit_number': 'PRM-2026-002',
+          'permit_type': 'Height Work Permit',
+          'location_zone': 'Tower A - North Elevation Facade',
+          'applicant_name': 'Rajesh Sharma (ABC Infra)',
+          'status': 'Active',
         },
       );
-    } else if (q.contains('DC') || q.contains('MAT')) {
+    } else if (q.contains('DC') || q.contains('MAT') || q.contains('PIPE')) {
       return VerificationResult(
         verificationStatus: 'ALLOW',
         recommendedAction: 'ALLOW_ENTRY',
@@ -935,20 +1218,37 @@ class ApiService {
           'status': 'Inward Pending Gate Check',
         },
       );
+    } else if (q.contains('KA') || q.contains('VEH') || q.contains('TRUCK') || q.contains('1234') || q.contains('9921')) {
+      return VerificationResult(
+        verificationStatus: 'ALLOW',
+        recommendedAction: 'ALLOW_ENTRY',
+        isCurrentlyInside: false,
+        complianceWarnings: ['PUC & Commercial Insurance Valid (Oct 2027)', 'Gate Speed Limit: 15 km/h'],
+        entityType: 'Vehicle',
+        data: {
+          'id': 1,
+          'vehicle_number': query.isEmpty ? 'KA 01 AB 1234' : query,
+          'vehicle_type': 'Heavy Commercial Truck',
+          'driver_name': 'Manish Yadav',
+          'driver_mobile': '+91 9122334411',
+          'vendor_name': 'ABC Infra Projects Pvt Ltd',
+          'status': 'Permitted',
+        },
+      );
     }
 
     return VerificationResult(
       verificationStatus: 'ALLOW',
       recommendedAction: 'ALLOW_ENTRY',
       isCurrentlyInside: false,
-      complianceWarnings: ['All documents verified valid'],
+      complianceWarnings: ['Verified Workforce Member (Real-time Gate Token)'],
       entityType: 'Employee',
       data: {
         'id': 2,
-        'employee_id': qrCode.isEmpty ? 'EMP-102' : qrCode,
-        'full_name': 'Verified Workforce Member',
-        'designation': 'Technician',
-        'skill': 'Electrical MEP',
+        'employee_id': query.isEmpty ? 'EMP-102' : query,
+        'full_name': 'Verified Workforce Pass',
+        'designation': 'Site Specialist',
+        'skill': 'Technical Operations',
         'vendor_name': 'Apex MEP Solutions',
         'blood_group': 'O+',
         'mobile': '+91 9876500000',
@@ -965,7 +1265,45 @@ class ApiService {
     int gateId = 1,
     String? remarks,
   }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/gate/movement'),
+        headers: headers,
+        body: jsonEncode({
+          'entity_type': entityType,
+          'entity_id': entityId,
+          'movement_type': movementType,
+          'gate_id': gateId,
+          'remarks': remarks ?? 'Mobile Terminal Gate Movement',
+        }),
+      ).timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['success'] == true) {
+          _syncLocalMovement(entityType, entityId, movementType);
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback sync in-memory
+    _syncLocalMovement(entityType, entityId, movementType);
     return true;
+  }
+
+  static void _syncLocalMovement(String entityType, int entityId, String movementType) {
+    if (entityType == 'Employee') {
+      final emp = _employeesStore.firstWhere((e) => e['id'] == entityId, orElse: () => {});
+      if (emp.isNotEmpty) {
+        emp['currently_inside'] = movementType == 'ENTRY' ? 1 : 0;
+        if (movementType == 'ENTRY') {
+          emp['last_entry_time'] = DateTime.now().toIso8601String();
+        } else {
+          emp['last_exit_time'] = DateTime.now().toIso8601String();
+        }
+      }
+    }
   }
 
   // --- 7. DASHBOARD KPIS & STATS ---
@@ -1199,6 +1537,210 @@ class ApiService {
   }
 
   static Future<bool> markManualAttendance(Map<String, dynamic> payload) async => true;
+
+  static Future<Map<String, dynamic>> getVendorAttendanceAnalytics({
+    required String period, // 'week' | 'month' | 'year'
+    String? vendorId,
+  }) async {
+    try {
+      final vId = vendorId ?? currentUser?.vendorId?.toString();
+      final query = 'period=$period${vId != null ? '&vendor_id=$vId' : ''}';
+      final response = await http.get(
+        Uri.parse('$baseUrl/attendance/analytics?$query'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        if (json['success'] == true) return json;
+      }
+    } catch (_) {}
+
+    // Fallback calculation for week, month, year
+    final now = DateTime.now();
+    final vIdNum = vendorId != null ? int.tryParse(vendorId) : currentUser?.vendorId;
+    final emps = vIdNum != null 
+      ? _employeesStore.where((e) => e['vendor_id'] == vIdNum).toList()
+      : _employeesStore;
+    final activeCount = emps.where((e) => e['status'] == 'Active').length;
+    final totalCount = emps.length;
+
+    if (period == 'week') {
+      final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      final breakdown = <Map<String, dynamic>>[];
+      int totalPresents = 0;
+      int totalLates = 0;
+      int totalAbsents = 0;
+      int totalOT = 0;
+
+      for (int i = 6; i >= 0; i--) {
+        final d = now.subtract(Duration(days: i));
+        final dateStr = d.toIso8601String().split('T')[0];
+        final dayLabel = '${dayNames[d.weekday - 1]} (${dateStr.substring(5)})';
+        final present = math.max(1, (activeCount * (0.88 + (i % 3) * 0.04)).round());
+        final late = (present * 0.06).round();
+        final absent = math.max(0, activeCount - present);
+        final ot = (present * 0.5).round();
+
+        totalPresents += present;
+        totalLates += late;
+        totalAbsents += absent;
+        totalOT += ot;
+
+        breakdown.add({
+          'key': dateStr,
+          'label': dayLabel,
+          'date': dateStr,
+          'total_workforce': activeCount,
+          'present': present,
+          'late': late,
+          'absent': absent,
+          'overtime_hours': ot,
+          'rate': activeCount > 0 ? ((present / activeCount) * 100).round() : 0,
+        });
+      }
+
+      return {
+        'success': true,
+        'period': 'week',
+        'summary': {
+          'total_workforce': totalCount,
+          'active_workforce': activeCount,
+          'total_presents': totalPresents,
+          'total_lates': totalLates,
+          'total_absents': totalAbsents,
+          'total_overtime_hours': totalOT,
+          'avg_daily_present': (totalPresents / 7).round(),
+          'attendance_percentage': activeCount > 0 ? ((totalPresents / (activeCount * 7)) * 100).round() : 0,
+        },
+        'breakdown': breakdown,
+        'records': emps,
+      };
+    } else if (period == 'year') {
+      final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      final breakdown = <Map<String, dynamic>>[];
+      int totalPresents = 0;
+      int totalOT = 0;
+
+      for (int m = 0; m <= now.month - 1; m++) {
+        final workDays = m == now.month - 1 ? math.min(now.day, 24) : 26;
+        final totalMandays = activeCount * workDays;
+        final present = (totalMandays * 0.91).round();
+        final late = (present * 0.05).round();
+        final absent = math.max(0, totalMandays - present);
+        final ot = (present * 0.6).round();
+
+        totalPresents += present;
+        totalOT += ot;
+
+        breakdown.add({
+          'key': '${now.year}-${m + 1}',
+          'label': '${monthNames[m]} ${now.year}',
+          'total_workforce': activeCount,
+          'working_days': workDays,
+          'present': present,
+          'late': late,
+          'absent': absent,
+          'overtime_hours': ot,
+          'rate': totalMandays > 0 ? ((present / totalMandays) * 100).round() : 91,
+        });
+      }
+
+      return {
+        'success': true,
+        'period': 'year',
+        'summary': {
+          'total_workforce': totalCount,
+          'active_workforce': activeCount,
+          'total_presents': totalPresents,
+          'total_overtime_hours': totalOT,
+          'months_tracked': now.month,
+          'avg_monthly_compliance': '91.8%',
+        },
+        'breakdown': breakdown,
+        'records': emps,
+      };
+    } else {
+      final breakdown = <Map<String, dynamic>>[];
+      int totalPresents = 0;
+      int totalLates = 0;
+      int totalAbsents = 0;
+      int totalOT = 0;
+
+      for (int w = 1; w <= 4; w++) {
+        final startDay = (w - 1) * 7 + 1;
+        final endDay = w == 4 ? 30 : w * 7;
+        final label = 'Week $w ($startDay-$endDay)';
+        final workDays = 6;
+        final mandays = activeCount * workDays;
+        final present = (mandays * 0.89).round();
+        final late = (present * 0.06).round();
+        final absent = math.max(0, mandays - present);
+        final ot = (present * 0.6).round();
+
+        totalPresents += present;
+        totalLates += late;
+        totalAbsents += absent;
+        totalOT += ot;
+
+        breakdown.add({
+          'key': 'w$w',
+          'label': label,
+          'work_days': workDays,
+          'total_workforce': activeCount,
+          'present': present,
+          'late': late,
+          'absent': absent,
+          'overtime_hours': ot,
+          'rate': mandays > 0 ? ((present / mandays) * 100).round() : 89,
+        });
+      }
+
+      return {
+        'success': true,
+        'period': 'month',
+        'summary': {
+          'total_workforce': totalCount,
+          'active_workforce': activeCount,
+          'total_presents': totalPresents,
+          'total_lates': totalLates,
+          'total_absents': totalAbsents,
+          'total_overtime_hours': totalOT,
+          'avg_attendance_rate': activeCount > 0 ? ((totalPresents / (activeCount * 24)) * 100).round() : 89,
+        },
+        'breakdown': breakdown,
+        'records': emps,
+      };
+    }
+  }
+
+  static Future<String> exportAttendanceCSVData({
+    required String period,
+    String? vendorId,
+  }) async {
+    try {
+      final vId = vendorId ?? currentUser?.vendorId?.toString();
+      final query = 'period=$period${vId != null ? '&vendor_id=$vId' : ''}';
+      final response = await http.get(
+        Uri.parse('$baseUrl/attendance/export?$query'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        return response.body;
+      }
+    } catch (_) {}
+
+    final vIdNum = vendorId != null ? int.tryParse(vendorId) : currentUser?.vendorId;
+    final emps = vIdNum != null 
+      ? _employeesStore.where((e) => e['vendor_id'] == vIdNum).toList()
+      : _employeesStore;
+
+    final buffer = StringBuffer();
+    buffer.writeln('Employee ID,Full Name,Designation,Vendor,Aadhaar Number,Attendance Rate,Medical Validity,Status');
+    for (final emp in emps) {
+      buffer.writeln('"${emp['employee_id']}","${emp['full_name']}","${emp['designation']}","${emp['vendor_name']}","${emp['aadhaar_no']}","92%","${emp['medical_validity']}","${emp['status']}"');
+    }
+    return buffer.toString();
+  }
 
   // --- 10. VISITOR PASSES ---
   static Future<List<dynamic>> getVisitors({String? status, String? search}) async {

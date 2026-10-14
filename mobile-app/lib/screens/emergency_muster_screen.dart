@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/validators.dart';
+import 'qr_scanner_screen.dart';
 
 class EmergencyMusterScreen extends StatefulWidget {
   const EmergencyMusterScreen({super.key});
@@ -106,15 +108,15 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
     }
   }
 
-  void _checkinWorker(int stationId) async {
-    final code = _scanCtrl.text.trim();
+  void _checkinWorker(int stationId, [String? customCode]) async {
+    final code = (customCode ?? _scanCtrl.text).trim();
     if (code.isEmpty) return;
 
     final ok = await ApiService.checkinMusterStation(stationId, code);
     if (ok && mounted) {
       _scanCtrl.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Worker $code safely checked in!'), backgroundColor: Colors.green),
+        SnackBar(content: Text('✓ Worker $code safely checked in at Muster Station!'), backgroundColor: Colors.green),
       );
       _loadStatus();
     }
@@ -143,7 +145,8 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh, color: Colors.white70), onPressed: _loadStatus),
+          IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh, color: Colors.white70), onPressed: _loadStatus),
+          const LogoutIconButton(),
         ],
       ),
       body: _isLoading
@@ -230,8 +233,28 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Quick Check-in Worker input
-                  const Text('MUSTER POINT SCANNER / QUICK CHECK-IN', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold)),
+                  // Quick Check-in Worker input (Scanner & Manual)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('MUSTER POINT SCANNER / QUICK CHECK-IN', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold)),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const QRScannerScreen(isManual: false)),
+                          ).then((_) => _loadStatus());
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.qr_code_scanner, color: Color(0xFF38BDF8), size: 14),
+                            SizedBox(width: 4),
+                            Text('Launch QR Terminal', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -242,24 +265,36 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
                           decoration: InputDecoration(
                             hintText: 'Enter Worker ID (e.g. EMP-101)...',
                             hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
-                            prefixIcon: const Icon(Icons.qr_code_scanner, color: Color(0xFF06B6D4), size: 20),
+                            prefixIcon: const Icon(Icons.badge, color: Color(0xFF06B6D4), size: 18),
                             filled: true,
                             fillColor: const Color(0xFF1E293B),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                           ),
+                          onSubmitted: (val) => _checkinWorker(1, val),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF06B6D4),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: () => _checkinWorker(1),
-                        child: const Text('Check In Point A', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 12)),
+                        child: const Text('Check In', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      _buildMusterChip('EMP-101 (Ramesh)'),
+                      _buildMusterChip('EMP-102 (Vikram)'),
+                      _buildMusterChip('EMP-103 (Sunil)'),
+                      _buildMusterChip('EMP-104 (Anil)'),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -343,6 +378,26 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
           Text(value, style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.bold)),
           Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w600)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMusterChip(String label) {
+    final code = label.split(' ').first;
+    return InkWell(
+      onTap: () {
+        _scanCtrl.text = code;
+        _checkinWorker(1, code);
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Text(label, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w600)),
       ),
     );
   }
