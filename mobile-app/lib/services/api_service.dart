@@ -725,8 +725,8 @@ class ApiService {
       'aadhaar_doc': payload['aadhaar_doc'] ?? 'aadhaar_card.pdf',
       'pan_no': payload['pan_no'] ?? 'ABCDE0000K',
       'police_verification_doc': payload['police_verification_doc'] ?? 'police_verified_$newId.pdf',
-      'police_verification_expiry': payload['police_verification_expiry'] ?? '2027-02-01',
-      'profile_photo': payload['profile_photo'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      'profile_photo': payload['profile_photo'] ?? payload['photo_url'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+      'photo_url': payload['profile_photo'] ?? payload['photo_url'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
       'status': isVendor ? 'Pending ID Clearance' : 'Active',
       'id_card_status': isVendor ? 'Awaiting Approvals' : 'Issued',
       'approval_stage': isVendor ? 'Pending Admin' : 'Completed',
@@ -797,14 +797,24 @@ class ApiService {
         emp['id_card_status'] = 'Rejected';
         emp['approval_stage'] = 'Rejected';
       } else {
-        final adminOk = approvals['admin']?['status'] == 'Approved';
-        final safetyOk = approvals['safety']?['status'] == 'Approved';
-        final superOk = approvals['super_admin']?['status'] == 'Approved';
+        bool isOk(dynamic val) {
+          if (val == null) return false;
+          if (val is String) return val.toLowerCase() == 'approved';
+          if (val is Map) return val['status']?.toString().toLowerCase() == 'approved';
+          return false;
+        }
+
+        final adminOk = isOk(approvals['admin']);
+        final safetyOk = isOk(approvals['safety']);
+        final superOk = isOk(approvals['super_admin']);
 
         if (adminOk && safetyOk && superOk) {
           emp['status'] = 'Active';
           emp['id_card_status'] = 'Issued';
           emp['approval_stage'] = 'Completed';
+          emp['gate_pass_issued'] = true;
+          emp['gate_pass_code'] = 'ZYETA-PASS-${emp['employee_id']}';
+          emp['approved_at'] = DateTime.now().toIso8601String();
         } else if (adminOk && safetyOk) {
           emp['approval_stage'] = 'Pending Super Admin';
           emp['id_card_status'] = 'Awaiting Super Admin Badge Issue';

@@ -18,14 +18,20 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
   List<dynamic> _myMaterials = [];
   bool _isLoading = true;
 
-  // Attendance Analytics State (Week / Month / Year)
-  String _selectedAttendancePeriod = 'week'; // 'week' | 'month' | 'year'
+  // --- ATTENDANCE ANALYTICS FILTERS ---
+  String _selectedAttendancePeriod = 'week'; // 'week' | 'month' | 'year' | 'custom'
+  DateTimeRange? _customDateRange;
+  String _attendanceShiftFilter = 'ALL'; // 'ALL' | 'General' | 'Morning' | 'Night'
+  String _attendanceStatusFilter = 'ALL'; // 'ALL' | 'Present' | 'Late' | 'Absent'
   Map<String, dynamic>? _attendanceAnalytics;
   bool _isAttendanceLoading = false;
 
-  // Employee Filters
-  String _empFilter = 'ALL'; // 'ALL' | 'ACTIVE' | 'PENDING' | 'INSIDE'
+  // --- WORKER MASTER FILTERS ---
+  String _empFilter = 'ALL'; // 'ALL' | 'ACTIVE' | 'PENDING' | 'INSIDE' | 'EXPIRING'
   String _empSearch = '';
+  String _selectedTradeFilter = 'ALL'; // 'ALL', 'Scaffolding', 'Welding', 'Electrical', 'Masonry', 'Helper'
+  String _selectedStageFilter = 'ALL'; // 'ALL', 'Pending Admin', 'Pending Safety', 'Pending Super Admin', 'Completed'
+  String _selectedSortBy = 'NAME_ASC'; // 'NAME_ASC', 'NAME_DESC', 'ID_ASC', 'ATT_DESC'
   final _searchController = TextEditingController();
 
   @override
@@ -66,12 +72,47 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       _isAttendanceLoading = true;
     });
     final vendorId = ApiService.currentUser?.vendorId?.toString();
-    final data = await ApiService.getVendorAttendanceAnalytics(period: period, vendorId: vendorId);
+    final data = await ApiService.getVendorAttendanceAnalytics(
+      period: period == 'custom' ? 'month' : period,
+      vendorId: vendorId,
+    );
     if (mounted) {
       setState(() {
         _attendanceAnalytics = data;
         _isAttendanceLoading = false;
       });
+    }
+  }
+
+  // Pick Custom Date Range
+  void _pickCustomDateRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 1),
+      initialDateRange: _customDateRange ?? DateTimeRange(start: now.subtract(const Duration(days: 14)), end: now),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF06B6D4),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E293B),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _customDateRange = picked;
+        _selectedAttendancePeriod = 'custom';
+      });
+      _loadAttendanceAnalytics('custom');
     }
   }
 
@@ -91,9 +132,9 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,31 +144,39 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.download_for_offline, color: Color(0xFF10B981), size: 24),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Download Attendance (${_selectedAttendancePeriod.toUpperCase()})',
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.file_download_done, color: Color(0xFF10B981), size: 24),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Export Attendance (${_selectedAttendancePeriod.toUpperCase()})',
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        const Text('Official Contractor Muster Roll CSV', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                      ],
                     ),
                   ],
                 ),
                 IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Official muster CSV report generated for ${ApiService.currentUser?.fullName ?? 'Contractor'}. Includes shift records, overtime hours, and compliance status.',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Container(
-              height: 150,
+              height: 160,
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white12),
+                color: const Color(0xFF080C15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
               ),
               child: SingleChildScrollView(
                 child: Text(
@@ -143,8 +192,8 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFF38BDF8)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(Icons.copy, color: Color(0xFF38BDF8), size: 18),
                     label: const Text('Copy CSV Data', style: TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
@@ -162,8 +211,10 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                      shadowColor: const Color(0xFF10B981).withValues(alpha: 0.5),
                     ),
                     icon: const Icon(Icons.download, color: Colors.white, size: 18),
                     label: const Text('Download CSV', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -171,7 +222,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('✓ Attendance report (${_selectedAttendancePeriod.toUpperCase()}) downloaded to Downloads/Zyeta_Attendance.csv'),
+                          content: Text('✓ Muster report (${_selectedAttendancePeriod.toUpperCase()}) saved to Downloads/Zyeta_Attendance.csv'),
                           backgroundColor: Colors.green,
                           duration: const Duration(seconds: 4),
                         ),
@@ -182,6 +233,140 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // ADVANCED FILTER BOTTOM SHEET FOR WORKFORCE
+  // ==========================================
+  void _openWorkforceFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.tune, color: Color(0xFF06B6D4), size: 22),
+                      SizedBox(width: 8),
+                      Text('Workforce Advanced Filter', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedTradeFilter = 'ALL';
+                        _selectedStageFilter = 'ALL';
+                        _selectedSortBy = 'NAME_ASC';
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: const Text('Reset All', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              // Filter 1: Trade / Skill
+              const Text('FILTER BY TRADE / SCOPE', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildSheetChoiceChip('ALL', 'All Trades', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                  _buildSheetChoiceChip('Scaffolding', 'Scaffolding', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                  _buildSheetChoiceChip('Welding', 'Welder (6G)', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                  _buildSheetChoiceChip('Electrical', 'Electrical', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                  _buildSheetChoiceChip('Masonry', 'Civil Mason', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                  _buildSheetChoiceChip('Logistics', 'Logistics/Rigging', _selectedTradeFilter, (val) => setSheetState(() => _selectedTradeFilter = val)),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Filter 2: Clearance Stage
+              const Text('FILTER BY ID APPROVAL STAGE', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildSheetChoiceChip('ALL', 'All Stages', _selectedStageFilter, (val) => setSheetState(() => _selectedStageFilter = val)),
+                  _buildSheetChoiceChip('Pending Admin', '1. Awaiting Admin', _selectedStageFilter, (val) => setSheetState(() => _selectedStageFilter = val)),
+                  _buildSheetChoiceChip('Pending Safety', '2. Awaiting Safety', _selectedStageFilter, (val) => setSheetState(() => _selectedStageFilter = val)),
+                  _buildSheetChoiceChip('Pending Super Admin', '3. Awaiting Super Admin', _selectedStageFilter, (val) => setSheetState(() => _selectedStageFilter = val)),
+                  _buildSheetChoiceChip('Completed', '✓ Active & Issued', _selectedStageFilter, (val) => setSheetState(() => _selectedStageFilter = val)),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Filter 3: Sort By
+              const Text('SORT WORKERS BY', style: TextStyle(color: Color(0xFF818CF8), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildSheetChoiceChip('NAME_ASC', 'Name (A to Z)', _selectedSortBy, (val) => setSheetState(() => _selectedSortBy = val)),
+                  _buildSheetChoiceChip('ID_ASC', 'Pass ID (EMP-101+)', _selectedSortBy, (val) => setSheetState(() => _selectedSortBy = val)),
+                  _buildSheetChoiceChip('ATT_DESC', 'Attendance High-to-Low', _selectedSortBy, (val) => setSheetState(() => _selectedSortBy = val)),
+                ],
+              ),
+              const SizedBox(height: 22),
+
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF06B6D4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    setState(() {});
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('APPLY FILTERS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.8)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetChoiceChip(String key, String label, String currentSelected, Function(String) onSelect) {
+    final isSelected = currentSelected == key;
+    return InkWell(
+      onTap: () => onSelect(key),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF06B6D4).withValues(alpha: 0.25) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.white12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF38BDF8) : Colors.white70,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
@@ -219,6 +404,8 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
     String selectedSkillLevel = 'Skilled';
     String selectedPhotoUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80';
     String medicalFitnessStatus = 'Fit for Construction & Height Work (Class A)';
+    String uploadedAadhaarDoc = 'aadhaar_card_front_back.pdf';
+    String uploadedMedicalDoc = 'medical_fitness_apollo_cert.pdf';
     bool isSaving = false;
 
     final photoPresets = [
@@ -233,7 +420,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
           padding: EdgeInsets.only(
@@ -247,7 +434,6 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -262,20 +448,20 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                    gradient: const LinearGradient(colors: [Color(0xFF1E1B4B), Color(0xFF1E293B)]),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.info_outline, color: Color(0xFF818CF8), size: 18),
-                      SizedBox(width: 8),
+                      Icon(Icons.verified_user, color: Color(0xFF818CF8), size: 20),
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'On submission, this worker profile goes for 3-tier clearance: 1. Site Admin → 2. Safety Officer → 3. Super Admin ID Badge Generation.',
+                          'Pipeline: 1. Site Admin KYC → 2. Safety Officer (Medical/HSE) → 3. Super Admin Final ID Card Generation.',
                           style: TextStyle(color: Colors.white70, fontSize: 11),
                         ),
                       ),
@@ -283,22 +469,64 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   ),
                 ),
 
-                // SECTION 1: PROFILE PHOTO & BASIC IDENTITY
+                // SECTION 1: PROFILE PHOTO & IDENTITY DETAILS
                 _buildSectionHeader('1. PROFILE PHOTO & IDENTITY DETAILS'),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 34,
-                      backgroundImage: NetworkImage(selectedPhotoUrl),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                        boxShadow: [
+                          BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 10)
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 34,
+                        backgroundImage: NetworkImage(selectedPhotoUrl),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Select Photo / Camera Avatar *', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Worker Photo (For ID Badges) *', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                              InkWell(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  setModalState(() {
+                                    selectedPhotoUrl = 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80';
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('📸 Photo uploaded & processed for Smart Pass!'), backgroundColor: Color(0xFF06B6D4)),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: const Color(0xFF06B6D4)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.camera_alt, color: Color(0xFF06B6D4), size: 12),
+                                      SizedBox(width: 4),
+                                      Text('TAKE PHOTO', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
@@ -405,7 +633,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                             dropdownColor: const Color(0xFF1E293B),
                             style: const TextStyle(color: Colors.white, fontSize: 13),
                             items: const [
-                              DropdownMenuItem(value: 'Expert', child: Text('Expert')),
+                              DropdownMenuItem(value: 'Expert', child: Text('Expert Level')),
                               DropdownMenuItem(value: 'Skilled', child: Text('Skilled')),
                               DropdownMenuItem(value: 'Semi-Skilled', child: Text('Semi-Skilled')),
                               DropdownMenuItem(value: 'Helper', child: Text('Helper / Unskilled')),
@@ -444,7 +672,6 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                 ),
 
                 // SECTION 3: AADHAAR, MEDICAL & POLICE VERIFICATION
-                const SizedBox(height: 14),
                 _buildSectionHeader('3. AADHAAR, MEDICAL FITNESS & SAFETY (FOR HSE)'),
                 const SizedBox(height: 8),
                 Row(
@@ -484,30 +711,136 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   ],
                 ),
                 const SizedBox(height: 8),
-                _buildFormTextField(panCtrl, 'PAN Card Number (Optional)', Icons.assignment_ind),
-                const SizedBox(height: 8),
+
+                // AADHAAR CARD UPLOAD BOX
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.credit_card, color: Color(0xFF06B6D4), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Aadhaar Document Upload (Front + Back) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text('Attached: $uploadedAadhaarDoc', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setModalState(() {
+                            uploadedAadhaarDoc = 'aadhaar_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}_verified.pdf';
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('✓ Aadhaar Card file selected & attached!'), backgroundColor: Color(0xFF06B6D4)),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF06B6D4)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.upload_file, size: 14, color: Color(0xFF06B6D4)),
+                              SizedBox(width: 4),
+                              Text('UPLOAD', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                _buildFormTextField(panCtrl, 'PAN Card Number (Optional)', Icons.assignment_ind),
+                const SizedBox(height: 8),
+
+                // MEDICAL FITNESS CERTIFICATE UPLOAD BOX
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 18),
-                          SizedBox(width: 6),
-                          Text('Medical Fitness Certificate (Attached) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(medicalFitnessStatus, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
-                      const SizedBox(height: 6),
                       Row(
                         children: [
-                          Expanded(child: _buildFormTextField(medicalValidityCtrl, 'Medical Validity Until', Icons.event)),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 20),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Medical Fitness Certificate (Attached) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text('Attached: $uploadedMedicalDoc', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setModalState(() {
+                                uploadedMedicalDoc = 'medical_clearance_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}.pdf';
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('✓ Medical Fitness Certificate Attached!'), backgroundColor: Color(0xFF10B981)),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFF10B981)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.upload_file, size: 14, color: Color(0xFF10B981)),
+                                  SizedBox(width: 4),
+                                  Text('CHANGE', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(medicalFitnessStatus, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(child: _buildFormTextField(medicalValidityCtrl, 'Medical Validity', Icons.event)),
                           const SizedBox(width: 8),
                           Expanded(child: _buildFormTextField(pvcExpiryCtrl, 'Police Verification Valid', Icons.verified_user)),
                         ],
@@ -534,11 +867,13 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF06B6D4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 6,
+                      shadowColor: const Color(0xFF06B6D4).withValues(alpha: 0.4),
                     ),
                     onPressed: isSaving
                         ? null
@@ -580,10 +915,14 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                               'designation': desigCtrl.text.trim(),
                               'skill': '${skillCtrl.text.trim()} ($selectedSkillLevel)',
                               'shift_name': selectedShift,
+                              'shift': selectedShift,
                               'aadhaar_no': aadhaarCtrl.text.trim(),
+                              'aadhaar_doc': uploadedAadhaarDoc,
                               'pan_no': panCtrl.text.trim(),
                               'blood_group': selectedBloodGroup,
+                              'photo_url': selectedPhotoUrl,
                               'profile_photo': selectedPhotoUrl,
+                              'medical_doc': uploadedMedicalDoc,
                               'medical_cert': medicalFitnessStatus,
                               'medical_validity': medicalValidityCtrl.text.trim(),
                               'police_verification_expiry': pvcExpiryCtrl.text.trim(),
@@ -649,7 +988,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
   }
 
   // ==========================================
-  // DIGITAL ID BADGE DIALOG
+  // ULTRA-PREMIUM DIGITAL ID BADGE MODAL
   // ==========================================
   void _showDigitalIDCard(Map<String, dynamic> emp) {
     showDialog(
@@ -657,20 +996,20 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          width: 330,
-          padding: const EdgeInsets.all(20),
+          width: 340,
+          padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              colors: [Color(0xFF1E293B), Color(0xFF0B1120), Color(0xFF030712)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.6), width: 1.5),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.7), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                blurRadius: 30,
+                color: const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                blurRadius: 35,
                 spreadRadius: 2,
               )
             ],
@@ -678,24 +1017,33 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Top Lanyard Hole Visual
+              Container(
+                width: 48,
+                height: 8,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(6)),
+              ),
+              const SizedBox(height: 12),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.shield, color: Color(0xFF06B6D4), size: 20),
+                      Icon(Icons.shield, color: Color(0xFF06B6D4), size: 22),
                       SizedBox(width: 6),
-                      Text('CONTRACTOR PASS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1)),
+                      Text('ZYETA SMART PASS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2)),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: emp['currently_inside'] == 1 ? Colors.green.withValues(alpha: 0.25) : Colors.white10,
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white24),
                     ),
                     child: Text(
-                      emp['currently_inside'] == 1 ? '● INSIDE' : 'OUTSIDE',
+                      emp['currently_inside'] == 1 ? '● INSIDE SITE' : 'OUTSIDE',
                       style: TextStyle(
                         color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white54,
                         fontSize: 9,
@@ -705,35 +1053,123 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              CircleAvatar(
-                radius: 38,
-                backgroundImage: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
+              const SizedBox(height: 16),
+
+              // Avatar with glowing border
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 15)
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-              Text('${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12)),
+              const SizedBox(height: 10),
+              Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
 
+              // Attached Documents Showcase Pills
               Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white10)),
-                child: Column(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B132B),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
+                ),
+                child: Row(
                   children: [
-                    _buildPassDetailRow('Pass ID', emp['employee_id'] ?? ''),
-                    _buildPassDetailRow('Contractor', emp['vendor_name'] ?? 'Contractor'),
-                    _buildPassDetailRow('Aadhaar No.', emp['aadhaar_no'] ?? 'N/A'),
-                    _buildPassDetailRow('Blood Group', emp['blood_group'] ?? 'O+'),
-                    _buildPassDetailRow('Medical Fitness', emp['medical_validity'] ?? 'Valid 2027'),
-                    _buildPassDetailRow('ID Status', emp['id_card_status'] ?? 'Issued'),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.assignment_turned_in, color: Color(0xFF06B6D4), size: 14),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Aadhaar: ${emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 14),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Medical: ${emp['medical_doc'] ?? emp['medical_cert'] ?? 'medical_fitness_apollo_cert.pdf'}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
 
+              // Details Grid
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  children: [
+                    _buildPassDetailRow('Pass / Badge ID', emp['employee_id'] ?? ''),
+                    _buildPassDetailRow('Contractor Company', emp['vendor_name'] ?? 'Contractor'),
+                    _buildPassDetailRow('Aadhaar Number', emp['aadhaar_no'] ?? 'N/A'),
+                    _buildPassDetailRow('Aadhaar Document', emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'),
+                    _buildPassDetailRow('Medical Fitness', emp['medical_doc'] ?? emp['medical_cert'] ?? 'Grade A Certified'),
+                    _buildPassDetailRow('Blood Group', emp['blood_group'] ?? 'O+'),
+                    _buildPassDetailRow('Gate Permissions', 'All Turnstiles & Optical Portals'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // 3-Tier Stamped Clearances Status Banner
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Site Admin KYC', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
+                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Safety HSE', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
+                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Super Admin', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // QR Code Box
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)],
+                ),
                 child: Column(
                   children: [
                     QrImageView(
@@ -741,19 +1177,26 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                       version: QrVersions.auto,
                       size: 100.0,
                     ),
-                    const SizedBox(height: 2),
-                    Text(emp['employee_id'] ?? '', style: const TextStyle(color: Colors.black87, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      emp['employee_id'] ?? '',
+                      style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 6),
+              const Text('Encrypted NFC & Optical Turnstile Badge', style: TextStyle(color: Colors.white38, fontSize: 10)),
+              const SizedBox(height: 12),
+
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E293B),
-                  minimumSize: const Size(double.infinity, 40),
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                child: const Text('Close ID Card', style: TextStyle(color: Colors.white70)),
+                child: const Text('Close ID Pass', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -764,7 +1207,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
 
   Widget _buildPassDetailRow(String label, String val) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -787,26 +1230,32 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
     final activePermitsCount = _myPermits.where((p) => p['status'] == 'Active' || p['status'] == 'Approved').length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: const Color(0xFF080C15),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0F172A),
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Vendor & Contractor Portal',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+            Row(
+              children: [
+                const Icon(Icons.verified, color: Color(0xFF06B6D4), size: 18),
+                const SizedBox(width: 6),
+                const Text(
+                  'Contractor Portal',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
             ),
             Text(
-              user?.fullName ?? 'Contractor Representative',
-              style: const TextStyle(fontSize: 11, color: Color(0xFF06B6D4)),
+              user?.fullName ?? 'ABC Infra Projects Pvt Ltd',
+              style: const TextStyle(fontSize: 11, color: Color(0xFF38BDF8)),
             ),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: 'Download Attendance CSV',
+            tooltip: 'Export Attendance CSV',
             icon: const Icon(Icons.file_download, color: Color(0xFF10B981)),
             onPressed: _downloadAttendanceReport,
           ),
@@ -827,7 +1276,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           tabs: [
             const Tab(icon: Icon(Icons.calendar_month, size: 18), text: 'Attendance Analytics'),
-            Tab(icon: const Icon(Icons.badge, size: 18), text: 'Workers & IDs ($totalWorkers)'),
+            Tab(icon: const Icon(Icons.badge, size: 18), text: 'Workforce & IDs ($totalWorkers)'),
             Tab(icon: const Icon(Icons.assignment, size: 18), text: 'Permits (${_myPermits.length})'),
             Tab(icon: const Icon(Icons.inventory_2, size: 18), text: 'Materials (${_myMaterials.length})'),
           ],
@@ -843,14 +1292,17 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
           : Column(
               children: [
-                // Top Contractor Metrics Banner
+                // Top Contractor Metrics Banner with Glowing Card
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  color: const Color(0xFF1E293B),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF111827),
+                    border: Border(bottom: BorderSide(color: Colors.white10)),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildSummaryItem('TOTAL WORKERS', '$totalWorkers', Colors.blueAccent),
+                      _buildSummaryItem('TOTAL WORKFORCE', '$totalWorkers', Colors.blueAccent),
                       _buildDivider(),
                       _buildSummaryItem('INSIDE CAMPUS', '$insideCount', Colors.greenAccent),
                       _buildDivider(),
@@ -879,7 +1331,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
   }
 
   // ==========================================
-  // TAB 1: ATTENDANCE ANALYTICS (WEEK / MONTH / YEAR)
+  // TAB 1: ATTENDANCE ANALYTICS (WEEK / MONTH / YEAR & FILTERS)
   // ==========================================
   Widget _buildAttendanceAnalyticsTab() {
     final summary = _attendanceAnalytics?['summary'] ?? {};
@@ -896,37 +1348,72 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // TIME PERIOD SELECTOR (WEEK WISE / MONTH WISE / YEAR WISE)
+          // 1. TIME PERIOD SELECTOR (WEEK WISE / MONTH WISE / YEAR WISE / CUSTOM)
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white10),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white12),
             ),
             child: Row(
               children: [
-                _buildPeriodTab('week', '📅 Week-Wise (7 Days)', Icons.view_week),
+                _buildPeriodTab('week', '📅 Week-Wise', Icons.view_week),
                 _buildPeriodTab('month', '🗓️ Month-Wise', Icons.calendar_month),
-                _buildPeriodTab('year', '📊 Year-Wise (2026)', Icons.calendar_today),
+                _buildPeriodTab('year', '📊 Year-Wise', Icons.calendar_today),
+                _buildCustomPeriodTab(),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 2. SHIFT & STATUS FILTER PILLS ROW
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                const Icon(Icons.filter_list, color: Color(0xFF06B6D4), size: 16),
+                const SizedBox(width: 8),
+                _buildShiftChip('ALL', 'All Shifts'),
+                _buildShiftChip('General', 'General (9-6)'),
+                _buildShiftChip('Morning', 'Shift A (Morning)'),
+                _buildShiftChip('Night', 'Shift C (Night)'),
+                const SizedBox(width: 8),
+                Container(width: 1, height: 20, color: Colors.white24),
+                const SizedBox(width: 8),
+                _buildAttendanceStatusChip('ALL', 'All Status'),
+                _buildAttendanceStatusChip('Present', 'Present Only'),
+                _buildAttendanceStatusChip('Late', 'Late Flagged'),
+                _buildAttendanceStatusChip('Absent', 'Absent Only'),
               ],
             ),
           ),
           const SizedBox(height: 14),
 
-          // DOWNLOAD CSV BANNER
+          // 3. ATTENDANCE EXPORT BANNER WITH GLOW
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF0F766E), Color(0xFF1E293B)]),
-              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF042F2E), Color(0xFF111827)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.1), blurRadius: 15)
+              ],
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  backgroundColor: Color(0xFF10B981),
-                  child: Icon(Icons.download, color: Colors.white),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.cloud_download, color: Color(0xFF10B981), size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -934,11 +1421,11 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_selectedAttendancePeriod.toUpperCase()} ATTENDANCE REPORT',
+                        '${_selectedAttendancePeriod.toUpperCase()} MUSTER ROLL REPORT',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       const SizedBox(height: 2),
-                      const Text('Download full shift audit logs & workforce muster in CSV format', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                      const Text('Export full audit logs with overtime hours & compliance in CSV', style: TextStyle(color: Colors.white70, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -946,6 +1433,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   onPressed: _downloadAttendanceReport,
                   child: const Text('DOWNLOAD', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 11)),
@@ -955,15 +1443,15 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ),
           const SizedBox(height: 14),
 
-          // KPI STATS GRID
+          // 4. METRIC KPI CARDS
           Row(
             children: [
               Expanded(
-                child: _buildAttendanceMetricCard('PRESENT SHIFTS', '$totalPresents', 'Marked on-site', const Color(0xFF10B981), Icons.check_circle),
+                child: _buildAttendanceMetricCard('PRESENT SHIFTS', '$totalPresents', 'Verified turnstile entries', const Color(0xFF10B981), Icons.check_circle),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _buildAttendanceMetricCard('ATTENDANCE RATE', '$rate%', 'Shift compliance', const Color(0xFF06B6D4), Icons.percent),
+                child: _buildAttendanceMetricCard('ATTENDANCE RATE', '$rate%', 'Workforce compliance', const Color(0xFF06B6D4), Icons.percent),
               ),
             ],
           ),
@@ -971,7 +1459,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           Row(
             children: [
               Expanded(
-                child: _buildAttendanceMetricCard('LATE CHECK-INS', '$totalLates', 'Flagged at turnstile', const Color(0xFFF59E0B), Icons.access_time),
+                child: _buildAttendanceMetricCard('LATE CHECK-INS', '$totalLates', 'Flagged at gate', const Color(0xFFF59E0B), Icons.access_time),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -985,20 +1473,25 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ),
           const SizedBox(height: 18),
 
-          // BREAKDOWN HEADER
+          // 5. VISUAL GRAPH HEADER
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${_selectedAttendancePeriod.toUpperCase()} ATTENDANCE BREAKDOWN',
+                '${_selectedAttendancePeriod.toUpperCase()} ATTENDANCE GRAPH & BREAKDOWN',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
               ),
               Text('${breakdown.length} intervals tracked', style: const TextStyle(color: Colors.white38, fontSize: 11)),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // BREAKDOWN LIST
+          // 6. INTERACTIVE ATTENDANCE BAR CHART VISUALIZER
+          if (breakdown.isNotEmpty) _buildAttendanceBarChart(breakdown),
+
+          const SizedBox(height: 14),
+
+          // 7. BREAKDOWN LIST
           if (_isAttendanceLoading)
             const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Color(0xFF06B6D4))))
           else if (breakdown.isEmpty)
@@ -1011,7 +1504,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: Colors.white10),
                 ),
                 child: Column(
@@ -1047,13 +1540,87 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                         value: (itemRate as num) / 100.0,
                         backgroundColor: Colors.white10,
                         valueColor: const AlwaysStoppedAnimation(Color(0xFF10B981)),
-                        minHeight: 5,
+                        minHeight: 6,
                       ),
                     ),
                   ],
                 ),
               );
             }),
+        ],
+      ),
+    );
+  }
+
+  // Visual Bar Chart Widget for Attendance
+  Widget _buildAttendanceBarChart(List<dynamic> breakdown) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('WORKFORCE MANPOWER CURVE', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: const Color(0xFF06B6D4).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                child: const Text('Live Telemetry', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 120,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: breakdown.map((item) {
+                final rate = (item['rate'] as num?)?.toDouble() ?? 85.0;
+                final barHeight = (rate / 100.0) * 85;
+                final isHighlight = rate >= 90;
+
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text('${rate.toInt()}%', style: TextStyle(color: isHighlight ? const Color(0xFF10B981) : Colors.white54, fontSize: 9, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Container(
+                          height: barHeight,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isHighlight
+                                  ? [const Color(0xFF06B6D4), const Color(0xFF10B981)]
+                                  : [const Color(0xFF3B82F6), const Color(0xFF6366F1)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: isHighlight
+                                ? [BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 6)]
+                                : [],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          item['key'].toString().length > 5 ? item['key'].toString().substring(item['key'].toString().length - 2) : item['key'].toString(),
+                          style: const TextStyle(color: Colors.white38, fontSize: 9),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ],
       ),
     );
@@ -1091,13 +1658,95 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
     );
   }
 
+  Widget _buildCustomPeriodTab() {
+    final isSelected = _selectedAttendancePeriod == 'custom';
+    return Expanded(
+      child: InkWell(
+        onTap: _pickCustomDateRange,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.date_range, color: isSelected ? Colors.white : Colors.white54, size: 16),
+              const SizedBox(height: 3),
+              Text(
+                _customDateRange != null ? 'Custom 🗓️' : 'Custom',
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.white54,
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShiftChip(String shiftKey, String label) {
+    final isSelected = _attendanceShiftFilter == shiftKey;
+    return InkWell(
+      onTap: () => setState(() => _attendanceShiftFilter = shiftKey),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.only(right: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontSize: 10.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttendanceStatusChip(String statusKey, String label) {
+    final isSelected = _attendanceStatusFilter == statusKey;
+    return InkWell(
+      onTap: () => setState(() => _attendanceStatusFilter = statusKey),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.only(right: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF10B981) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? const Color(0xFF10B981) : Colors.transparent),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontSize: 10.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAttendanceMetricCard(String label, String value, String sub, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
+        color: const Color(0xFF111827),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1129,19 +1778,40 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
   }
 
   // ==========================================
-  // TAB 2: TOTAL EMPLOYEES & ID CLEARANCE
+  // TAB 2: TOTAL WORKFORCE & ADVANCED FILTER
   // ==========================================
   Widget _buildWorkersAndIDsTab() {
     var list = _myEmployees;
 
+    // 1. Status Filter
     if (_empFilter == 'ACTIVE') {
       list = list.where((e) => e['status'] == 'Active').toList();
     } else if (_empFilter == 'PENDING') {
       list = list.where((e) => e['status'] == 'Pending ID Clearance' || e['status'] == 'Pending Approval').toList();
     } else if (_empFilter == 'INSIDE') {
       list = list.where((e) => e['currently_inside'] == 1).toList();
+    } else if (_empFilter == 'EXPIRING') {
+      list = list.where((e) => e['medical_validity'] != null && e['medical_validity'].toString().contains('2026')).toList();
     }
 
+    // 2. Trade Scope Filter
+    if (_selectedTradeFilter != 'ALL') {
+      list = list.where((e) =>
+        e['designation'].toString().toLowerCase().contains(_selectedTradeFilter.toLowerCase()) ||
+        e['skill'].toString().toLowerCase().contains(_selectedTradeFilter.toLowerCase())
+      ).toList();
+    }
+
+    // 3. Stage Filter
+    if (_selectedStageFilter != 'ALL') {
+      if (_selectedStageFilter == 'Completed') {
+        list = list.where((e) => e['status'] == 'Active').toList();
+      } else {
+        list = list.where((e) => e['approval_stage'] == _selectedStageFilter).toList();
+      }
+    }
+
+    // 4. Search Filter
     if (_empSearch.isNotEmpty) {
       final q = _empSearch.toLowerCase();
       list = list.where((e) =>
@@ -1152,29 +1822,150 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       ).toList();
     }
 
+    // 5. Sort By
+    if (_selectedSortBy == 'NAME_ASC') {
+      list.sort((a, b) => a['full_name'].toString().compareTo(b['full_name'].toString()));
+    } else if (_selectedSortBy == 'ID_ASC') {
+      list.sort((a, b) => a['employee_id'].toString().compareTo(b['employee_id'].toString()));
+    }
+
+    final hasActiveCustomFilters = _selectedTradeFilter != 'ALL' || _selectedStageFilter != 'ALL';
+    final issuedWorkers = _myEmployees.where((e) => e['status'] == 'Active' || e['id_card_status'] == 'Issued').toList();
+
+    bool isStageOk(dynamic val) {
+      if (val == null) return false;
+      if (val is String) return val.toLowerCase() == 'approved';
+      if (val is Map) return val['status']?.toString().toLowerCase() == 'approved';
+      return false;
+    }
+
     return Column(
       children: [
+        // PROMINENT TOP CAROUSEL: ISSUED & CLEARED DIGITAL ID BADGES SHOWCASE
+        if (issuedWorkers.isNotEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              border: Border(bottom: BorderSide(color: const Color(0xFF06B6D4).withValues(alpha: 0.25))),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
+                          child: const Icon(Icons.verified, color: Color(0xFF10B981), size: 14),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'ISSUED DIGITAL ID PASSES (${issuedWorkers.length})',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                        ),
+                      ],
+                    ),
+                    const Text('Approved & Turnstile Ready', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 78,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: issuedWorkers.length,
+                    itemBuilder: (ctx, i) {
+                      final emp = issuedWorkers[i];
+                      return InkWell(
+                        onTap: () => _showDigitalIDCard(emp),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: 205,
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF1E293B), Color(0xFF0B1120)]),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                                    Text(emp['employee_id'] ?? '', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold)),
+                                    const Text('✓ ID BADGE ACTIVE', style: TextStyle(color: Color(0xFF10B981), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.qr_code_scanner, color: Color(0xFF06B6D4), size: 18),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+
         // SEARCH & FILTER BAR
         Container(
           padding: const EdgeInsets.all(12),
           color: const Color(0xFF0F172A),
           child: Column(
             children: [
-              TextField(
-                controller: _searchController,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Search workers by Name, Pass ID, Aadhaar...',
-                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                ),
-                onChanged: (val) => setState(() => _empSearch = val.trim()),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'Search Name, Pass ID, Aadhaar...',
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                        prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                        filled: true,
+                        fillColor: const Color(0xFF1E293B),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                      ),
+                      onChanged: (val) => setState(() => _empSearch = val.trim()),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: _openWorkforceFilterSheet,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: hasActiveCustomFilters ? const Color(0xFF06B6D4) : const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: hasActiveCustomFilters ? const Color(0xFF06B6D4) : Colors.white12),
+                      ),
+                      child: Icon(Icons.tune, color: hasActiveCustomFilters ? Colors.white : const Color(0xFF06B6D4), size: 20),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
+
+              // QUICK STATUS PILLS
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -1183,6 +1974,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                     _buildFilterChip('ACTIVE', 'Active Passes (${_myEmployees.where((e) => e['status'] == 'Active').length})'),
                     _buildFilterChip('PENDING', 'Pending ID Approval (${_myEmployees.where((e) => e['status'] == 'Pending ID Clearance' || e['status'] == 'Pending Approval').length})'),
                     _buildFilterChip('INSIDE', 'Inside Site (${_myEmployees.where((e) => e['currently_inside'] == 1).length})'),
+                    _buildFilterChip('EXPIRING', 'Expiring Medical (1)'),
                   ],
                 ),
               ),
@@ -1190,139 +1982,212 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ),
         ),
 
-        // WORKERS LIST
+        // ACTIVE FILTER SUMMARY PILL
+        if (hasActiveCustomFilters)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Filters Active: Trade [$_selectedTradeFilter] • Stage [$_selectedStageFilter]',
+                  style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                InkWell(
+                  onTap: () => setState(() {
+                    _selectedTradeFilter = 'ALL';
+                    _selectedStageFilter = 'ALL';
+                  }),
+                  child: const Text('Clear', style: TextStyle(color: Colors.white70, fontSize: 11, decoration: TextDecoration.underline)),
+                ),
+              ],
+            ),
+          ),
+
+        // WORKERS LIST WITH 3-TIER APPROVAL STEPPER
         Expanded(
           child: list.isEmpty
-              ? const Center(child: Text('No workers matching criteria', style: TextStyle(color: Colors.white54)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(14),
-                  itemCount: list.length,
-                  itemBuilder: (ctx, i) {
-                    final emp = list[i];
-                    final isActive = emp['status'] == 'Active';
-                    final isPending = emp['status'] == 'Pending ID Clearance' || emp['status'] == 'Pending Approval';
-                    final stage = emp['approval_stage'] ?? (isActive ? 'Completed' : 'Pending Admin');
-                    final approvals = emp['approvals'] as Map<String, dynamic>? ?? {};
+              ? const Center(child: Text('No workers matching filter criteria', style: TextStyle(color: Colors.white54)))
+              : RefreshIndicator(
+                  onRefresh: () async => _loadVendorData(),
+                  color: const Color(0xFF06B6D4),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(14),
+                    itemCount: list.length,
+                    itemBuilder: (ctx, i) {
+                      final emp = list[i];
+                      final isActive = emp['status'] == 'Active';
+                      final isPending = emp['status'] == 'Pending ID Clearance' || emp['status'] == 'Pending Approval';
+                      final stage = emp['approval_stage'] ?? (isActive ? 'Completed' : 'Pending Admin');
+                      final approvals = emp['approvals'] as Map<String, dynamic>? ?? {};
 
-                    final adminOk = approvals['admin']?['status'] == 'Approved' || isActive;
-                    final safetyOk = approvals['safety']?['status'] == 'Approved' || isActive;
-                    final superOk = approvals['super_admin']?['status'] == 'Approved' || isActive;
+                      final adminOk = isStageOk(approvals['admin']) || isActive;
+                      final safetyOk = isStageOk(approvals['safety']) || isActive;
+                      final superOk = isStageOk(approvals['super_admin']) || isActive;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isPending
-                              ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
-                              : Colors.white10,
+                      final isInside = emp['currently_inside'] == 1;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF131D31),
+                              isPending ? const Color(0xFF1C1A27) : const Color(0xFF0F172A),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isPending
+                                ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                                : const Color(0xFF06B6D4).withValues(alpha: 0.25),
+                          ),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))
+                          ],
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 24,
-                                backgroundImage: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Stack(
                                   children: [
-                                    Text(
-                                      emp['full_name'] ?? 'Worker',
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                    CircleAvatar(
+                                      radius: 26,
+                                      backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
                                     ),
-                                    Text(
-                                      '${emp['employee_id'] ?? ''} • ${emp['designation'] ?? 'Technician'}',
-                                      style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12),
-                                    ),
-                                    Text(
-                                      'Aadhaar: ${emp['aadhaar_no'] ?? 'N/A'} • Medical: ${emp['medical_validity'] ?? 'Valid'}',
-                                      style: const TextStyle(color: Colors.white38, fontSize: 10),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: isInside ? Colors.greenAccent : Colors.white38,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: const Color(0xFF131D31), width: 2),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? Colors.green.withValues(alpha: 0.15)
-                                      : const Color(0xFFF59E0B).withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  isActive ? 'ACTIVE' : 'ID CLEARANCE',
-                                  style: TextStyle(
-                                    color: isActive ? Colors.greenAccent : const Color(0xFFF59E0B),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            emp['full_name'] ?? 'Worker',
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                                          ),
+                                          if (isActive) ...[
+                                            const SizedBox(width: 4),
+                                            const Icon(Icons.verified, color: Color(0xFF06B6D4), size: 14),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${emp['employee_id'] ?? ''} • ${emp['designation'] ?? 'Technician'}',
+                                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                      Text(
+                                        'Aadhaar: ${emp['aadhaar_no'] ?? 'N/A'} • Medical: ${emp['medical_validity'] ?? 'Valid'}',
+                                        style: const TextStyle(color: Colors.white38, fontSize: 10),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          const Divider(color: Colors.white10, height: 1),
-                          const SizedBox(height: 10),
-
-                          // 3-TIER APPROVAL WORKFLOW PROGRESS BAR
-                          const Text(
-                            'ID GENERATION CLEARANCE WORKFLOW',
-                            style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              _buildApprovalStep('1. Site Admin', adminOk, approvals['admin']?['status'] == 'Pending'),
-                              _buildStepArrow(),
-                              _buildApprovalStep('2. Safety (HSE)', safetyOk, approvals['safety']?['status'] == 'Pending'),
-                              _buildStepArrow(),
-                              _buildApprovalStep('3. Super Admin', superOk, approvals['super_admin']?['status'] == 'Pending'),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-
-                          // ACTION BUTTONS
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                isPending ? 'Stage: $stage' : 'Turnstile QR Pass Active',
-                                style: TextStyle(
-                                  color: isPending ? const Color(0xFFF59E0B) : Colors.greenAccent,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (isActive)
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF06B6D4),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  ),
-                                  icon: const Icon(Icons.qr_code, size: 14, color: Colors.white),
-                                  label: const Text('View ID Pass & QR', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
-                                  onPressed: () => _showDigitalIDCard(emp),
-                                )
-                              else
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(6)),
-                                  child: const Text('Pass Generated Post Approval', style: TextStyle(color: Colors.white54, fontSize: 10)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? Colors.green.withValues(alpha: 0.15)
+                                        : const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isActive
+                                          ? Colors.greenAccent.withValues(alpha: 0.4)
+                                          : const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isActive ? 'PASS ACTIVE' : 'ID CLEARANCE',
+                                    style: TextStyle(
+                                      color: isActive ? Colors.greenAccent : const Color(0xFFF59E0B),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(color: Colors.white10, height: 1),
+                            const SizedBox(height: 10),
+
+                            // 3-TIER APPROVAL STEPPER WITH GLOW
+                            const Text(
+                              '3-TIER ID CARD GENERATION PIPELINE',
+                              style: TextStyle(color: Colors.white54, fontSize: 9.5, fontWeight: FontWeight.bold, letterSpacing: 0.6),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _buildApprovalStep('1. Site Admin', adminOk, approvals['admin']?['status'] == 'Pending'),
+                                _buildStepArrow(),
+                                _buildApprovalStep('2. Safety (HSE)', safetyOk, approvals['safety']?['status'] == 'Pending'),
+                                _buildStepArrow(),
+                                _buildApprovalStep('3. Super Admin', superOk, approvals['super_admin']?['status'] == 'Pending'),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // BOTTOM ACTION BUTTONS
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  isPending ? 'Pending: $stage' : 'Access: Main Turnstiles',
+                                  style: TextStyle(
+                                    color: isPending ? const Color(0xFFF59E0B) : Colors.greenAccent,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (isActive)
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF06B6D4),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      elevation: 3,
+                                    ),
+                                    icon: const Icon(Icons.qr_code, size: 14, color: Colors.white),
+                                    label: const Text('View Smart Pass & QR', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
+                                    onPressed: () => _showDigitalIDCard(emp),
+                                  )
+                                else
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(8)),
+                                    child: const Text('Badge Issues Post Approvals', style: TextStyle(color: Colors.white54, fontSize: 10.5)),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
         ),
       ],
@@ -1340,6 +2205,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent),
         ),
         child: Text(
           label,
@@ -1404,7 +2270,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(14)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1448,7 +2314,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(14)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
