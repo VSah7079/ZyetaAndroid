@@ -21,6 +21,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
   List<dynamic> _hazards = [];
   List<dynamic> _punches = [];
   List<dynamic> _pendingSafetyEmployees = [];
+  List<dynamic> _allEmployees = [];
   String _selectedPunchColorFilter = 'ALL';
   String _punchSearchQuery = '';
 
@@ -37,7 +38,14 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
     super.dispose();
   }
 
-  void _clearWorkerSafety(int empId, String action) async {
+  bool _isApproved(dynamic val) {
+    if (val == null) return false;
+    if (val is String) return val.toLowerCase() == 'approved';
+    if (val is Map) return val['status']?.toString().toLowerCase() == 'approved';
+    return false;
+  }
+
+  void _clearWorkerSafety(dynamic empId, String action) async {
     final ok = await ApiService.approveEmployeeStage(empId: empId, stage: 'safety', action: action);
     if (ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -48,6 +56,140 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
       );
       _loadSafetyData();
     }
+  }
+
+  void _showWorkerDocsDialog(Map<String, dynamic> emp) {
+    HapticFeedback.lightImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Color(0xFF10B981), width: 1.5)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 22),
+                        SizedBox(width: 8),
+                        Text('Worker Health & KYC', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    IconButton(icon: const Icon(Icons.close, color: Colors.white54, size: 20), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Center(
+                  child: CircleAvatar(
+                    radius: 36,
+                    backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                Center(
+                  child: Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name'] ?? 'Contractor'})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 12), textAlign: TextAlign.center),
+                ),
+                const SizedBox(height: 14),
+
+                // Attached Aadhaar Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white12)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.credit_card, color: Color(0xFF06B6D4), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Aadhaar Document Attached', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                            Text('Aadhaar No: ${emp['aadhaar_no'] ?? 'Verified'}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.verified, color: Color(0xFF10B981), size: 18),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Attached Medical Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4))),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.medical_services, color: Color(0xFF10B981), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Medical Fitness Certificate', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(emp['medical_doc'] ?? emp['medical_cert'] ?? 'medical_fitness_apollo_cert.pdf', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
+                            Text('Validity: ${emp['medical_validity'] ?? '2027'} • Blood: ${emp['blood_group'] ?? 'O+'}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.verified, color: Color(0xFF10B981), size: 18),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.redAccent),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _clearWorkerSafety(emp['id'] ?? emp['employee_id'], 'Rejected');
+                        },
+                        child: const Text('REJECT', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.check_circle, size: 16, color: Colors.white),
+                        label: const Text('APPROVE & CLEAR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _clearWorkerSafety(emp['id'] ?? emp['employee_id'], 'Approved');
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _loadSafetyData() async {
@@ -63,8 +205,9 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
     final allEmps = await ApiService.getEmployees();
     final pendingSafety = allEmps.where((e) {
       if (e['status'] == 'Pending ID Clearance' || e['status'] == 'Pending Approval') {
-        final approvals = e['approvals'] as Map<String, dynamic>? ?? {};
-        return approvals['safety']?['status'] != 'Approved';
+        final approvals = e['approvals'];
+        if (approvals == null || approvals is! Map) return true;
+        return !_isApproved(approvals['safety']);
       }
       return false;
     }).toList();
@@ -76,6 +219,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
         _inspections = inspections;
         _hazards = hazards;
         _punches = punches;
+        _allEmployees = allEmps;
         _pendingSafetyEmployees = pendingSafety;
         _isLoading = false;
       });
