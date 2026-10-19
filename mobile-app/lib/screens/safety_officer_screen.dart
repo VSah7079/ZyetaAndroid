@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import 'inside_headcount_screen.dart';
@@ -226,28 +227,32 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
     }
   }
 
-  // ==========================================
-  // MODAL 1: RECORD NEW SAFETY PUNCH (RED / YELLOW / GREEN)
-  // ==========================================
   void _openNewPunchModal() {
+    final workerOptions = _allEmployees.isNotEmpty
+        ? _allEmployees.map((e) => {
+            'name': (e['full_name'] ?? e['name'] ?? 'Worker').toString(),
+            'id': (e['employee_id'] ?? e['id'] ?? 'EMP').toString(),
+            'vendor': (e['vendor_name'] ?? 'Contractor').toString(),
+          }).toList()
+        : [
+            {'name': 'Ramesh Patel', 'id': 'EMP-101', 'vendor': 'ABC Infra Projects Pvt Ltd'},
+            {'name': 'Amitabh Sen', 'id': 'EMP-102', 'vendor': 'Apex MEP Solutions'},
+            {'name': 'Sanjay Gupta', 'id': 'EMP-103', 'vendor': 'FastTrack Logistics'},
+            {'name': 'Vikram Rathore', 'id': 'EMP-104', 'vendor': 'ABC Infra Projects Pvt Ltd'},
+            {'name': 'Manoj Sharma', 'id': 'EMP-105', 'vendor': 'Apex MEP Solutions'},
+          ];
+
+    final initialWorker = workerOptions.first;
     String selectedColor = 'RED'; // 'RED', 'YELLOW', 'GREEN'
-    String selectedWorker = 'Ramesh Patel (EMP-101)';
-    String workerId = 'EMP-101';
-    String vendorName = 'ABC Infra Projects Pvt Ltd';
+    String selectedWorker = '${initialWorker['name']} (${initialWorker['id']})';
+    String workerId = initialWorker['id']!;
+    String vendorName = initialWorker['vendor']!;
     final zoneCtrl = TextEditingController(text: 'Block A - 4th Floor Facade Scaffolding');
     final reasonCtrl = TextEditingController(text: 'Working at 14m scaffold elevation without chin strap and harness hook loose.');
     final actionCtrl = TextEditingController(text: 'Immediate Work Stoppage. Chin-strap fastened & harness dual-lanyards anchored to 100% lifeline.');
     String selectedPhotoUrl = 'https://images.unsplash.com/photo-1541888946425-d0fbb186156a?w=400&auto=format&fit=crop&q=80';
     final customPhotoCtrl = TextEditingController();
     bool isSaving = false;
-
-    final workerOptions = [
-      {'name': 'Ramesh Patel', 'id': 'EMP-101', 'vendor': 'ABC Infra Projects Pvt Ltd'},
-      {'name': 'Amitabh Sen', 'id': 'EMP-102', 'vendor': 'Apex MEP Solutions'},
-      {'name': 'Sanjay Gupta', 'id': 'EMP-103', 'vendor': 'FastTrack Logistics'},
-      {'name': 'Vikram Rathore', 'id': 'EMP-104', 'vendor': 'ABC Infra Projects Pvt Ltd'},
-      {'name': 'Manoj Sharma', 'id': 'EMP-105', 'vendor': 'Apex MEP Solutions'},
-    ];
 
     final photoPresets = [
       {
@@ -515,7 +520,10 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                           final label = '${w['name']} (${w['id']})';
                           return DropdownMenuItem<String>(
                             value: label,
-                            child: Text('$label — ${w['vendor']}'),
+                            child: Text(
+                              '$label — ${w['vendor']}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) {
