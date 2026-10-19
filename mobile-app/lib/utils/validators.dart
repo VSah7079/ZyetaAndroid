@@ -42,11 +42,11 @@ class FormValidators {
     return null;
   }
 
-  static String? validateAadhaar(String? val) {
+  static String? validateAadhaar(String? val, {String fieldName = 'Aadhaar'}) {
     if (val == null || val.trim().isEmpty) return null;
     final clean = val.replaceAll(RegExp(r'\s'), '');
     if (!_aadhaarRegex.hasMatch(clean)) {
-      return 'Aadhaar must be exactly 12 digits';
+      return '$fieldName must be exactly 12 digits';
     }
     return null;
   }

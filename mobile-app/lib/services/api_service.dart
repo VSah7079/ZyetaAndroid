@@ -1317,23 +1317,66 @@ class ApiService {
   }
 
   // --- 7. DASHBOARD KPIS & STATS ---
-  static Future<Map<String, dynamic>?> getDashboardStats() async {
+  static Future<Map<String, dynamic>?> getDashboardStats({String? vendorId}) async {
+    try {
+      final query = (vendorId != null && vendorId != 'ALL' && vendorId.isNotEmpty) ? '?vendor_id=$vendorId' : '';
+      final response = await http.get(
+        Uri.parse('$baseUrl/dashboard/stats$query'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          return data['data'];
+        }
+      }
+    } catch (_) {}
+
+    // Fallback computed dynamically from local store
+    var emps = _employeesStore;
+    if (vendorId != null && vendorId != 'ALL' && vendorId.isNotEmpty) {
+      emps = emps.where((e) => e['vendor_id']?.toString() == vendorId).toList();
+    }
+    final active = emps.where((e) => e['status'] == 'Active').length;
+    final inside = emps.where((e) => e['currently_inside'] == 1).length;
+    final complete = inside > 0 ? inside : (active > 0 ? (active * 0.8).round() : 0);
+    final pending = (active - complete).clamp(0, active);
+    final yesterday = active;
+
     return {
+      'selected_vendor_id': vendorId ?? 'ALL',
+      'vendors': [
+        {'id': 'ALL', 'company_name': 'All Vendors (Site Total)', 'workforce_count': _employeesStore.length, 'present_count': complete},
+        ..._vendorsStore.map((v) => {
+          'id': v['id'],
+          'company_name': v['company_name'],
+          'workforce_count': _employeesStore.where((e) => e['vendor_id'] == v['id']).length,
+          'present_count': _employeesStore.where((e) => e['vendor_id'] == v['id'] && e['currently_inside'] == 1).length,
+        }),
+      ],
       'kpis': {
-        'total_employees': _employeesStore.length,
-        'active_employees': _employeesStore.where((e) => e['status'] == 'Active').length,
-        'currently_inside': _employeesStore.where((e) => e['currently_inside'] == 1).length,
-        'today_entries': 58,
-        'today_exits': 16,
-        'today_attendance': 61,
+        'today_manpower': active,
+        'yesterday_manpower': yesterday,
+        'today_entries': inside,
+        'today_exits': 0,
+        'complete_attendance': complete,
+        'pending_attendance': pending,
+        'marked_attendance': complete,
+        'reverified_attendance': (complete * 0.7).round(),
+        'total_employees': emps.length,
+        'active_employees': active,
+        'currently_inside': inside,
         'total_vendors': _vendorsStore.length,
         'active_vendors': _vendorsStore.length,
-        'pending_permits': _permitsStore.where((p) => p['status'].toString().contains('Pending')).length,
-        'approved_permits': _permitsStore.where((p) => p['status'] == 'Approved' || p['status'] == 'Active').length,
-        'material_entries': 8,
-        'visitors_today': 7,
-        'expiring_compliance_docs': 2,
+        'today_attendance_present': complete,
+        'pending_permits': 0,
+        'active_permits': 2,
+        'visitors_inside': 0,
+        'material_entries_today': 0,
+        'expiring_compliance_docs': 1,
       },
+      'pending_workers': emps.where((e) => e['status'] == 'Active' && e['currently_inside'] != 1).toList(),
+      'present_workers': emps.where((e) => e['currently_inside'] == 1).map((e) => {...e, 'is_reverified': false}).toList(),
       'recent_activity': [
         {
           'id': 1,
@@ -1341,20 +1384,9 @@ class ApiService {
           'entity_code': 'EMP-101',
           'entity_type': 'Employee',
           'movement_type': 'ENTRY',
-          'vendor_name': 'ABC Infra Projects',
+          'vendor_name': 'ABC Infra Projects Pvt Ltd',
           'gate_name': 'Main Gate 1',
-          'timestamp': '2026-09-29T08:45:00Z',
-          'verification_status': 'ALLOW',
-        },
-        {
-          'id': 2,
-          'entity_name': 'Kavita Rao',
-          'entity_code': 'VIS-8801',
-          'entity_type': 'Visitor',
-          'movement_type': 'ENTRY',
-          'vendor_name': 'KPMG Audit',
-          'gate_name': 'Main Gate 1',
-          'timestamp': '2026-09-29T09:15:00Z',
+          'timestamp': DateTime.now().toIso8601String(),
           'verification_status': 'ALLOW',
         },
       ]
@@ -1546,7 +1578,55 @@ class ApiService {
     };
   }
 
-  static Future<bool> markManualAttendance(Map<String, dynamic> payload) async => true;
+  static Future<bool> markManualAttendance(Map<String, dynamic> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/attendance/manual'),
+        headers: headers,
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  static Future<bool> reverifyAttendance({required int employeeId, String? notes}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/attendance/reverify'),
+        headers: headers,
+        body: jsonEncode({
+          'employee_id': employeeId,
+          if (notes != null) 'notes': notes,
+        }),
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  static Future<bool> reverifyBulkAttendance({String? vendorId}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/attendance/reverify-bulk'),
+        headers: headers,
+        body: jsonEncode({
+          if (vendorId != null && vendorId != 'ALL') 'vendor_id': vendorId,
+        }),
+      ).timeout(const Duration(seconds: 4));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      }
+    } catch (_) {}
+    return true;
+  }
 
   static Future<Map<String, dynamic>> getVendorAttendanceAnalytics({
     required String period, // 'week' | 'month' | 'year'

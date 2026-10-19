@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 
 class SuperAdminScreen extends StatefulWidget {
   const SuperAdminScreen({super.key});
@@ -95,7 +96,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -113,22 +114,27 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Icon(isEdit ? Icons.edit_note : Icons.person_add_alt, color: const Color(0xFFF59E0B), size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          isEdit ? 'Edit User & Permissions Matrix' : 'Create User & Assign Access',
-                          style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(isEdit ? Icons.edit_note : Icons.person_add_alt, color: AppTheme.primary, size: 24),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              isEdit ? 'Edit User & Permissions Matrix' : 'Create User & Assign Access',
+                              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
 
-                const Text('USER PROFILE DETAILS', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                const Text('USER PROFILE DETAILS', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 const SizedBox(height: 8),
                 _buildTextField(nameCtrl, 'Full Name *', Icons.person),
                 const SizedBox(height: 8),
@@ -145,20 +151,24 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                 if (!isEdit) _buildTextField(passCtrl, 'Account Password *', Icons.lock, isPassword: true),
 
                 const SizedBox(height: 14),
-                const Text('SYSTEM ROLE & STATUS', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                const Text('SYSTEM ROLE & STATUS', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgSurface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.border),
+                        ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: role,
                             isExpanded: true,
-                            dropdownColor: const Color(0xFF1E293B),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
                             items: const [
                               DropdownMenuItem(value: 'Super Admin', child: Text('👑 Super Admin')),
                               DropdownMenuItem(value: 'Admin', child: Text('🏢 Site Admin')),
@@ -182,13 +192,17 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: AppTheme.bgSurface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppTheme.border),
+                        ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: status,
                             isExpanded: true,
-                            dropdownColor: const Color(0xFF1E293B),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            dropdownColor: Colors.white,
+                            style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
                             items: const [
                               DropdownMenuItem(value: 'Active', child: Text('🟢 Active')),
                               DropdownMenuItem(value: 'Suspended', child: Text('🟡 Suspended')),
@@ -209,7 +223,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('GRANULAR PERMISSIONS (CHECK TO GRANT ACCESS)', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                    const Text('GRANULAR PERMISSIONS (RBAC)', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                     TextButton(
                       onPressed: () {
                         setModalState(() {
@@ -222,7 +236,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                       },
                       child: Text(
                         selectedPermissions.length == _availablePermissions.length ? 'Clear All' : 'Select All',
-                        style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -230,9 +244,9 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: AppTheme.bgSurface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: AppTheme.border),
                   ),
                   child: Column(
                     children: _availablePermissions.entries.map((entry) {
@@ -240,8 +254,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                       return CheckboxListTile(
                         dense: true,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                        activeColor: const Color(0xFFF59E0B),
-                        title: Text(entry.value, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                        activeColor: AppTheme.primary,
+                        title: Text(entry.value, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)),
                         value: isChecked,
                         onChanged: (bool? val) {
                           setModalState(() {
@@ -264,7 +278,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
+                      backgroundColor: AppTheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: isSaving
@@ -316,10 +330,10 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                             }
                           },
                     child: isSaving
-                        ? const CircularProgressIndicator(color: Colors.black87)
+                        ? const CircularProgressIndicator(color: Colors.white)
                         : Text(
                             isEdit ? 'UPDATE USER & ACCESS' : 'CREATE ACCOUNT & GRANT ACCESS',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                   ),
                 ),
@@ -350,15 +364,16 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
-        title: Text('Delete Account ${user['username']}?', style: const TextStyle(color: Colors.white)),
-        content: Text('Are you sure you want to permanently delete user account for ${user['full_name']}?', style: const TextStyle(color: Colors.white70)),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete Account ${user['username']}?', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to permanently delete user account for ${user['full_name']}?', style: const TextStyle(color: AppTheme.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Confirm Delete', style: TextStyle(color: Colors.white)),
+            child: const Text('Confirm Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -386,7 +401,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -398,8 +413,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Edit Worker ${emp['employee_id']}', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                  IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                  Text('Edit Worker ${emp['employee_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+                  IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -429,8 +444,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                           );
                         }
                       },
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
-                      child: const Text('DELETE WORKER', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      child: const Text('DELETE WORKER', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -452,7 +467,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                           );
                         }
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       child: const Text('SAVE CHANGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ),
                   ),
@@ -475,7 +490,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
@@ -486,8 +501,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Edit Contractor ${vnd['vendor_id']}', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                Text('Edit Contractor ${vnd['vendor_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+                IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
               ],
             ),
             const SizedBox(height: 12),
@@ -512,8 +527,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                       await ApiService.deleteVendor(vnd['id']);
                       _loadAllMasterData();
                     },
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
-                    child: const Text('DELETE VENDOR', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: const Text('DELETE VENDOR', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -529,7 +544,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                       });
                       _loadAllMasterData();
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06B6D4)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                     child: const Text('SAVE VENDOR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
@@ -546,15 +561,17 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
       controller: ctrl,
       obscureText: isPassword,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white, fontSize: 13),
+      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
       decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 18),
+        labelText: hint,
+        labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+        prefixIcon: Icon(icon, color: AppTheme.primary, size: 18),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: AppTheme.bgSurface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
       ),
     );
   }
@@ -562,30 +579,30 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.admin_panel_settings, color: Color(0xFFF59E0B), size: 20),
+                Icon(Icons.admin_panel_settings, color: AppTheme.primary, size: 20),
                 SizedBox(width: 8),
-                Text('Super Admin Control Center', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text('Super Admin Control Center', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               ],
             ),
-            Text(
+            const Text(
               'Master Database & Granular Access Control (RBAC)',
-              style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
             ),
           ],
         ),
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: _loadAllMasterData,
           ),
           const LogoutIconButton(),
@@ -593,10 +610,10 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: const Color(0xFFF59E0B),
+          indicatorColor: AppTheme.primary,
           indicatorWeight: 3,
-          labelColor: const Color(0xFFF59E0B),
-          unselectedLabelColor: Colors.white54,
+          labelColor: AppTheme.primary,
+          unselectedLabelColor: AppTheme.textSecondary,
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           tabs: [
             Tab(icon: const Icon(Icons.people, size: 18), text: 'Users (${_users.length})'),
@@ -608,7 +625,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -627,9 +644,9 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFFF59E0B),
-        icon: const Icon(Icons.person_add, color: Colors.black87),
-        label: const Text('Add User & Permissions', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(Icons.person_add, color: Colors.white),
+        label: const Text('Add User & Permissions', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         onPressed: () => _openUserModal(),
       ),
       body: ListView.separated(
@@ -644,66 +661,66 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
           final isSuperAdmin = role == 'Super Admin';
 
           Color roleColor = isSuperAdmin
-              ? const Color(0xFFF59E0B)
+              ? const Color(0xFF7C3AED)
               : role == 'Admin'
-                  ? const Color(0xFF6366F1)
+                  ? AppTheme.primary
                   : role == 'Safety Officer'
-                      ? const Color(0xFFF97316)
+                      ? const Color(0xFFEA580C)
                       : role == 'Vendor'
-                          ? const Color(0xFF06B6D4)
-                          : const Color(0xFF10B981);
+                          ? const Color(0xFF0284C7)
+                          : const Color(0xFF059669);
 
           return Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: roleColor.withValues(alpha: 0.3)),
-            ),
+            decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: roleColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: roleColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.person, color: roleColor, size: 22),
                           ),
-                          child: Icon(Icons.person, color: roleColor, size: 22),
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              u['full_name'] ?? u['username'] ?? '',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  u['full_name'] ?? u['username'] ?? '',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${u['username']} • ${u['email']}',
+                                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            Text(
-                              '${u['username']} • ${u['email']}',
-                              style: const TextStyle(color: Colors.white54, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: status == 'Active' ? Colors.green.withValues(alpha: 0.15) : Colors.red.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                          ),
+                        ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: AppTheme.badgeDecoration(color: status == 'Active' ? AppTheme.success : AppTheme.danger),
                       child: Text(
                         status,
                         style: TextStyle(
-                          color: status == 'Active' ? Colors.greenAccent : Colors.redAccent,
-                          fontSize: 10,
+                          color: status == 'Active' ? AppTheme.success : AppTheme.danger,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -713,15 +730,19 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                 const SizedBox(height: 10),
 
                 // Assigned Permissions Chips
-                const Text('GRANTED PERMISSIONS (RBAC):', style: TextStyle(color: Colors.white38, fontSize: 9.5, fontWeight: FontWeight.bold)),
+                const Text('GRANTED PERMISSIONS (RBAC):', style: TextStyle(color: AppTheme.textMuted, fontSize: 9.5, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 const SizedBox(height: 4),
                 Wrap(
                   spacing: 4,
                   runSpacing: 4,
                   children: perms.map((p) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.circular(4)),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.bgSurface,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: AppTheme.border),
+                      ),
                       child: Text(
                         p.toString().toUpperCase(),
                         style: TextStyle(color: roleColor, fontSize: 9.5, fontWeight: FontWeight.bold),
@@ -730,22 +751,22 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                   }).toList(),
                 ),
                 const SizedBox(height: 10),
-                const Divider(color: Colors.white10, height: 1),
-                const SizedBox(height: 8),
+                const Divider(color: AppTheme.border, height: 1),
+                const SizedBox(height: 6),
 
                 // Action Buttons: Edit, Permissions, Delete
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton.icon(
-                      icon: const Icon(Icons.edit_note, size: 16, color: Color(0xFF06B6D4)),
-                      label: const Text('Edit & Permissions', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, fontWeight: FontWeight.bold)),
+                      icon: const Icon(Icons.edit_note, size: 16, color: AppTheme.primary),
+                      label: const Text('Edit & Permissions', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
                       onPressed: () => _openUserModal(u),
                     ),
                     if (!isSuperAdmin)
                       TextButton.icon(
-                        icon: const Icon(Icons.delete_outline, size: 16, color: Colors.redAccent),
-                        label: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.delete_outline, size: 16, color: AppTheme.danger),
+                        label: const Text('Delete', style: TextStyle(color: AppTheme.danger, fontSize: 11, fontWeight: FontWeight.bold)),
                         onPressed: () => _deleteUserPrompt(u),
                       ),
                   ],
@@ -781,11 +802,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
 
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isPending ? const Color(0xFFF59E0B).withValues(alpha: 0.4) : Colors.white10),
-          ),
+          decoration: AppTheme.cardDecoration(customBorder: Border.all(color: isPending ? AppTheme.warning.withValues(alpha: 0.5) : AppTheme.border)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -796,6 +813,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                     height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.border, width: 1.5),
                       image: DecorationImage(image: NetworkImage(emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'), fit: BoxFit.cover),
                     ),
                   ),
@@ -804,30 +822,38 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(emp['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name']})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 11)),
-                        Text('Aadhaar: ${emp['aadhaar_no']} • Medical: ${emp['medical_validity']}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                        Text(emp['full_name'] ?? '', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('${emp['employee_id']} • ${emp['designation']} (${emp['vendor_name']})', style: const TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w600)),
+                        Text('Aadhaar: ${emp['aadhaar_no']} • Medical: ${emp['medical_validity']}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 10.5)),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit, color: Color(0xFF6366F1), size: 20),
+                    icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20),
                     onPressed: () => _openEditWorkerModal(emp),
                   ),
                 ],
               ),
               if (isPending) ...[
                 const SizedBox(height: 8),
-                const Divider(color: Colors.white10, height: 1),
+                const Divider(color: AppTheme.border, height: 1),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Stage: $stage', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 11, fontWeight: FontWeight.bold)),
+                    Expanded(
+                      child: Text(
+                        'Stage: $stage',
+                        style: const TextStyle(color: AppTheme.warning, fontSize: 11, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: AppTheme.success,
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       icon: const Icon(Icons.verified, size: 14, color: Colors.white),
                       label: const Text('Authorize & Issue ID', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
@@ -853,28 +879,28 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
         final vnd = _vendors[idx];
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+          decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
           child: Row(
             children: [
               Container(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(color: const Color(0xFF06B6D4).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.business, color: Color(0xFF06B6D4)),
+                decoration: BoxDecoration(color: AppTheme.primarySubtle, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.business, color: AppTheme.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(vnd['company_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('${vnd['vendor_id']} • Owner: ${vnd['owner_name']} (${vnd['phone']})', style: const TextStyle(color: Colors.white54, fontSize: 11)),
-                    Text('Contract: ${vnd['contract_start']} to ${vnd['contract_end']}', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                    Text(vnd['company_name'] ?? '', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text('${vnd['vendor_id']} • Owner: ${vnd['owner_name']} (${vnd['phone']})', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                    Text('Contract: ${vnd['contract_start']} to ${vnd['contract_end']}', style: const TextStyle(color: AppTheme.textMuted, fontSize: 10)),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.edit, color: Color(0xFF06B6D4), size: 20),
+                icon: const Icon(Icons.edit, color: AppTheme.primary, size: 20),
                 onPressed: () => _openEditVendorModal(vnd),
               ),
             ],
@@ -896,24 +922,24 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
 
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+          decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(p['permit_number'] ?? '', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text(p['permit_number'] ?? '', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 12)),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: isApproved ? Colors.green.withValues(alpha: 0.15) : Colors.orange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
-                    child: Text(p['status'] ?? '', style: TextStyle(color: isApproved ? Colors.greenAccent : Colors.orangeAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: AppTheme.badgeDecoration(color: isApproved ? AppTheme.success : AppTheme.warning),
+                    child: Text(p['status'] ?? '', style: TextStyle(color: isApproved ? AppTheme.success : AppTheme.warning, fontSize: 10.5, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-              Text(p['permit_type'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('Location: ${p['location_zone']} • Contractor: ${p['vendor_name']}', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+              Text(p['permit_type'] ?? '', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+              Text('Location: ${p['location_zone']} • Contractor: ${p['vendor_name']}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -924,14 +950,14 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
                         await ApiService.approvePermit(p['id']);
                         _loadAllMasterData();
                       },
-                      child: const Text('Force Approve', style: TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: const Text('Force Approve', style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
                   TextButton(
                     onPressed: () async {
                       await ApiService.deletePermit(p['id']);
                       _loadAllMasterData();
                     },
-                    child: const Text('Delete Permit', style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: const Text('Delete Permit', style: TextStyle(color: AppTheme.danger, fontSize: 11, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -952,21 +978,21 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
         final log = _auditLogs[idx];
         return Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+          decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(log['action_type'] ?? 'AUDIT', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 11)),
-                  Text(log['timestamp'] != null ? log['timestamp'].toString().split('T').first : '', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                  Text(log['action_type'] ?? 'AUDIT', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 11)),
+                  Text(log['timestamp'] != null ? log['timestamp'].toString().split('T').first : '', style: const TextStyle(color: AppTheme.textMuted, fontSize: 10)),
                 ],
               ),
               const SizedBox(height: 4),
-              Text(log['details'] ?? '', style: const TextStyle(color: Colors.white, fontSize: 12)),
+              Text(log['details'] ?? '', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 12, fontWeight: FontWeight.w500)),
               const SizedBox(height: 4),
-              Text('By: ${log['user_name']} (${log['user_role']})', style: const TextStyle(color: Color(0xFF06B6D4), fontSize: 10)),
+              Text('By: ${log['user_name']} (${log['user_role']})', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10.5)),
             ],
           ),
         );

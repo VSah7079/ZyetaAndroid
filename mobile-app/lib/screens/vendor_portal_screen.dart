@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 
 class VendorPortalScreen extends StatefulWidget {
   const VendorPortalScreen({super.key});
@@ -1230,48 +1231,48 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
     final activePermitsCount = _myPermits.where((p) => p['status'] == 'Active' || p['status'] == 'Approved').length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080C15),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.verified, color: Color(0xFF06B6D4), size: 18),
+                const Icon(Icons.verified, color: AppTheme.primary, size: 18),
                 const SizedBox(width: 6),
                 const Text(
                   'Contractor Portal',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
                 ),
               ],
             ),
             Text(
               user?.fullName ?? 'ABC Infra Projects Pvt Ltd',
-              style: const TextStyle(fontSize: 11, color: Color(0xFF38BDF8)),
+              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
             ),
           ],
         ),
         actions: [
           IconButton(
             tooltip: 'Export Attendance CSV',
-            icon: const Icon(Icons.file_download, color: Color(0xFF10B981)),
+            icon: const Icon(Icons.file_download, color: AppTheme.success),
             onPressed: _downloadAttendanceReport,
           ),
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: _loadVendorData,
           ),
           const LogoutIconButton(),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF06B6D4),
+          indicatorColor: AppTheme.primary,
           indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white54,
+          labelColor: AppTheme.primary,
+          unselectedLabelColor: AppTheme.textSecondary,
           isScrollable: true,
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           tabs: [
@@ -1283,32 +1284,33 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF06B6D4),
+        backgroundColor: AppTheme.primary,
         icon: const Icon(Icons.person_add, color: Colors.white),
         label: const Text('Register Worker', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         onPressed: _openEmployeeRegistrationModal,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : Column(
               children: [
-                // Top Contractor Metrics Banner with Glowing Card
+                // Top Contractor Metrics Banner
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF111827),
-                    border: Border(bottom: BorderSide(color: Colors.white10)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(bottom: BorderSide(color: AppTheme.border)),
+                    boxShadow: AppTheme.softShadow,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildSummaryItem('TOTAL WORKFORCE', '$totalWorkers', Colors.blueAccent),
+                      _buildSummaryItem('TOTAL WORKFORCE', '$totalWorkers', AppTheme.primary),
                       _buildDivider(),
-                      _buildSummaryItem('INSIDE CAMPUS', '$insideCount', Colors.greenAccent),
+                      _buildSummaryItem('INSIDE CAMPUS', '$insideCount', AppTheme.success),
                       _buildDivider(),
-                      _buildSummaryItem('ID APPROVALS', '$pendingClearanceCount', pendingClearanceCount > 0 ? const Color(0xFFF59E0B) : Colors.white54),
+                      _buildSummaryItem('ID APPROVALS', '$pendingClearanceCount', pendingClearanceCount > 0 ? AppTheme.warning : AppTheme.textSecondary),
                       _buildDivider(),
-                      _buildSummaryItem('ACTIVE PTWs', '$activePermitsCount', const Color(0xFF10B981)),
+                      _buildSummaryItem('ACTIVE PTWs', '$activePermitsCount', const Color(0xFF0284C7)),
                     ],
                   ),
                 ),
@@ -2339,14 +2341,17 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
   Widget _buildSummaryItem(String label, String value, Color color) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color)),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(value, style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: color)),
+        ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 9, color: Colors.white54, fontWeight: FontWeight.bold)),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 9, color: AppTheme.textMuted, fontWeight: FontWeight.bold)),
       ],
     );
   }
 
   Widget _buildDivider() {
-    return Container(width: 1, height: 24, color: Colors.white12);
+    return Container(width: 1, height: 24, color: AppTheme.border);
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 
 class VendorScreen extends StatefulWidget {
   const VendorScreen({super.key});
@@ -1640,23 +1641,23 @@ class _VendorScreenState extends State<VendorScreen> {
     final pendingPermits = stats['pending_permits'] ?? 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080C15),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Contractor Command Hub', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            const Text('Contractor Command Hub', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
             Row(
               children: [
                 Container(
                   width: 7,
                   height: 7,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF10B981)),
+                  decoration: const BoxDecoration(shape: BoxShape.circle, color: AppTheme.success),
                 ),
                 const SizedBox(width: 5),
-                const Text('GATE SYNCHRONIZED • REALTIME', style: TextStyle(fontSize: 9.5, color: Color(0xFF10B981), fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                const Text('GATE SYNCHRONIZED • REALTIME', style: TextStyle(fontSize: 9.5, color: AppTheme.success, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
               ],
             ),
           ],
@@ -1664,16 +1665,16 @@ class _VendorScreenState extends State<VendorScreen> {
         actions: [
           IconButton(
             tooltip: 'Refresh All',
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: () => _fetchVendors(_selectedVendorId),
           ),
           const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF06B6D4),
-        icon: const Icon(Icons.add_business, color: Colors.black),
-        label: const Text('Add Contractor', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+        backgroundColor: AppTheme.primary,
+        icon: const Icon(Icons.add_business, color: Colors.white),
+        label: const Text('Add Contractor', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         onPressed: _openOnboardVendorModal,
       ),
       body: _isLoading
@@ -1871,48 +1872,68 @@ class _VendorScreenState extends State<VendorScreen> {
     required int activePermits,
     required int pendingPermits,
   }) {
+    final tile1 = _buildMetricTile(
+      'TODAY ON-SITE',
+      '$today',
+      'Manpower present',
+      const Color(0xFF06B6D4),
+      Icons.access_time_filled,
+      trend: '+12% shift',
+    );
+    final tile2 = _buildMetricTile(
+      'TOTAL WORKFORCE',
+      '$totalWorkers',
+      'Registered crew',
+      const Color(0xFF818CF8),
+      Icons.groups,
+    );
+    final tile3 = _buildMetricTile(
+      '3-TIER APPROVALS',
+      '$pendingApprovals',
+      pendingApprovals > 0 ? 'Action required' : 'All cleared',
+      pendingApprovals > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+      Icons.verified_user,
+    );
+    final tile4 = _buildMetricTile(
+      'ACTIVE PTWs',
+      '$activePermits',
+      pendingPermits > 0 ? '$pendingPermits pending' : 'Valid',
+      const Color(0xFFF97316),
+      Icons.assignment,
+    );
+
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    if (isMobile) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: tile1),
+              const SizedBox(width: 8),
+              Expanded(child: tile2),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: tile3),
+              const SizedBox(width: 8),
+              Expanded(child: tile4),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
-        Expanded(
-          child: _buildMetricTile(
-            'TODAY ON-SITE',
-            '$today',
-            'Manpower present',
-            const Color(0xFF06B6D4),
-            Icons.access_time_filled,
-            trend: '+12% shift',
-          ),
-        ),
+        Expanded(child: tile1),
         const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricTile(
-            'TOTAL WORKFORCE',
-            '$totalWorkers',
-            'Registered crew',
-            const Color(0xFF818CF8),
-            Icons.groups,
-          ),
-        ),
+        Expanded(child: tile2),
         const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricTile(
-            '3-TIER APPROVALS',
-            '$pendingApprovals',
-            pendingApprovals > 0 ? 'Action required' : 'All cleared',
-            pendingApprovals > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-            Icons.verified_user,
-          ),
-        ),
+        Expanded(child: tile3),
         const SizedBox(width: 8),
-        Expanded(
-          child: _buildMetricTile(
-            'ACTIVE PTWs',
-            '$activePermits',
-            pendingPermits > 0 ? '$pendingPermits pending' : 'Valid',
-            const Color(0xFFF97316),
-            Icons.assignment,
-          ),
-        ),
+        Expanded(child: tile4),
       ],
     );
   }
@@ -1931,12 +1952,23 @@ class _VendorScreenState extends State<VendorScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(color: color, fontSize: 9.5, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(color: color, fontSize: 9.5, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 14),
             ],
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+          ),
+          const SizedBox(height: 2),
           Text(sub, style: const TextStyle(color: Colors.white38, fontSize: 9), maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 import 'main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -64,16 +65,16 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+              side: const BorderSide(color: AppTheme.border, width: 1),
             ),
             title: const Row(
               children: [
-                Icon(Icons.dns, color: Color(0xFF06B6D4), size: 22),
+                Icon(Icons.dns, color: AppTheme.primary, size: 22),
                 SizedBox(width: 8),
-                Text('Server Configuration', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                Text('Server Configuration', style: TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
               ],
             ),
             content: Column(
@@ -82,23 +83,25 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Text(
                   'Configure the backend API URL for this mobile terminal:',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: serverController,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'http://10.64.56.201:5000/api',
-                    hintStyle: const TextStyle(color: Colors.white38),
+                    hintStyle: const TextStyle(color: AppTheme.textMuted),
                     filled: true,
-                    fillColor: const Color(0xFF070B14),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                    prefixIcon: const Icon(Icons.link, color: Color(0xFF06B6D4), size: 18),
+                    fillColor: const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
+                    prefixIcon: const Icon(Icons.link, color: AppTheme.primary, size: 18),
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Quick Presets:', style: TextStyle(color: Colors.white54, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                const Text('Quick Presets:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 10.5, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
@@ -114,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     testStatus!,
                     style: TextStyle(
-                      color: testStatus!.contains('✅') ? Colors.greenAccent : Colors.redAccent,
+                      color: testStatus!.contains('✅') ? AppTheme.success : AppTheme.danger,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -138,8 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                       },
                 child: isTesting
-                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Test Connection', style: TextStyle(color: Color(0xFF06B6D4), fontWeight: FontWeight.bold)),
+                    ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
+                    : const Text('Test Connection', style: TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -149,12 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Server URL set to: ${ApiService.baseUrl}'),
-                      backgroundColor: const Color(0xFF06B6D4),
+                      backgroundColor: AppTheme.primary,
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF06B6D4),
+                  backgroundColor: AppTheme.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 child: const Text('Save & Apply', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -168,9 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildPresetChip(String label, String url, TextEditingController controller, StateSetter setDialogState) {
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 10.5, color: Colors.white70)),
-      backgroundColor: const Color(0xFF1E293B),
-      side: const BorderSide(color: Color(0xFF334155)),
+      label: Text(label, style: const TextStyle(fontSize: 10.5, color: AppTheme.textSecondary)),
+      backgroundColor: const Color(0xFFF1F5F9),
+      side: const BorderSide(color: AppTheme.border),
       onPressed: () {
         setDialogState(() {
           controller.text = url;
@@ -182,281 +185,290 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
+      backgroundColor: AppTheme.bgPrimary,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Top Server Status Indicator Button
-                Align(
-                  alignment: Alignment.topRight,
-                  child: InkWell(
-                    onTap: _showServerConfigDialog,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4)),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Top Server Status Indicator Pill
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: InkWell(
+                      onTap: _showServerConfigDialog,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppTheme.border),
+                          boxShadow: AppTheme.softShadow,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppTheme.success,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              ApiService.baseUrl.replaceFirst('http://', '').replaceFirst('/api', ''),
+                              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Modern Minimal Brand Icon
+                  Container(
+                    width: 76,
+                    height: 76,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: AppTheme.mediumShadow,
+                      border: Border.all(color: AppTheme.primaryLight, width: 2),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.asset(
+                        'assets/app_logo.jpg',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                            ),
+                          ),
+                          child: const Icon(Icons.shield, color: Colors.white, size: 38),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  const Text(
+                    'ZyetaGate OS',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'WORKFORCE, VENDOR & TURNSTILE HUB',
+                        style: TextStyle(color: AppTheme.primary, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 0.6),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.dangerBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppTheme.dangerBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.dns, size: 14, color: Color(0xFF06B6D4)),
-                          const SizedBox(width: 6),
-                          Text(
-                            ApiService.baseUrl.replaceFirst('http://', '').replaceFirst('/api', ''),
-                            style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              const Icon(Icons.error_outline, color: AppTheme.danger, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(_errorMessage!, style: const TextStyle(color: AppTheme.danger, fontSize: 12.5, fontWeight: FontWeight.w600)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: _showServerConfigDialog,
+                            child: const Text(
+                              '⚙️ Check Server IP or connection settings',
+                              style: TextStyle(color: AppTheme.primary, fontSize: 11, decoration: TextDecoration.underline),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
 
-                // Glowing Biometric Hologram Shield Logo
-                Container(
-                  width: 86,
-                  height: 86,
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(26),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF06B6D4), Color(0xFF6366F1), Color(0xFF10B981)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF06B6D4).withValues(alpha: 0.45),
-                        blurRadius: 30,
-                        spreadRadius: 2,
-                      )
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(23),
-                    child: Image.asset(
-                      'assets/app_logo.jpg',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+                  // Main Clean Card for Credentials
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: AppTheme.cardDecoration(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          controller: _userController,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                          decoration: InputDecoration(
+                            labelText: 'Username or Work Email',
+                            labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                            hintText: 'e.g. security_gate1',
+                            prefixIcon: const Icon(Icons.person_outline, color: AppTheme.primary, size: 20),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
                           ),
                         ),
-                        child: const Icon(Icons.shield, color: Color(0xFF06B6D4), size: 44),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-
-                const Text(
-                  'ZyetaGate OS',
-                  style: TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'TURNSTILE & WORKFORCE COMMAND SYSTEM',
-                      style: TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                if (_errorMessage != null)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 12.5)),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _passController,
+                          obscureText: _obscurePassword,
+                          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                            hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.primary, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: AppTheme.textMuted, size: 18),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                             ),
-                          ],
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.border)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
+                          ),
                         ),
-                        const SizedBox(height: 6),
-                        GestureDetector(
-                          onTap: _showServerConfigDialog,
-                          child: const Text(
-                            '⚙️ Tap here to check Server IP / Offline mode',
-                            style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11, decoration: TextDecoration.underline),
+                        const SizedBox(height: 18),
+
+                        // Sign In Action
+                        SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : () => _handleLogin(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 2,
+                              shadowColor: AppTheme.primary.withValues(alpha: 0.35),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : const Text(
+                                    'SIGN IN TO GATE TERMINAL',
+                                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5),
+                                  ),
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                // Form Fields
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: TextField(
-                    controller: _userController,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: const InputDecoration(
-                      hintText: 'Username or Email',
-                      hintStyle: TextStyle(color: Colors.white38, fontSize: 12.5),
-                      prefixIcon: Icon(Icons.person_outline, color: Color(0xFF06B6D4), size: 20),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: TextField(
-                    controller: _passController,
-                    obscureText: _obscurePassword,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: InputDecoration(
-                      hintText: 'Security Password',
-                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 12.5),
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF06B6D4), size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38, size: 18),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppTheme.border)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          'FAST ROLE DEMO (TAP TO TEST)',
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
                       ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    ),
+                      const Expanded(child: Divider(color: AppTheme.border)),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 14),
 
-                // Sign In Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : () => _handleLogin(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF06B6D4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 6,
-                      shadowColor: const Color(0xFF06B6D4).withValues(alpha: 0.4),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'SIGN IN TO GATE TERMINAL',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.8),
-                          ),
+                  // 5 Role Buttons formatted as clean compact cards
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildRoleButton(
+                          '👑 Super Admin',
+                          'Gate Pass Approval',
+                          const Color(0xFFD97706),
+                          const Color(0xFFFFFBEB),
+                          () => _handleLogin('superadmin', 'admin123'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildRoleButton(
+                          '🏢 Site Admin',
+                          'KYC & Verification',
+                          const Color(0xFF4F46E5),
+                          const Color(0xFFEEF2FF),
+                          () => _handleLogin('admin', 'admin123'),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
-                const SizedBox(height: 26),
-                Row(
-                  children: [
-                    const Expanded(child: Divider(color: Colors.white10)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        'FAST ROLE PRESETS (ONE-TAP DEMO)',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildRoleButton(
+                          '⛑️ Safety Officer (HSE)',
+                          'Medical Clearance',
+                          const Color(0xFFEA580C),
+                          const Color(0xFFFFF7ED),
+                          () => _handleLogin('safety_officer', 'safety123'),
+                        ),
                       ),
-                    ),
-                    const Expanded(child: Divider(color: Colors.white10)),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                // 5 ROLES PRESET BUTTONS
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildRoleButton(
-                        '👑 Super Admin',
-                        'Gate Pass Approval',
-                        const Color(0xFFF59E0B),
-                        () => _handleLogin('superadmin', 'admin123'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildRoleButton(
+                          '🏗️ Vendor Portal',
+                          'Workforce & Badges',
+                          const Color(0xFF0284C7),
+                          const Color(0xFFF0F9FF),
+                          () => _handleLogin('vendor_infra', 'vendor123'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildRoleButton(
-                        '🏢 Site Admin',
-                        'KYC & Verification',
-                        const Color(0xFF6366F1),
-                        () => _handleLogin('admin', 'admin123'),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildRoleButton(
+                          '🛡️ Security Guard',
+                          'Turnstile Scanner',
+                          const Color(0xFF059669),
+                          const Color(0xFFECFDF5),
+                          () => _handleLogin('security_gate1', 'security123'),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildRoleButton(
-                        '⛑️ Safety Officer (HSE)',
-                        'Medical Clearance',
-                        const Color(0xFFF97316),
-                        () => _handleLogin('safety_officer', 'safety123'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildRoleButton(
-                        '🏗️ Vendor Portal',
-                        'Workforce & Badges',
-                        const Color(0xFF06B6D4),
-                        () => _handleLogin('vendor_infra', 'vendor123'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildRoleButton(
-                        '🛡️ Security Guard',
-                        'Turnstile Scanner',
-                        const Color(0xFF10B981),
-                        () => _handleLogin('security_gate1', 'security123'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -464,23 +476,49 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRoleButton(String title, String subtitle, Color color, VoidCallback onTap) {
+  Widget _buildRoleButton(String title, String subtitle, Color color, Color bgColor, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.5)),
+          border: Border.all(color: AppTheme.border),
+          boxShadow: AppTheme.softShadow,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Text(title, style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 1),
-            Text(subtitle, style: const TextStyle(color: Colors.white38, fontSize: 9)),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(title.split(' ').first, style: const TextStyle(fontSize: 14)),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title.substring(title.indexOf(' ') + 1),
+                      style: TextStyle(color: color, fontSize: 11.5, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9.5),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

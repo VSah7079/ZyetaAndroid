@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
+import '../utils/responsive.dart';
 import 'employee_screen.dart';
 import 'permit_screen.dart';
 import 'gate_passes_hub_screen.dart';
@@ -125,7 +127,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -140,12 +142,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.business_center, color: Color(0xFF06B6D4)),
+                        Icon(Icons.business_center, color: AppTheme.primary),
                         SizedBox(width: 8),
-                        Text('Onboard Contractor & Generate Login', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('Onboard Contractor & Generate Login', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -176,7 +178,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                const Text('PORTAL USER LOGIN CREDENTIALS', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                const Text('PORTAL USER LOGIN CREDENTIALS', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -191,7 +193,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF06B6D4),
+                      backgroundColor: AppTheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     onPressed: isSaving
@@ -249,40 +251,44 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(Icons.check_circle, color: Color(0xFF10B981)),
+            Icon(Icons.check_circle, color: AppTheme.success),
             SizedBox(width: 8),
-            Text('Contractor Login Created!', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('Contractor Login Created!', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Vendor Account for "$companyName" is active. Share these credentials for Vendor Self-Service Portal access:', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text('Vendor Account for "$companyName" is active. Share these credentials for Vendor Self-Service Portal access:', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3))),
+              decoration: BoxDecoration(
+                color: AppTheme.bgSurface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.border),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Username:', style: TextStyle(color: Colors.white54, fontSize: 12)),
-                      Text(username, style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 13)),
+                      const Text('Username:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                      Text(username, style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Password:', style: TextStyle(color: Colors.white54, fontSize: 12)),
-                      Text(password, style: const TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 13)),
+                      const Text('Password:', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                      Text(password, style: const TextStyle(color: AppTheme.success, fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
                 ],
@@ -296,11 +302,11 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
               Clipboard.setData(ClipboardData(text: 'Username: $username\nPassword: $password'));
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Credentials copied to clipboard!'), backgroundColor: Colors.green));
             },
-            icon: const Icon(Icons.copy, size: 16, color: Color(0xFF38BDF8)),
-            label: const Text('Copy', style: TextStyle(color: Color(0xFF38BDF8))),
+            icon: const Icon(Icons.copy, size: 16, color: AppTheme.primary),
+            label: const Text('Copy', style: TextStyle(color: AppTheme.primary)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06B6D4)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Done', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
@@ -321,7 +327,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -336,12 +342,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.person_add, color: Color(0xFF6366F1)),
+                        Icon(Icons.person_add, color: AppTheme.primary),
                         SizedBox(width: 8),
-                        Text('Enroll Worker for Contractor', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('Enroll Worker for Contractor', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -361,7 +367,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     onPressed: isSaving
                         ? null
                         : () async {
@@ -408,7 +414,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -423,12 +429,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.local_fire_department, color: Color(0xFFF59E0B)),
+                        Icon(Icons.local_fire_department, color: AppTheme.warning),
                         SizedBox(width: 8),
-                        Text('Issue Permit to Work (PTW)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('Issue Permit to Work (PTW)', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -442,7 +448,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     onPressed: isSaving
                         ? null
                         : () async {
@@ -466,7 +472,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                           },
                     child: isSaving
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('ISSUE WORK PERMIT (PTW)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+                        : const Text('ISSUE WORK PERMIT (PTW)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -488,7 +494,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
@@ -503,12 +509,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.inventory_2, color: Color(0xFF10B981)),
+                        Icon(Icons.inventory_2, color: AppTheme.success),
                         SizedBox(width: 8),
-                        Text('Material Delivery Pass (DC)', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('Material Delivery Pass (DC)', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
-                    IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -528,7 +534,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                     onPressed: isSaving
                         ? null
                         : () async {
@@ -569,15 +575,17 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
       controller: ctrl,
       keyboardType: keyboardType,
       onChanged: onChanged,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
       decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+        labelText: hint,
+        labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+        prefixIcon: Icon(icon, color: AppTheme.primary, size: 18),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: AppTheme.bgSurface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
       ),
     );
   }
@@ -597,57 +605,60 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     final isDeltaUp = manpowerDelta >= 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Site Admin: Contractor Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text('Site Admin: Contractor Hub', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: () => _fetchVendors(_selectedVendorId),
           ),
           const LogoutIconButton(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF06B6D4),
+        backgroundColor: AppTheme.primary,
         icon: const Icon(Icons.add_business, color: Colors.white),
         label: const Text('New Contractor', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         onPressed: _openOnboardVendorModal,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : _vendors.isEmpty
-              ? const Center(child: Text('No registered contractors', style: TextStyle(color: Colors.white54)))
+              ? const Center(child: Text('No registered contractors', style: TextStyle(color: AppTheme.textSecondary)))
               : Column(
                   children: [
                     // TOP CONTRACTOR DROPDOWN SELECTOR
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      color: const Color(0xFF0F172A),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(bottom: BorderSide(color: AppTheme.border)),
+                      ),
                       child: Row(
                         children: [
-                          const Icon(Icons.business, color: Color(0xFF06B6D4), size: 20),
+                          const Icon(Icons.business, color: AppTheme.primary, size: 20),
                           const SizedBox(width: 8),
-                          const Text('Contractor:', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 13)),
+                          const Text('Contractor:', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold, fontSize: 13)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
+                                color: AppTheme.bgSurface,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
+                                border: Border.all(color: AppTheme.border),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<int>(
                                   value: _selectedVendorId,
-                                  dropdownColor: const Color(0xFF1E293B),
+                                  dropdownColor: Colors.white,
                                   isExpanded: true,
-                                  style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 14),
-                                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF38BDF8)),
+                                  style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                                  icon: const Icon(Icons.arrow_drop_down, color: AppTheme.primary),
                                   items: _vendors.map<DropdownMenuItem<int>>((v) {
                                     return DropdownMenuItem<int>(
                                       value: v['id'] as int,
@@ -673,192 +684,187 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
 
                     Expanded(
                       child: _isDetailsLoading
-                          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
-                          : ListView(
-                              padding: const EdgeInsets.all(14),
-                              children: [
-                                // CONTRACTOR PROFILE HEADER CARD
-                                Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1E293B),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: Colors.white10),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              _selectedVendorDetails?['company_name'] ?? 'Contractor',
-                                              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                          : ResponsiveBody(
+                              padding: EdgeInsets.zero,
+                              child: ListView(
+                                padding: const EdgeInsets.all(14),
+                                children: [
+                                  // CONTRACTOR PROFILE HEADER CARD
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                _selectedVendorDetails?['company_name'] ?? 'Contractor',
+                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                                              ),
                                             ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: AppTheme.badgeDecoration(color: AppTheme.success),
+                                              child: const Text('ACTIVE', style: TextStyle(color: AppTheme.success, fontSize: 10.5, fontWeight: FontWeight.bold)),
                                             ),
-                                            child: const Text('ACTIVE', style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        'Rep: ${_selectedVendorDetails?['owner_name'] ?? _selectedVendorDetails?['contact_person'] ?? 'N/A'} • ${_selectedVendorDetails?['phone'] ?? 'N/A'}',
-                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'GSTIN: ${_selectedVendorDetails?['gst_pan'] ?? _selectedVendorDetails?['gstin'] ?? '29ABCDE1234F1Z5'}',
-                                        style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      // ACTION SHORTCUT BUTTONS
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
-                                        children: [
-                                          _buildActionBtn('Add Worker', Icons.person_add, const Color(0xFF6366F1), _openAddWorkerModal),
-                                          _buildActionBtn('Issue PTW', Icons.local_fire_department, const Color(0xFFF59E0B), _openIssuePermitModal),
-                                          _buildActionBtn('Material DC', Icons.inventory_2, const Color(0xFF10B981), _openCreateMaterialModal),
-                                        ],
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Rep: ${_selectedVendorDetails?['owner_name'] ?? _selectedVendorDetails?['contact_person'] ?? 'N/A'} • ${_selectedVendorDetails?['phone'] ?? 'N/A'}',
+                                          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'GSTIN: ${_selectedVendorDetails?['gst_pan'] ?? _selectedVendorDetails?['gstin'] ?? '29ABCDE1234F1Z5'}',
+                                          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        // ACTION SHORTCUT BUTTONS
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            _buildActionBtn('Add Worker', Icons.person_add, AppTheme.primary, _openAddWorkerModal),
+                                            _buildActionBtn('Issue PTW', Icons.local_fire_department, AppTheme.warning, _openIssuePermitModal),
+                                            _buildActionBtn('Material DC', Icons.inventory_2, AppTheme.success, _openCreateMaterialModal),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
 
-                                const SizedBox(height: 14),
+                                  const SizedBox(height: 14),
 
-                                // MANPOWER & KPI METRICS GRID
-                                Row(
-                                  children: [
-                                    // TODAY MANPOWER
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Today Manpower',
-                                        '$todayManpower',
-                                        isDeltaUp ? '+$manpowerDelta vs y\'day' : '$manpowerDelta vs y\'day',
-                                        const Color(0xFF06B6D4),
-                                        Icons.access_time_filled,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    // YESTERDAY MANPOWER
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Y\'day Manpower',
-                                        '$yesterdayManpower',
-                                        'Previous muster',
-                                        Colors.blueGrey,
-                                        Icons.calendar_today,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Total Workforce',
-                                        '$totalWorkers',
-                                        'Registered',
-                                        const Color(0xFF818CF8),
-                                        Icons.people,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Worker Approvals',
-                                        '$pendingApprovals',
-                                        pendingApprovals > 0 ? 'Pending review' : 'All approved',
-                                        pendingApprovals > 0 ? const Color(0xFFF59E0B) : Colors.white54,
-                                        Icons.how_to_reg,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Active PTWs',
-                                        '$activePermits',
-                                        pendingPermits > 0 ? '$pendingPermits pending' : 'Valid permits',
-                                        const Color(0xFFF97316),
-                                        Icons.assignment,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: _buildMetricCard(
-                                        'Total DC Passes',
-                                        '$totalDc',
-                                        'Inward / Out',
-                                        const Color(0xFF10B981),
-                                        Icons.local_shipping,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 18),
-
-                                // INTERCONNECTED MODULE SHORTCUTS
-                                const Text('INTERCONNECTED SITE MODULES', style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold)),
-                                const SizedBox(height: 8),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
+                                  // MANPOWER & KPI METRICS GRID
+                                  Row(
                                     children: [
-                                      _buildDeepLinkChip('👷 Workforce Hub', const Color(0xFF6366F1), () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeScreen()));
-                                      }),
-                                      _buildDeepLinkChip('📋 PTW Hub', const Color(0xFFF59E0B), () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => const PermitScreen()));
-                                      }),
-                                      _buildDeepLinkChip('🚪 Gate Passes', const Color(0xFF10B981), () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen()));
-                                      }),
-                                      _buildDeepLinkChip('📊 Attendance', const Color(0xFF06B6D4), () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
-                                      }),
-                                      _buildDeepLinkChip('⛑️ HSE Safety', const Color(0xFFEF4444), () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => const SafetyOfficerScreen()));
-                                      }),
+                                      // TODAY MANPOWER
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Today Manpower',
+                                          '$todayManpower',
+                                          isDeltaUp ? '+$manpowerDelta vs y\'day' : '$manpowerDelta vs y\'day',
+                                          AppTheme.primary,
+                                          Icons.access_time_filled,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      // YESTERDAY MANPOWER
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Y\'day Manpower',
+                                          '$yesterdayManpower',
+                                          'Previous muster',
+                                          AppTheme.textSecondary,
+                                          Icons.calendar_today,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ),
-
-                                const SizedBox(height: 16),
-
-                                // SEGMENTED TAB SELECTOR
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
+                                  const SizedBox(height: 10),
+                                  Row(
                                     children: [
-                                      _buildSegmentTab(0, 'Workers & Approvals', Icons.people, pendingApprovals),
-                                      _buildSegmentTab(1, 'PTW Permits', Icons.local_fire_department, pendingPermits),
-                                      _buildSegmentTab(2, 'Live Muster', Icons.access_time, 0),
-                                      _buildSegmentTab(3, 'DC Movements', Icons.inventory_2, 0),
-                                      _buildSegmentTab(4, 'Safety & Vehicles', Icons.shield, 0),
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Total Workforce',
+                                          '$totalWorkers',
+                                          'Registered',
+                                          const Color(0xFF6366F1),
+                                          Icons.people,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Worker Approvals',
+                                          '$pendingApprovals',
+                                          pendingApprovals > 0 ? 'Pending review' : 'All approved',
+                                          pendingApprovals > 0 ? AppTheme.warning : AppTheme.success,
+                                          Icons.how_to_reg,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Active PTWs',
+                                          '$activePermits',
+                                          pendingPermits > 0 ? '$pendingPermits pending' : 'Valid permits',
+                                          const Color(0xFFEA580C),
+                                          Icons.assignment,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: _buildMetricCard(
+                                          'Total DC Passes',
+                                          '$totalDc',
+                                          'Inward / Out',
+                                          AppTheme.success,
+                                          Icons.local_shipping,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
 
-                                const SizedBox(height: 12),
+                                  const SizedBox(height: 18),
 
-                                // TAB DETAILS VIEW
-                                _buildCurrentTabView(),
-                              ],
+                                  // INTERCONNECTED MODULE SHORTCUTS
+                                  const Text('INTERCONNECTED SITE MODULES', style: TextStyle(color: AppTheme.textMuted, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                  const SizedBox(height: 8),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        _buildDeepLinkChip('👷 Workforce Hub', AppTheme.primary, () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeScreen()));
+                                        }),
+                                        _buildDeepLinkChip('📋 PTW Hub', AppTheme.warning, () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => const PermitScreen()));
+                                        }),
+                                        _buildDeepLinkChip('🚪 Gate Passes', AppTheme.success, () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen()));
+                                        }),
+                                        _buildDeepLinkChip('📊 Attendance', const Color(0xFF0284C7), () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+                                        }),
+                                        _buildDeepLinkChip('⛑️ HSE Safety', AppTheme.danger, () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => const SafetyOfficerScreen()));
+                                        }),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // SEGMENTED TAB SELECTOR
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        _buildSegmentTab(0, 'Workers & Approvals', Icons.people, pendingApprovals),
+                                        _buildSegmentTab(1, 'PTW Permits', Icons.local_fire_department, pendingPermits),
+                                        _buildSegmentTab(2, 'Live Muster', Icons.access_time, 0),
+                                        _buildSegmentTab(3, 'DC Movements', Icons.inventory_2, 0),
+                                        _buildSegmentTab(4, 'Safety & Vehicles', Icons.shield, 0),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  // TAB DETAILS VIEW
+                                  _buildCurrentTabView(),
+                                ],
+                              ),
                             ),
                     ),
                   ],
@@ -870,8 +876,8 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     return Container(
       margin: const EdgeInsets.only(right: 8),
       child: ActionChip(
-        backgroundColor: color.withValues(alpha: 0.15),
-        side: BorderSide(color: color.withValues(alpha: 0.4)),
+        backgroundColor: color.withValues(alpha: 0.1),
+        side: BorderSide(color: color.withValues(alpha: 0.3)),
         label: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
         onPressed: onTap,
       ),
@@ -881,24 +887,31 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
   Widget _buildMetricCard(String label, String val, String sub, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
+      decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 16),
             ],
           ),
           const SizedBox(height: 4),
-          Text(val, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-          Text(sub, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(val, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.w900)),
+          ),
+          const SizedBox(height: 2),
+          Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10)),
         ],
       ),
     );
@@ -913,21 +926,21 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF06B6D4).withValues(alpha: 0.2) : const Color(0xFF1E293B),
+          color: isSelected ? AppTheme.primary : AppTheme.bgSurface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent),
+          border: Border.all(color: isSelected ? AppTheme.primary : AppTheme.border),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF06B6D4) : Colors.white54, size: 15),
+            Icon(icon, color: isSelected ? Colors.white : AppTheme.textSecondary, size: 15),
             const SizedBox(width: 6),
-            Text(title, style: TextStyle(color: isSelected ? Colors.white : Colors.white70, fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+            Text(title, style: TextStyle(color: isSelected ? Colors.white : AppTheme.textSecondary, fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500)),
             if (badgeCount > 0) ...[
               const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(10)),
-                child: Text('$badgeCount', style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(color: isSelected ? Colors.white : AppTheme.warning, borderRadius: BorderRadius.circular(10)),
+                child: Text('$badgeCount', style: TextStyle(color: isSelected ? AppTheme.primary : Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
             ],
           ],
@@ -943,7 +956,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
@@ -973,37 +986,37 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                color: AppTheme.warning.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.3)),
+                border: Border.all(color: AppTheme.warning.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pending Approvals Queue', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 13, fontWeight: FontWeight.bold)),
+                  const Text('Pending Approvals Queue', style: TextStyle(color: AppTheme.warning, fontSize: 13, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   ...pendingList.map((emp) => Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(10)),
+                        decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
                         child: Row(
                           children: [
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                                  Text('${emp['employee_id'] ?? ''} • ${emp['designation'] ?? 'Technician'}', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                                  Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
+                                  Text('${emp['employee_id'] ?? ''} • ${emp['designation'] ?? 'Technician'}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                                 ],
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.check_circle, color: Colors.greenAccent),
+                              icon: const Icon(Icons.check_circle, color: AppTheme.success),
                               onPressed: () => _approveWorker(emp['id']),
                               tooltip: 'Approve',
                             ),
                             IconButton(
-                              icon: const Icon(Icons.cancel, color: Colors.redAccent),
+                              icon: const Icon(Icons.cancel, color: AppTheme.danger),
                               onPressed: () => _rejectWorker(emp['id']),
                               tooltip: 'Reject',
                             ),
@@ -1017,32 +1030,29 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
           ...empList.map((emp) => Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+                decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
                 child: Row(
                   children: [
                     CircleAvatar(
-                      backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                      child: const Icon(Icons.person, color: Color(0xFF6366F1)),
+                      backgroundColor: AppTheme.primarySubtle,
+                      child: const Icon(Icons.person, color: AppTheme.primary),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                          Text('${emp['employee_id'] ?? ''} • ${emp['designation'] ?? ''}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text('${emp['employee_id'] ?? ''} • ${emp['designation'] ?? ''}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                         ],
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: emp['currently_inside'] == 1 ? Colors.green.withValues(alpha: 0.15) : Colors.white10,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+                      decoration: AppTheme.badgeDecoration(color: emp['currently_inside'] == 1 ? AppTheme.success : AppTheme.textMuted),
                       child: Text(
                         emp['currently_inside'] == 1 ? 'INSIDE' : 'OUTSIDE',
-                        style: TextStyle(color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: emp['currently_inside'] == 1 ? AppTheme.success : AppTheme.textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
@@ -1053,7 +1063,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     } else if (_currentTab == 1) {
       // TAB 1: PERMITS TO WORK (PTW) & APPROVALS
       final permits = _selectedVendorDetails?['permits'] as List<dynamic>? ?? [];
-      if (permits.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('No permits found', style: TextStyle(color: Colors.white54))));
+      if (permits.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('No permits found', style: TextStyle(color: AppTheme.textSecondary))));
 
       return Column(
         children: permits.map((p) {
@@ -1061,37 +1071,41 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+            decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(p['permit_number'] ?? 'PTW', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13)),
-                    Text(p['status'] ?? 'Active', style: TextStyle(color: isPending ? Colors.amber : Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(p['permit_number'] ?? 'PTW', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: AppTheme.badgeDecoration(color: isPending ? AppTheme.warning : AppTheme.success),
+                      child: Text(p['status'] ?? 'Active', style: TextStyle(color: isPending ? AppTheme.warning : AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(p['permit_type'] ?? 'Work Permit', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                Text(p['location_zone'] ?? 'Main Zone', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                Text(p['permit_type'] ?? 'Work Permit', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(p['location_zone'] ?? 'Main Zone', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                 if (isPending) ...[
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                         onPressed: () => _approvePermit(p['id']),
                         icon: const Icon(Icons.check, size: 14, color: Colors.white),
-                        label: const Text('Approve', style: TextStyle(fontSize: 11, color: Colors.white)),
+                        label: const Text('Approve', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6)),
                         onPressed: () => _rejectPermit(p['id']),
-                        icon: const Icon(Icons.close, size: 14, color: Colors.redAccent),
-                        label: const Text('Reject', style: TextStyle(fontSize: 11, color: Colors.redAccent)),
+                        icon: const Icon(Icons.close, size: 14, color: AppTheme.danger),
+                        label: const Text('Reject', style: TextStyle(fontSize: 11, color: AppTheme.danger, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -1108,21 +1122,21 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
         children: empList.map((e) => Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+              decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
               child: Row(
                 children: [
-                  const Icon(Icons.access_time, color: Color(0xFF06B6D4), size: 20),
+                  const Icon(Icons.access_time, color: AppTheme.primary, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(e['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                        Text('In: 08:45 AM • Gate 1', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                        Text(e['full_name'] ?? 'Worker', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
+                        const Text('In: 08:45 AM • Gate 1', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                       ],
                     ),
                   ),
-                  Text(e['currently_inside'] == 1 ? 'Present (Inside)' : 'Completed', style: TextStyle(color: e['currently_inside'] == 1 ? Colors.greenAccent : Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text(e['currently_inside'] == 1 ? 'Present (Inside)' : 'Completed', style: TextStyle(color: e['currently_inside'] == 1 ? AppTheme.success : AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
                 ],
               ),
             )).toList(),
@@ -1134,20 +1148,24 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
         children: mats.map((m) => Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+              decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(m['dc_number'] ?? 'DC-PASS', style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 13)),
-                      Text(m['movement_type'] ?? 'INWARD', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(m['dc_number'] ?? 'DC-PASS', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: AppTheme.badgeDecoration(color: AppTheme.success),
+                        child: Text(m['movement_type'] ?? 'INWARD', style: const TextStyle(color: AppTheme.success, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(m['material_name'] ?? 'Material', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text('Qty: ${m['quantity']} • Veh: ${m['vehicle_number'] ?? 'N/A'}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                  Text(m['material_name'] ?? 'Material', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text('Qty: ${m['quantity']} • Veh: ${m['vehicle_number'] ?? 'N/A'}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                 ],
               ),
             )).toList(),
@@ -1160,45 +1178,49 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Safety Punches & Observations', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text('Safety Punches & Observations', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 8),
           if (punches.isEmpty)
-            const Text('Clean safety record (0 violations)', style: TextStyle(color: Colors.greenAccent, fontSize: 12))
+            const Text('Clean safety record (0 violations)', style: TextStyle(color: AppTheme.success, fontSize: 12, fontWeight: FontWeight.w600))
           else
             ...punches.map((pch) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+                  decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('● ${pch['color_type']} PUNCH: ${pch['category'] ?? 'Observation'}', style: TextStyle(color: pch['color_type'] == 'RED' ? Colors.redAccent : Colors.amber, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text('● ${pch['color_type']} PUNCH: ${pch['category'] ?? 'Observation'}', style: TextStyle(color: pch['color_type'] == 'RED' ? AppTheme.danger : AppTheme.warning, fontWeight: FontWeight.bold, fontSize: 12)),
                       const SizedBox(height: 4),
-                      Text(pch['reason'] ?? '', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(pch['reason'] ?? '', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                     ],
                   ),
                 )),
           const SizedBox(height: 14),
-          const Text('Registered Fleet Vehicles', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text('Registered Fleet Vehicles', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 8),
           ...vehicles.map((v) => Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(12)),
+                decoration: AppTheme.cardDecoration(customBorder: Border.all(color: AppTheme.border)),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_shipping, color: Color(0xFFA855F7), size: 20),
+                    const Icon(Icons.local_shipping, color: AppTheme.primary, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(v['vehicle_number'] ?? 'KA 04 E 9921', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                          Text('Driver: ${v['driver_name'] ?? 'N/A'}', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                          Text(v['vehicle_number'] ?? 'KA 04 E 9921', style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text('Driver: ${v['driver_name'] ?? 'N/A'}', style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
                         ],
                       ),
                     ),
-                    const Text('AUTHORIZED', style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: AppTheme.badgeDecoration(color: AppTheme.success),
+                      child: const Text('AUTHORIZED', style: TextStyle(color: AppTheme.success, fontSize: 10, fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
               )),

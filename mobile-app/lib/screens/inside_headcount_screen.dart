@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
+import '../utils/responsive.dart';
 import 'emergency_muster_screen.dart';
 
 class InsideHeadcountScreen extends StatefulWidget {
@@ -51,31 +53,35 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.exit_to_app, color: Colors.redAccent, size: 22),
+              decoration: AppTheme.badgeDecoration(
+                background: AppTheme.dangerBg,
+                borderColor: AppTheme.dangerBorder,
+                radius: 10,
+              ),
+              child: const Icon(Icons.exit_to_app_rounded, color: AppTheme.danger, size: 22),
             ),
             const SizedBox(width: 10),
-            const Text('Confirm Exit', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+            const Text('Confirm Exit', style: TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Text(
           'Mark "${item['name']}" (${item['code'] ?? 'ID'}) as checked OUT through Turnstile Exit Gate?',
-          style: const TextStyle(color: Colors.white70, fontSize: 13),
+          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF43F5E),
+              backgroundColor: AppTheme.danger,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
@@ -98,13 +104,13 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('✓ ${item['name']} successfully cleared OUT!'),
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: AppTheme.success,
         ),
       );
       _fetchInside();
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to record exit'), backgroundColor: Colors.red),
+        const SnackBar(content: Text('Failed to record exit'), backgroundColor: AppTheme.danger),
       );
     }
   }
@@ -136,327 +142,341 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
     final vehiclesInside = _insideList.where((i) => (i['type'] ?? '').toString().toLowerCase().contains('veh') || (i['type'] ?? '').toString().toLowerCase().contains('driver')).length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
             FadeTransition(
               opacity: _pulseAnimation,
               child: Container(
-                width: 10,
-                height: 10,
+                width: 9,
+                height: 9,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
+                  color: AppTheme.success,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: Color(0xFF10B981), blurRadius: 8, spreadRadius: 2)],
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            const Text('Live Headcount Telemetry', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+            const Expanded(
+              child: Text(
+                'Live Headcount Telemetry',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, letterSpacing: 0.3),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
           IconButton(
             tooltip: 'Emergency Muster Roll',
-            icon: const Icon(Icons.emergency, color: Colors.redAccent),
+            icon: const Icon(Icons.emergency_rounded, color: AppTheme.danger),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
             },
           ),
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh, color: Color(0xFF06B6D4)),
+            icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
             onPressed: _fetchInside,
           ),
           const LogoutIconButton(),
         ],
       ),
-      body: Column(
-        children: [
-          // RADAR TELEMETRY HERO BANNER
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              border: Border(bottom: BorderSide(color: const Color(0xFF06B6D4).withValues(alpha: 0.2))),
-            ),
-            child: Column(
-              children: [
-                // Live count summary row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Row(
+      body: ResponsiveBody(
+        child: Column(
+          children: [
+            // RADAR TELEMETRY HERO BANNER
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: AppTheme.cardDecoration(),
+              child: Column(
+                children: [
+                  // Live count summary row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.radar, color: Color(0xFF06B6D4), size: 14),
-                            SizedBox(width: 6),
-                            Text('ACTIVE PREMISES ROSTER', style: TextStyle(color: Colors.white54, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              '$totalInside',
-                              style: const TextStyle(color: Color(0xFF10B981), fontSize: 28, fontWeight: FontWeight.w900),
+                            const Row(
+                              children: [
+                                Icon(Icons.radar_rounded, color: AppTheme.primary, size: 16),
+                                SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'ACTIVE PREMISES ROSTER',
+                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.6),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 6),
-                            const Text('Souls Inside Site', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ],
-                    ),
-                    InkWell(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [Color(0xFFBE123C), Color(0xFF881337)]),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(color: Colors.red.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 3)),
-                          ],
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.warning_amber_rounded, color: Colors.white, size: 16),
-                            SizedBox(width: 6),
-                            Text('MUSTER SOS', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.8)),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  '$totalInside',
+                                  style: const TextStyle(color: AppTheme.success, fontSize: 32, fontWeight: FontWeight.w900),
+                                ),
+                                const SizedBox(width: 8),
+                                const Flexible(
+                                  child: Text(
+                                    'Souls Inside Site',
+                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // 3 METRIC TILES (Workers, Visitors, Vehicles)
-                Row(
-                  children: [
-                    _buildMetricTile('WORKERS', '$workersInside', const Color(0xFF06B6D4), Icons.engineering),
-                    const SizedBox(width: 8),
-                    _buildMetricTile('VISITORS', '$visitorsInside', const Color(0xFFF59E0B), Icons.badge),
-                    const SizedBox(width: 8),
-                    _buildMetricTile('VEHICLES', '$vehiclesInside', const Color(0xFF818CF8), Icons.local_shipping),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // SEARCH BAR
-                TextField(
-                  controller: _searchController,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                  decoration: InputDecoration(
-                    hintText: 'Search by Person Name, Badge Code, Contractor...',
-                    hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF06B6D4), size: 18),
-                    suffixIcon: _search.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear, color: Colors.white54, size: 16),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _search = '');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: const Color(0xFF131D31),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  ),
-                  onChanged: (val) => setState(() => _search = val.trim()),
-                ),
-                const SizedBox(height: 8),
-
-                // FILTER PILLS
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildPill('ALL', 'All Inside ($totalInside)'),
-                      _buildPill('WORKERS', '👷 Workers ($workersInside)'),
-                      _buildPill('VISITORS', '🪪 Visitors ($visitorsInside)'),
-                      _buildPill('VEHICLES', '🚛 Drivers ($vehiclesInside)'),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: AppTheme.badgeDecoration(
+                            background: AppTheme.dangerBg,
+                            borderColor: AppTheme.dangerBorder,
+                            radius: 10,
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.warning_amber_rounded, color: AppTheme.danger, size: 16),
+                              SizedBox(width: 6),
+                              Text('MUSTER SOS', style: TextStyle(color: AppTheme.danger, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+
+                  // 3 METRIC TILES (Workers, Visitors, Vehicles)
+                  Row(
+                    children: [
+                      _buildMetricTile('WORKERS', '$workersInside', const Color(0xFF0284C7), Icons.engineering_rounded),
+                      const SizedBox(width: 8),
+                      _buildMetricTile('VISITORS', '$visitorsInside', const Color(0xFFD97706), Icons.badge_rounded),
+                      const SizedBox(width: 8),
+                      _buildMetricTile('VEHICLES', '$vehiclesInside', const Color(0xFF9333EA), Icons.local_shipping_rounded),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // SEARCH BAR
+                  TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search by Person Name, Badge Code, Contractor...',
+                      hintStyle: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+                      prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 18),
+                      suffixIcon: _search.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, color: AppTheme.textSecondary, size: 16),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _search = '');
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AppTheme.bgSurface,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppTheme.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: AppTheme.border),
+                      ),
+                    ),
+                    onChanged: (val) => setState(() => _search = val.trim()),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // FILTER PILLS
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildPill('ALL', 'All Inside ($totalInside)'),
+                        _buildPill('WORKERS', '👷 Workers ($workersInside)'),
+                        _buildPill('VISITORS', '🪪 Visitors ($visitorsInside)'),
+                        _buildPill('VEHICLES', '🚛 Drivers ($vehiclesInside)'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          // LIST OF PERSONS CURRENTLY INSIDE
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
-                : filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(color: const Color(0xFF1E293B), shape: BoxShape.circle),
-                              child: const Icon(Icons.verified_user_outlined, size: 44, color: Color(0xFF06B6D4)),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text('No entities currently inside matching filter', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 4),
-                            const Text('Turnstile gate records synchronize in real-time', style: TextStyle(color: Colors.white38, fontSize: 11)),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async => _fetchInside(),
-                        color: const Color(0xFF06B6D4),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(14),
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, idx) {
-                            final item = filtered[idx];
-                            final type = (item['type'] ?? 'Employee').toString();
-                            final isWorker = type.toLowerCase().contains('emp') || type.toLowerCase().contains('worker');
-                            final isVisitor = type.toLowerCase().contains('vis');
-
-                            final accentColor = isWorker
-                                ? const Color(0xFF06B6D4)
-                                : isVisitor
-                                    ? const Color(0xFFF59E0B)
-                                    : const Color(0xFF818CF8);
-
-                            return Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF111827), Color(0xFF0B132B)],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: accentColor.withValues(alpha: 0.35)),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 3)),
-                                ],
+            // LIST OF PERSONS CURRENTLY INSIDE
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+                  : filtered.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(color: AppTheme.bgSurface, shape: BoxShape.circle),
+                                child: const Icon(Icons.verified_user_outlined, size: 40, color: AppTheme.primary),
                               ),
-                              child: Row(
-                                children: [
-                                  // Avatar
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: accentColor, width: 1.5),
-                                      color: accentColor.withValues(alpha: 0.12),
-                                    ),
-                                    child: Center(
-                                      child: Icon(
-                                        isWorker
-                                            ? Icons.engineering
-                                            : isVisitor
-                                                ? Icons.badge
-                                                : Icons.local_shipping,
-                                        color: accentColor,
-                                        size: 22,
+                              const SizedBox(height: 12),
+                              const Text('No entities currently inside matching filter', style: TextStyle(color: AppTheme.textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 4),
+                              const Text('Turnstile gate records synchronize in real-time', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async => _fetchInside(),
+                          color: AppTheme.primary,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            itemCount: filtered.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            itemBuilder: (context, idx) {
+                              final item = filtered[idx];
+                              final type = (item['type'] ?? 'Employee').toString();
+                              final isWorker = type.toLowerCase().contains('emp') || type.toLowerCase().contains('worker');
+                              final isVisitor = type.toLowerCase().contains('vis');
+
+                              final accentColor = isWorker
+                                  ? AppTheme.primary
+                                  : isVisitor
+                                      ? const Color(0xFFD97706)
+                                      : const Color(0xFF9333EA);
+
+                              return Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: AppTheme.cardDecoration(
+                                  customBorder: Border.all(color: AppTheme.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Avatar
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: AppTheme.badgeDecoration(
+                                        background: accentColor.withValues(alpha: 0.1),
+                                        borderColor: accentColor.withValues(alpha: 0.25),
+                                        radius: 22,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          isWorker
+                                              ? Icons.engineering_rounded
+                                              : isVisitor
+                                                  ? Icons.badge_rounded
+                                                  : Icons.local_shipping_rounded,
+                                          color: accentColor,
+                                          size: 22,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 12),
+                                    const SizedBox(width: 12),
 
-                                  // Details
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                item['name'] ?? 'Authorized Person',
-                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                                borderRadius: BorderRadius.circular(4),
-                                                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                                              ),
-                                              child: const Text('INSIDE', style: TextStyle(color: Color(0xFF10B981), fontSize: 8.5, fontWeight: FontWeight.bold)),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Text(
-                                          '${item['code'] ?? 'ID-100'} • ${item['vendor'] ?? 'Zyeta Direct'}',
-                                          style: const TextStyle(color: Colors.white54, fontSize: 11),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const Icon(Icons.login, color: Color(0xFF06B6D4), size: 12),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'Entry: ${item['entry_time'] != null ? item['entry_time'].toString().split('T').last.substring(0, 5) : 'Turnstile 01'}',
-                                              style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 10.5, fontWeight: FontWeight.w600),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            const Text('• Zone: Main Core', style: TextStyle(color: Colors.white38, fontSize: 10)),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Quick Checkout Button
-                                  InkWell(
-                                    onTap: () => _quickCheckout(item),
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF43F5E).withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: const Color(0xFFF43F5E).withValues(alpha: 0.5)),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                    // Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.logout, size: 14, color: Color(0xFFF43F5E)),
-                                          SizedBox(width: 4),
-                                          Text('OUT', style: TextStyle(color: Color(0xFFF43F5E), fontWeight: FontWeight.bold, fontSize: 10.5)),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  item['name'] ?? 'Authorized Person',
+                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textPrimary),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: AppTheme.badgeDecoration(
+                                                  background: AppTheme.successBg,
+                                                  borderColor: AppTheme.successBorder,
+                                                  radius: 4,
+                                                ),
+                                                child: const Text('INSIDE', style: TextStyle(color: AppTheme.success, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            '${item['code'] ?? 'ID-100'} • ${item['vendor'] ?? 'Zyeta Direct'}',
+                                            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.login_rounded, color: AppTheme.primary, size: 12),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Entry: ${item['entry_time'] != null ? item['entry_time'].toString().split('T').last.substring(0, 5) : 'Turnstile 01'}',
+                                                style: const TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w600),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              const Text('• Zone: Main Core', style: TextStyle(color: AppTheme.textMuted, fontSize: 10)),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
+
+                                    // Quick Checkout Button
+                                    InkWell(
+                                      onTap: () => _quickCheckout(item),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                        decoration: AppTheme.badgeDecoration(
+                                          background: AppTheme.dangerBg,
+                                          borderColor: AppTheme.dangerBorder,
+                                          radius: 8,
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.logout_rounded, size: 14, color: AppTheme.danger),
+                                            SizedBox(width: 4),
+                                            Text('OUT', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold, fontSize: 10.5)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -464,22 +484,42 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
   Widget _buildMetricTile(String label, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF131D31),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: AppTheme.cardDecoration(
+          color: AppTheme.bgSurface,
+          customBorder: Border.all(color: AppTheme.border),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value, style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w900)),
-                Text(label, style: const TextStyle(color: Colors.white38, fontSize: 8.5, fontWeight: FontWeight.bold)),
-              ],
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: AppTheme.badgeDecoration(
+                background: color.withValues(alpha: 0.1),
+                borderColor: color.withValues(alpha: 0.2),
+                radius: 6,
+              ),
+              child: Icon(icon, color: color, size: 16),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(value, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w900)),
+                  ),
+                  Text(
+                    label,
+                    style: const TextStyle(color: AppTheme.textSecondary, fontSize: 8.5, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -494,16 +534,17 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
       borderRadius: BorderRadius.circular(8),
       child: Container(
         margin: const EdgeInsets.only(right: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF06B6D4) : const Color(0xFF131D31),
+          color: isSelected ? AppTheme.primary : Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.white12),
+          border: Border.all(color: isSelected ? AppTheme.primary : AppTheme.border),
+          boxShadow: isSelected ? AppTheme.softShadow : null,
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white70,
+            color: isSelected ? Colors.white : AppTheme.textSecondary,
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),

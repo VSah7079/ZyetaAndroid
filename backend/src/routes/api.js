@@ -53,7 +53,9 @@ router.get('/attendance', authenticateToken, attendanceController.getAttendance)
 router.get('/attendance/summary', authenticateToken, attendanceController.getAttendanceSummary);
 router.get('/attendance/analytics', authenticateToken, attendanceController.getAttendanceAnalytics);
 router.get('/attendance/export', authenticateToken, attendanceController.exportAttendanceCSV);
-router.post('/attendance/manual', authenticateToken, authorizeRoles('Super Admin', 'Admin'), attendanceController.markManualAttendance);
+router.post('/attendance/manual', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security'), attendanceController.markManualAttendance);
+router.post('/attendance/reverify', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security'), attendanceController.reverifyAttendance);
+router.post('/attendance/reverify-bulk', authenticateToken, authorizeRoles('Super Admin', 'Admin', 'Security'), attendanceController.reverifyBulkAttendance);
 
 // --- 7. Permits ---
 router.get('/permits', authenticateToken, permitController.getPermits);

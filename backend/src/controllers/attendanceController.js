@@ -359,10 +359,112 @@ const exportAttendanceCSV = async (req, res) => {
   }
 };
 
+const reverifyAttendance = async (req, res) => {
+  try {
+    const { employee_id, date, notes } = req.body;
+    if (!employee_id) {
+      return res.status(400).json({ success: false, message: 'Employee ID is required' });
+    }
+
+    const todayDate = date || new Date().toISOString().split('T')[0];
+    const emp = db.employees.findById(employee_id);
+    if (!emp) return res.status(404).json({ success: false, message: 'Employee not found' });
+
+    const vendor = emp.vendor_id ? db.vendors.findById(emp.vendor_id) : null;
+    let existing = db.attendance.findOne((a) => Number(a.employee_id) === Number(emp.id) && a.date === todayDate);
+
+    let record;
+    if (existing) {
+      record = db.attendance.update(existing.id, {
+        is_reverified: true,
+        reverified_at: new Date().toISOString(),
+        reverified_by: req.user ? req.user.full_name : 'Gate Security',
+        status: existing.status === 'Absent' ? 'Present' : existing.status,
+        notes: notes ? `${existing.notes || ''} | Reverified: ${notes}` : existing.notes
+      });
+    } else {
+      record = db.attendance.create({
+        employee_id: emp.id,
+        employee_code: emp.employee_id,
+        employee_name: emp.full_name,
+        vendor_id: emp.vendor_id,
+        vendor_name: vendor ? vendor.company_name : 'Direct Hire',
+        date: todayDate,
+        punch_in: new Date().toISOString(),
+        punch_out: null,
+        status: 'Present',
+        is_reverified: true,
+        reverified_at: new Date().toISOString(),
+        reverified_by: req.user ? req.user.full_name : 'Gate Security',
+        late_minutes: 0,
+        overtime_minutes: 0,
+        source: 'Security Re-verification',
+        marked_by: req.user ? req.user.full_name : 'Gate Security',
+        notes: notes || 'Physical Verification Passed'
+      });
+    }
+
+    logAudit({
+      userId: req.user.id,
+      userName: req.user.full_name,
+      userRole: req.user.role,
+      actionType: 'ATTENDANCE_REVERIFY',
+      module: 'Attendance',
+      affectedRecordId: record.id,
+      details: `Attendance reverified for ${emp.full_name} (${emp.employee_id}) by ${req.user.full_name}`,
+      ipAddress: req.ip
+    });
+
+    res.json({ success: true, message: `✓ Attendance reverified for ${emp.full_name}`, data: record });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const reverifyBulkAttendance = async (req, res) => {
+  try {
+    const { vendor_id, date } = req.body;
+    const todayDate = date || new Date().toISOString().split('T')[0];
+    let records = db.attendance.find((a) => a.date === todayDate && a.status === 'Present');
+
+    if (vendor_id && vendor_id !== 'ALL') {
+      records = records.filter((a) => Number(a.vendor_id) === Number(vendor_id));
+    }
+
+    let updatedCount = 0;
+    records.forEach((att) => {
+      if (!att.is_reverified) {
+        db.attendance.update(att.id, {
+          is_reverified: true,
+          reverified_at: new Date().toISOString(),
+          reverified_by: req.user ? req.user.full_name : 'Gate Security'
+        });
+        updatedCount++;
+      }
+    });
+
+    logAudit({
+      userId: req.user.id,
+      userName: req.user.full_name,
+      userRole: req.user.role,
+      actionType: 'ATTENDANCE_BULK_REVERIFY',
+      module: 'Attendance',
+      details: `Bulk attendance reverified for ${updatedCount} workers by ${req.user.full_name}`,
+      ipAddress: req.ip
+    });
+
+    res.json({ success: true, message: `✓ Successfully reverified ${updatedCount} attendance records`, count: updatedCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getAttendance,
   getAttendanceSummary,
   markManualAttendance,
   getAttendanceAnalytics,
-  exportAttendanceCSV
+  exportAttendanceCSV,
+  reverifyAttendance,
+  reverifyBulkAttendance
 };

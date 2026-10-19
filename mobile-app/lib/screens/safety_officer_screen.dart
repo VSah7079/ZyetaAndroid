@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 import 'inside_headcount_screen.dart';
 import 'emergency_muster_screen.dart';
 import 'toolbox_talk_screen.dart';
@@ -1224,15 +1225,17 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
   Widget _buildModalTextField(TextEditingController ctrl, String hint, IconData icon) {
     return TextField(
       controller: ctrl,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
       decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-        prefixIcon: Icon(icon, color: Colors.white54, size: 20),
+        labelText: hint,
+        labelStyle: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+        prefixIcon: Icon(icon, color: AppTheme.primary, size: 18),
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: AppTheme.bgSurface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppTheme.border)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppTheme.primary, width: 1.5)),
       ),
     );
   }
@@ -1240,37 +1243,37 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.health_and_safety, color: Color(0xFFF59E0B), size: 20),
+                Icon(Icons.health_and_safety, color: AppTheme.primary, size: 20),
                 SizedBox(width: 8),
-                Text('HSE & Safety Command', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text('HSE & Safety Command', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               ],
             ),
             Text(
               ApiService.currentUser?.fullName ?? 'Safety Officer',
-              style: const TextStyle(fontSize: 11, color: Colors.white54),
+              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
             ),
           ],
         ),
         actions: [
           IconButton(
             tooltip: 'Live Inside Muster',
-            icon: const Icon(Icons.groups, color: Color(0xFF06B6D4)),
+            icon: const Icon(Icons.groups, color: AppTheme.primary),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen()));
             },
           ),
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh, color: Colors.white70),
+            icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: _loadSafetyData,
           ),
           const LogoutIconButton(),
@@ -1278,10 +1281,10 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: const Color(0xFFF59E0B),
+          indicatorColor: AppTheme.primary,
           indicatorWeight: 3,
-          labelColor: const Color(0xFFF59E0B),
-          unselectedLabelColor: Colors.white54,
+          labelColor: AppTheme.primary,
+          unselectedLabelColor: AppTheme.textSecondary,
           labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           tabs: [
             const Tab(icon: Icon(Icons.dashboard, size: 18), text: 'Command'),
@@ -1293,7 +1296,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
           : TabBarView(
               controller: _tabController,
               children: [
@@ -1450,25 +1453,35 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                               ),
                             ),
                             const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                            Wrap(
+                              alignment: WrapAlignment.end,
+                              spacing: 8,
+                              runSpacing: 6,
                               children: [
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFF06B6D4)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  ),
+                                  icon: const Icon(Icons.description, size: 13, color: Color(0xFF06B6D4)),
+                                  label: const Text('View KYC / Medical', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 11)),
+                                  onPressed: () => _showWorkerDocsDialog(emp),
+                                ),
                                 OutlinedButton(
                                   style: OutlinedButton.styleFrom(
                                     side: const BorderSide(color: Colors.redAccent),
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                   ),
                                   onPressed: () => _clearWorkerSafety(emp['id'], 'Rejected'),
-                                  child: const Text('Reject Medical', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+                                  child: const Text('Reject', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
                                 ),
-                                const SizedBox(width: 8),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF10B981),
                                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   ),
                                   icon: const Icon(Icons.check_circle, size: 14, color: Colors.white),
-                                  label: const Text('Clear Safety & Medical (HSE)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  label: const Text('Clear Safety (HSE)', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                                   onPressed: () => _clearWorkerSafety(emp['id'], 'Approved'),
                                 ),
                               ],
@@ -2399,9 +2412,12 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
         children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+          ),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.white54)),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: Colors.white54)),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 import 'security_dashboard_screen.dart';
 import 'safety_officer_screen.dart';
 import 'employee_screen.dart';
@@ -118,34 +119,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       _currentIndex = 0;
     }
 
-    Color roleColor = isSuperAdmin
-        ? const Color(0xFFF59E0B)
-        : role == 'Admin'
-            ? const Color(0xFF6366F1)
-            : role == 'Safety Officer'
-                ? const Color(0xFFF97316)
-                : role == 'Vendor'
-                    ? const Color(0xFF06B6D4)
-                    : const Color(0xFF10B981);
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: AppTheme.bgPrimary,
       drawer: Drawer(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Drawer Header with User Role & Permissions Badge
+            // Drawer Header with Clean Modern Gradient
             UserAccountsDrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [roleColor.withValues(alpha: 0.85), const Color(0xFF0F172A)],
+                  colors: [Color(0xFF1E40AF), Color(0xFF2563EB)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
               currentAccountPicture: Container(
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white24),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.2),
+                  border: Border.all(color: Colors.white30, width: 2),
+                ),
                 child: Icon(
                   isSuperAdmin
                       ? Icons.admin_panel_settings
@@ -157,21 +152,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                                   ? Icons.storefront
                                   : Icons.security,
                   color: Colors.white,
-                  size: 38,
+                  size: 36,
                 ),
               ),
               accountName: Text(
                 user?.fullName ?? 'Zyeta User',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
               ),
               accountEmail: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(4)),
-                    child: Text(
-                      'ROLE: ${role.toUpperCase()} ${isSuperAdmin ? '(MASTER ROOT)' : ''}',
-                      style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold),
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'ROLE: ${role.toUpperCase()} ${isSuperAdmin ? '(MASTER ROOT)' : ''}',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                 ],
@@ -180,14 +182,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
             // --- SUPER ADMIN MASTER MODULE ---
             if (isSuperAdmin || user?.can('superadmin') == true)
-              _buildDrawerTile(Icons.admin_panel_settings, '👑 Super Admin Control Suite', () {
+              _buildDrawerTile(Icons.admin_panel_settings_outlined, '👑 Super Admin Control Suite', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SuperAdminScreen()));
               }),
 
-            // --- PERMITTED MODULES (CLEANLY FILTERED BASED ON PERMISSIONS) ---
+            // --- PERMITTED MODULES ---
             if (isSuperAdmin || user?.can('gate') == true)
-              _buildDrawerTile(Icons.dashboard, '🛡️ Gate Security Terminal', () {
+              _buildDrawerTile(Icons.dashboard_outlined, '🛡️ Gate Security Terminal', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SecurityDashboardScreen()));
               }),
@@ -199,92 +201,93 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               }),
 
             if (isSuperAdmin || user?.can('safety') == true)
-              _buildDrawerTile(Icons.health_and_safety, '⛑️ HSE Safety Command Hub', () {
+              _buildDrawerTile(Icons.health_and_safety_outlined, '⛑️ HSE Safety Command Hub', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SafetyOfficerScreen()));
               }),
 
             if (isSuperAdmin || user?.can('employees') == true)
-              _buildDrawerTile(Icons.badge, '👷 Workforce & ID Passes', () {
+              _buildDrawerTile(Icons.badge_outlined, '👷 Workforce & ID Passes', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const EmployeeScreen()));
               }),
 
             if (isSuperAdmin || user?.can('permits') == true)
-              _buildDrawerTile(Icons.assignment, '📋 Work Permits (PTW)', () {
+              _buildDrawerTile(Icons.assignment_outlined, '📋 Work Permits (PTW)', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const PermitScreen()));
               }),
 
             if (isSuperAdmin || user?.can('visitors') == true || user?.can('materials') == true || user?.can('vehicles') == true)
-              _buildDrawerTile(Icons.door_sliding, '🚪 Gate Passes Hub', () {
+              _buildDrawerTile(Icons.door_sliding_outlined, '🚪 Gate Passes Hub', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const GatePassesHubScreen()));
               }),
 
             if (isSuperAdmin || role == 'Admin' || user?.can('vendors') == true)
-              _buildDrawerTile(Icons.business_center, '🏛️ Site Admin Contractor Command', () {
+              _buildDrawerTile(Icons.business_center_outlined, '🏛️ Site Admin Contractor Command', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SiteAdminScreen()));
               }),
 
             if (isSuperAdmin || user?.can('vendors') == true)
-              _buildDrawerTile(Icons.business, '🏗️ Contractors & Vendors Roster', () {
+              _buildDrawerTile(Icons.business_outlined, '🏗️ Contractors & Vendors Roster', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorScreen()));
               }),
 
             if (role == 'Vendor')
-              _buildDrawerTile(Icons.storefront, '🏢 Vendor Self-Service Portal', () {
+              _buildDrawerTile(Icons.storefront_outlined, '🏢 Vendor Self-Service Portal', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorPortalScreen()));
               }),
 
             if (isSuperAdmin || user?.can('attendance') == true)
-              _buildDrawerTile(Icons.how_to_reg, '📊 Attendance & Muster Roll', () {
+              _buildDrawerTile(Icons.how_to_reg_outlined, '📊 Attendance & Muster Roll', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
               }),
 
             if (isSuperAdmin || user?.can('headcount') == true)
-              _buildDrawerTile(Icons.groups, '🟢 Live Inside Headcount', () {
+              _buildDrawerTile(Icons.groups_outlined, '🟢 Live Inside Headcount', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const InsideHeadcountScreen()));
               }),
 
             if (isSuperAdmin || user?.can('reports') == true)
-              _buildDrawerTile(Icons.analytics, '📈 Reports & Analytics', () {
+              _buildDrawerTile(Icons.analytics_outlined, '📈 Reports & Analytics', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
               }),
 
             if (isSuperAdmin || user?.can('audit') == true)
-              _buildDrawerTile(Icons.history_edu, '📜 System Audit Trail', () {
+              _buildDrawerTile(Icons.history_edu_outlined, '📜 System Audit Trail', () {
                 Navigator.pop(context);
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const AuditLogsScreen()));
               }),
 
-            _buildDrawerTile(Icons.record_voice_over, '🗣️ Daily Toolbox Talks (TBT)', () {
+            _buildDrawerTile(Icons.record_voice_over_outlined, '🗣️ Daily Toolbox Talks (TBT)', () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ToolboxTalkScreen()));
             }),
 
-            _buildDrawerTile(Icons.emergency, '🚨 Emergency Muster & Evacuation', () {
+            _buildDrawerTile(Icons.emergency_outlined, '🚨 Emergency Muster & Evacuation', () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencyMusterScreen()));
             }),
 
-            const Divider(color: Colors.white12),
+            const Divider(color: AppTheme.border, height: 24),
 
             // Logout / Switch User Account
             ListTile(
-              leading: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444)),
-              title: const Text('Switch Role / Logout', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+              leading: const Icon(Icons.logout_rounded, color: AppTheme.danger),
+              title: const Text('Switch Role / Logout', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold, fontSize: 13.5)),
               onTap: () {
-                Navigator.pop(context); // Close drawer first
+                Navigator.pop(context);
                 AuthUtils.showLogoutDialog(context);
               },
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -294,18 +297,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
-          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1)),
+          color: Colors.white,
+          border: const Border(top: BorderSide(color: AppTheme.border, width: 1)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (idx) => setState(() => _currentIndex = idx),
           type: BottomNavigationBarType.fixed,
-          backgroundColor: const Color(0xFF0F172A),
-          selectedItemColor: roleColor,
-          unselectedItemColor: Colors.white54,
+          backgroundColor: Colors.white,
+          selectedItemColor: AppTheme.primary,
+          unselectedItemColor: AppTheme.textMuted,
           selectedFontSize: 11,
           unselectedFontSize: 10,
+          elevation: 0,
           items: navItems,
         ),
       ),
@@ -314,15 +325,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _buildDrawerTile(IconData icon, String title, VoidCallback onTap, {bool isSelected = false}) {
     return ListTile(
-      leading: Icon(icon, color: isSelected ? const Color(0xFF6366F1) : Colors.white70),
+      leading: Icon(icon, color: isSelected ? AppTheme.primary : AppTheme.textSecondary, size: 21),
       title: Text(
         title,
         style: TextStyle(
-          color: isSelected ? const Color(0xFF6366F1) : Colors.white,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? AppTheme.primary : AppTheme.textPrimary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          fontSize: 13,
         ),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
       selected: isSelected,
+      selectedTileColor: AppTheme.primarySubtle,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      dense: true,
       onTap: onTap,
     );
   }

@@ -1,4 +1,5 @@
 import '../utils/validators.dart';
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'visitor_screen.dart';
 import 'material_screen.dart';
@@ -30,24 +31,26 @@ class _GatePassesHubScreenState extends State<GatePassesHubScreen> with SingleTi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
+      backgroundColor: AppTheme.bgPrimary,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Gate Passes Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)),
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Gate Passes Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         actions: const [
           LogoutIconButton(),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF6366F1),
+          indicatorColor: AppTheme.primary,
           indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white54,
+          labelColor: AppTheme.primary,
+          unselectedLabelColor: AppTheme.textSecondary,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           tabs: const [
-            Tab(icon: Icon(Icons.person_pin, size: 20), text: 'Visitors'),
-            Tab(icon: Icon(Icons.inventory_2, size: 20), text: 'Materials'),
-            Tab(icon: Icon(Icons.local_shipping, size: 20), text: 'Vehicles'),
+            Tab(icon: Icon(Icons.person_pin_rounded, size: 20), text: 'Visitors'),
+            Tab(icon: Icon(Icons.inventory_2_rounded, size: 20), text: 'Materials'),
+            Tab(icon: Icon(Icons.local_shipping_rounded, size: 20), text: 'Vehicles'),
           ],
         ),
       ),
