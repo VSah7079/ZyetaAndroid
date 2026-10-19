@@ -150,6 +150,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         ],
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             // Report Selector Dropdown

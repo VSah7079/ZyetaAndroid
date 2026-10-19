@@ -482,6 +482,7 @@ class _PermitScreenState extends State<PermitScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: widget.showAppBar
           ? AppBar(
               backgroundColor: Colors.white,
@@ -505,6 +506,7 @@ class _PermitScreenState extends State<PermitScreen> {
         onPressed: _openNewPermitModal,
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             Container(

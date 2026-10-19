@@ -143,6 +143,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -187,12 +188,13 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
         ],
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             // RADAR TELEMETRY HERO BANNER
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.all(12),
               decoration: AppTheme.cardDecoration(),
               child: Column(
                 children: [
@@ -217,20 +219,20 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
                                   '$totalInside',
-                                  style: const TextStyle(color: AppTheme.success, fontSize: 32, fontWeight: FontWeight.w900),
+                                  style: const TextStyle(color: AppTheme.success, fontSize: 28, fontWeight: FontWeight.w900),
                                 ),
                                 const SizedBox(width: 8),
                                 const Flexible(
                                   child: Text(
                                     'Souls Inside Site',
-                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+                                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -247,7 +249,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
                         },
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                           decoration: AppTheme.badgeDecoration(
                             background: AppTheme.dangerBg,
                             borderColor: AppTheme.dangerBorder,
@@ -256,28 +258,28 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.warning_amber_rounded, color: AppTheme.danger, size: 16),
-                              SizedBox(width: 6),
-                              Text('MUSTER SOS', style: TextStyle(color: AppTheme.danger, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                              Icon(Icons.warning_amber_rounded, color: AppTheme.danger, size: 15),
+                              SizedBox(width: 5),
+                              Text('MUSTER SOS', style: TextStyle(color: AppTheme.danger, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                             ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
                   // 3 METRIC TILES (Workers, Visitors, Vehicles)
                   Row(
                     children: [
                       _buildMetricTile('WORKERS', '$workersInside', const Color(0xFF0284C7), Icons.engineering_rounded),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _buildMetricTile('VISITORS', '$visitorsInside', const Color(0xFFD97706), Icons.badge_rounded),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       _buildMetricTile('VEHICLES', '$vehiclesInside', const Color(0xFF9333EA), Icons.local_shipping_rounded),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
                   // SEARCH BAR
                   TextField(
@@ -298,7 +300,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
                           : null,
                       filled: true,
                       fillColor: AppTheme.bgSurface,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(color: AppTheme.border),
@@ -310,7 +312,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
                     ),
                     onChanged: (val) => setState(() => _search = val.trim()),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
                   // FILTER PILLS
                   SingleChildScrollView(

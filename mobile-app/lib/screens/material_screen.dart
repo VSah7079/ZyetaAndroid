@@ -203,10 +203,11 @@ class _MaterialScreenState extends State<MaterialScreen> {
             right: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -308,6 +309,7 @@ class _MaterialScreenState extends State<MaterialScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -529,6 +531,7 @@ class _MaterialScreenState extends State<MaterialScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: widget.showAppBar
           ? AppBar(
               backgroundColor: Colors.white,
@@ -552,6 +555,7 @@ class _MaterialScreenState extends State<MaterialScreen> {
         onPressed: _openNewDCModal,
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             Container(

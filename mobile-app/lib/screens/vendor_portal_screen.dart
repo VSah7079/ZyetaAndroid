@@ -136,10 +136,11 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(22),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -236,7 +237,8 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   // ==========================================
@@ -251,10 +253,11 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Padding(
           padding: const EdgeInsets.all(22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -346,6 +349,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           ),
         ),
       ),
+    ),
     );
   }
 

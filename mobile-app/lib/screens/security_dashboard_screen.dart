@@ -142,10 +142,11 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
             right: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -303,6 +304,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -323,10 +325,11 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
             right: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -519,6 +522,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -590,6 +594,7 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
               color: AppTheme.primary,
               onRefresh: () async => _loadStats(),
               child: ResponsiveBody(
+                padding: EdgeInsets.zero,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),

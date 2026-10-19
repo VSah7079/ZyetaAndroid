@@ -720,6 +720,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: widget.showAppBar
           ? AppBar(
               backgroundColor: Colors.white,
@@ -743,6 +744,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         onPressed: _openOnboardWorkerModal,
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             Container(

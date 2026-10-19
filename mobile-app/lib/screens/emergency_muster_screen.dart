@@ -176,7 +176,7 @@ class _EmergencyMusterScreenState extends State<EmergencyMusterScreen> {
         ),
         actions: [
           IconButton(tooltip: 'Refresh', icon: Icon(Icons.refresh_rounded, color: isActive ? Colors.white : AppTheme.textSecondary), onPressed: _loadStatus),
-          const LogoutIconButton(),
+          LogoutIconButton(color: isActive ? Colors.white : AppTheme.danger),
         ],
       ),
       body: _isLoading

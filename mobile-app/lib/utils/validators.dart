@@ -96,7 +96,7 @@ class FormValidators {
 }
 
 class AuthUtils {
-  /// Opens a modern dark confirmation dialog before logging out the active user.
+  /// Opens a modern clean confirmation dialog before logging out the active user.
   static Future<bool?> showLogoutDialog(BuildContext context) async {
     final user = ApiService.currentUser;
 
@@ -105,10 +105,10 @@ class AuthUtils {
       barrierDismissible: true,
       builder: (BuildContext ctx) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
+            borderRadius: BorderRadius.circular(18),
+            side: const BorderSide(color: AppTheme.border, width: 1),
           ),
           titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -117,17 +117,18 @@ class AuthUtils {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+                decoration: AppTheme.badgeDecoration(
+                  background: AppTheme.dangerBg,
+                  borderColor: AppTheme.dangerBorder,
+                  radius: 10,
                 ),
-                child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 22),
+                child: const Icon(Icons.logout_rounded, color: AppTheme.danger, size: 22),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Confirm Logout',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -142,18 +143,18 @@ class AuthUtils {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: AppTheme.bgSurface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: AppTheme.border),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 18,
-                        backgroundColor: const Color(0xFF6366F1),
+                        backgroundColor: AppTheme.primarySubtle,
                         child: Text(
                           (user.fullName.isNotEmpty ? user.fullName[0] : 'U').toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -163,12 +164,12 @@ class AuthUtils {
                           children: [
                             Text(
                               user.fullName,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               '${user.role} • ${user.username}',
-                              style: const TextStyle(color: Colors.white60, fontSize: 11),
+                              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
@@ -181,7 +182,7 @@ class AuthUtils {
               ],
               const Text(
                 'Are you sure you want to log out from this session? You will be returned to the login screen.',
-                style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, height: 1.4),
               ),
             ],
           ),
@@ -189,7 +190,7 @@ class AuthUtils {
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.white60,
+                foregroundColor: AppTheme.textSecondary,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
               child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -202,7 +203,7 @@ class AuthUtils {
               icon: const Icon(Icons.logout, size: 16, color: Colors.white),
               label: const Text('Log Out', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: AppTheme.danger,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 elevation: 0,
@@ -232,15 +233,15 @@ class LogoutIconButton extends StatelessWidget {
 
   const LogoutIconButton({
     super.key,
-    this.color = Colors.white70,
-    this.size = 20,
+    this.color,
+    this.size = 22,
     this.tooltip = 'Log Out',
   });
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(Icons.logout_rounded, color: color, size: size),
+      icon: Icon(Icons.logout_rounded, color: color ?? AppTheme.danger, size: size),
       tooltip: tooltip,
       onPressed: () => AuthUtils.showLogoutDialog(context),
     );

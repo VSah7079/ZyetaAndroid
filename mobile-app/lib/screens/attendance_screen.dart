@@ -165,10 +165,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             right: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -303,6 +304,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -327,6 +329,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -359,12 +362,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         onPressed: _openManualAttendanceModal,
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             // KPI HEADER & METRIC SUMMARY
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.all(12),
               decoration: AppTheme.cardDecoration(),
               child: Column(
                 children: [

@@ -406,74 +406,76 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Padding(
           padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Edit Worker ${emp['employee_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
-                  IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(nameCtrl, 'Full Name', Icons.person),
-              const SizedBox(height: 8),
-              _buildTextField(mobileCtrl, 'Mobile', Icons.phone, keyboardType: TextInputType.phone),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: _buildTextField(desigCtrl, 'Designation', Icons.badge)),
-                  const SizedBox(width: 8),
-                  Expanded(child: _buildTextField(tradeCtrl, 'Skill / Trade', Icons.handyman)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        Navigator.pop(ctx);
-                        await ApiService.deleteEmployee(emp['id']);
-                        _loadAllMasterData();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Worker record deleted from system'), backgroundColor: Colors.red),
-                          );
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      child: const Text('DELETE WORKER', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Edit Worker ${emp['employee_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+                    IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(nameCtrl, 'Full Name', Icons.person),
+                const SizedBox(height: 8),
+                _buildTextField(mobileCtrl, 'Mobile', Icons.phone, keyboardType: TextInputType.phone),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildTextField(desigCtrl, 'Designation', Icons.badge)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildTextField(tradeCtrl, 'Skill / Trade', Icons.handyman)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          await ApiService.deleteEmployee(emp['id']);
+                          _loadAllMasterData();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Worker record deleted from system'), backgroundColor: Colors.red),
+                            );
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: const Text('DELETE WORKER', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(ctx);
-                        await ApiService.updateEmployee(emp['id'], {
-                          'full_name': nameCtrl.text.trim(),
-                          'mobile': mobileCtrl.text.trim(),
-                          'designation': desigCtrl.text.trim(),
-                          'skill': tradeCtrl.text.trim(),
-                          'status': status,
-                        });
-                        _loadAllMasterData();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Worker updated successfully!'), backgroundColor: Colors.green),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      child: const Text('SAVE CHANGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          await ApiService.updateEmployee(emp['id'], {
+                            'full_name': nameCtrl.text.trim(),
+                            'mobile': mobileCtrl.text.trim(),
+                            'designation': desigCtrl.text.trim(),
+                            'skill': tradeCtrl.text.trim(),
+                            'status': status,
+                          });
+                          _loadAllMasterData();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Worker updated successfully!'), backgroundColor: Colors.green),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: const Text('SAVE CHANGES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -494,63 +496,65 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Edit Contractor ${vnd['vendor_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
-                IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildTextField(nameCtrl, 'Company Name', Icons.business),
-            const SizedBox(height: 8),
-            _buildTextField(ownerCtrl, 'Authorized Contact', Icons.person),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: _buildTextField(phoneCtrl, 'Phone', Icons.phone)),
-                const SizedBox(width: 8),
-                Expanded(child: _buildTextField(emailCtrl, 'Email', Icons.email)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await ApiService.deleteVendor(vnd['id']);
-                      _loadAllMasterData();
-                    },
-                    style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text('DELETE VENDOR', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Edit Contractor ${vnd['vendor_id']}', style: const TextStyle(color: AppTheme.textPrimary, fontSize: 17, fontWeight: FontWeight.bold)),
+                  IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _buildTextField(nameCtrl, 'Company Name', Icons.business),
+              const SizedBox(height: 8),
+              _buildTextField(ownerCtrl, 'Authorized Contact', Icons.person),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(child: _buildTextField(phoneCtrl, 'Phone', Icons.phone)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _buildTextField(emailCtrl, 'Email', Icons.email)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        await ApiService.deleteVendor(vnd['id']);
+                        _loadAllMasterData();
+                      },
+                      style: OutlinedButton.styleFrom(side: const BorderSide(color: AppTheme.danger), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      child: const Text('DELETE VENDOR', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await ApiService.updateVendor(vnd['id'], {
-                        'company_name': nameCtrl.text.trim(),
-                        'owner_name': ownerCtrl.text.trim(),
-                        'phone': phoneCtrl.text.trim(),
-                        'email': emailCtrl.text.trim(),
-                      });
-                      _loadAllMasterData();
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text('SAVE VENDOR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        await ApiService.updateVendor(vnd['id'], {
+                          'company_name': nameCtrl.text.trim(),
+                          'owner_name': ownerCtrl.text.trim(),
+                          'phone': phoneCtrl.text.trim(),
+                          'email': emailCtrl.text.trim(),
+                        });
+                        _loadAllMasterData();
+                      },
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      child: const Text('SAVE VENDOR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -67,9 +67,9 @@ class Responsive {
       return const EdgeInsets.symmetric(horizontal: 24, vertical: 20);
     }
     if (width < 360) {
-      return const EdgeInsets.symmetric(horizontal: 10, vertical: 12);
+      return const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
-    return const EdgeInsets.all(16);
+    return const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
   }
 }
 
@@ -88,11 +88,13 @@ class ResponsiveBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+    final effectivePadding = padding ?? (isMobile ? EdgeInsets.zero : Responsive.screenPadding(context));
     return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Padding(
-          padding: padding ?? Responsive.screenPadding(context),
+          padding: effectivePadding,
           child: child,
         ),
       ),

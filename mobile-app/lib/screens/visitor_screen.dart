@@ -402,6 +402,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgPrimary,
+      resizeToAvoidBottomInset: false,
       appBar: widget.showAppBar
           ? AppBar(
               backgroundColor: Colors.white,
@@ -425,6 +426,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
         onPressed: _openNewVisitorModal,
       ),
       body: ResponsiveBody(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             // Filter Chips & Search Bar
