@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../screens/login_screen.dart';
+import 'app_theme.dart';
 
 class FormValidators {
   static final RegExp _phoneRegex = RegExp(r'^[6-9]\d{9}$');
@@ -225,25 +226,106 @@ class AuthUtils {
   }
 }
 
-/// Standard reusable Logout Icon Button for AppBars
-class LogoutIconButton extends StatelessWidget {
-  final Color? color;
-  final double size;
-  final String tooltip;
+/// Navigation utility to open root drawer from nested scaffolds
+class NavUtils {
+  static VoidCallback? openDrawerCallback;
+  static void openDrawer() {
+    openDrawerCallback?.call();
+  }
+}
 
-  const LogoutIconButton({
+/// Standard reusable Leading button for AppBars
+class AppBarLeadingButton extends StatelessWidget {
+  final Color? color;
+  final VoidCallback? onMenuPressed;
+
+  const AppBarLeadingButton({
     super.key,
     this.color,
-    this.size = 22,
-    this.tooltip = 'Log Out',
+    this.onMenuPressed,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (Navigator.canPop(context)) {
+      return IconButton(
+        tooltip: 'Back',
+        icon: Icon(Icons.arrow_back_rounded, color: color ?? AppTheme.textPrimary, size: 22),
+        onPressed: () => Navigator.pop(context),
+      );
+    }
     return IconButton(
-      icon: Icon(Icons.logout_rounded, color: color ?? AppTheme.danger, size: size),
-      tooltip: tooltip,
-      onPressed: () => AuthUtils.showLogoutDialog(context),
+      tooltip: 'Open Menu',
+      icon: Icon(Icons.menu_rounded, color: color ?? AppTheme.primary, size: 24),
+      onPressed: onMenuPressed ?? () => NavUtils.openDrawer(),
     );
   }
 }
+
+/// Standard reusable prominent Logout Button for AppBars
+class LogoutIconButton extends StatelessWidget {
+  final Color? color;
+  final double size;
+  final String tooltip;
+  final bool compact;
+
+  const LogoutIconButton({
+    super.key,
+    this.color,
+    this.size = 17,
+    this.tooltip = 'Log Out',
+    this.compact = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isExplicitWhite = color == Colors.white;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => AuthUtils.showLogoutDialog(context),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: isExplicitWhite ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isExplicitWhite ? Colors.white.withValues(alpha: 0.4) : const Color(0xFFFCA5A5),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.logout_rounded,
+                    color: color ?? AppTheme.danger,
+                    size: size,
+                  ),
+                  if (!compact) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: color ?? AppTheme.danger,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

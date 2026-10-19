@@ -30,11 +30,19 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   late int _currentIndex;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    NavUtils.openDrawerCallback = () => _scaffoldKey.currentState?.openDrawer();
+  }
+
+  @override
+  void dispose() {
+    NavUtils.openDrawerCallback = null;
+    super.dispose();
   }
 
   @override
@@ -120,6 +128,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppTheme.bgPrimary,
       drawer: Drawer(
         backgroundColor: Colors.white,

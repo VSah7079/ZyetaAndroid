@@ -587,19 +587,27 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> with SingleTickerPr
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.admin_panel_settings, color: AppTheme.primary, size: 20),
-                SizedBox(width: 8),
-                Text('Super Admin Control Center', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const Icon(Icons.admin_panel_settings, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 8),
+                const Flexible(
+                  child: Text(
+                    'Super Admin Hub',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             const Text(
-              'Master Database & Granular Access Control (RBAC)',
-              style: TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+              'Master Database & Granular Access Control',
+              style: TextStyle(fontSize: 10.5, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

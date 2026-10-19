@@ -1247,19 +1247,27 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.health_and_safety, color: AppTheme.primary, size: 20),
-                SizedBox(width: 8),
-                Text('HSE & Safety Command', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+                const Icon(Icons.health_and_safety, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 8),
+                const Flexible(
+                  child: Text(
+                    'HSE & Safety Command',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             Text(
               ApiService.currentUser?.fullName ?? 'Safety Officer',
               style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1276,7 +1284,7 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
             icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: _loadSafetyData,
           ),
-          const LogoutIconButton(),
+          const LogoutIconButton(compact: true),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -1766,11 +1774,11 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.gps_fixed, size: 48, color: Colors.white24),
+                        const Icon(Icons.gps_fixed, size: 48, color: AppTheme.textMuted),
                         const SizedBox(height: 12),
-                        const Text('No Safety Punches Found', style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.bold)),
+                        const Text('No Safety Punches Found', style: TextStyle(color: AppTheme.textPrimary, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
-                        const Text('Tap "+ Record Safety Punch" to log an on-site observation.', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                        const Text('Tap "+ Record Safety Punch" to log an on-site observation.', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
                           onPressed: _openNewPunchModal,

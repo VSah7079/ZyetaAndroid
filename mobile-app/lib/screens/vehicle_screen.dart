@@ -364,6 +364,7 @@ class _VehicleScreenState extends State<VehicleScreen> {
               backgroundColor: Colors.white,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
+              leading: const AppBarLeadingButton(),
               title: const Text('Vehicle Check & Compliance', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               actions: [
                 IconButton(

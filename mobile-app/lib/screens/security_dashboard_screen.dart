@@ -551,16 +551,20 @@ class _SecurityDashboardScreenState extends State<SecurityDashboardScreen> with 
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: const AppBarLeadingButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.shield_rounded, color: AppTheme.primary, size: 20),
-                SizedBox(width: 6),
-                Text(
-                  'Gate Security Terminal',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                const Icon(Icons.shield_rounded, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 6),
+                const Flexible(
+                  child: Text(
+                    'Gate Security Terminal',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

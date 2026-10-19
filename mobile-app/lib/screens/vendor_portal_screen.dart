@@ -1239,6 +1239,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1246,15 +1247,19 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
               children: [
                 const Icon(Icons.verified, color: AppTheme.primary, size: 18),
                 const SizedBox(width: 6),
-                const Text(
-                  'Contractor Portal',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                const Flexible(
+                  child: Text(
+                    'Contractor Portal',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
             Text(
               user?.fullName ?? 'ABC Infra Projects Pvt Ltd',
               style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -1269,7 +1274,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
             icon: const Icon(Icons.refresh, color: AppTheme.primary),
             onPressed: _loadVendorData,
           ),
-          const LogoutIconButton(),
+          const LogoutIconButton(compact: true),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -1501,7 +1506,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
           if (_isAttendanceLoading)
             const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Color(0xFF06B6D4))))
           else if (breakdown.isEmpty)
-            const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('No attendance records for this period', style: TextStyle(color: Colors.white54))))
+            const Center(child: Padding(padding: EdgeInsets.all(20), child: Text('No attendance records for this period', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold))))
           else
             ...breakdown.map((item) {
               final itemRate = item['rate'] ?? 90;
@@ -2015,7 +2020,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
         // WORKERS LIST WITH 3-TIER APPROVAL STEPPER
         Expanded(
           child: list.isEmpty
-              ? const Center(child: Text('No workers matching filter criteria', style: TextStyle(color: Colors.white54)))
+              ? const Center(child: Text('No workers matching filter criteria', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)))
               : RefreshIndicator(
                   onRefresh: () async => _loadVendorData(),
                   color: const Color(0xFF06B6D4),

@@ -129,7 +129,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        title: const Text('Reports & Analytics Suite', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+        leading: const AppBarLeadingButton(),
+        title: const Text('Reports & Analytics', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary), overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             tooltip: 'Export PDF',
@@ -146,7 +147,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
             onPressed: _fetchReport,
           ),
-          const LogoutIconButton(),
+          const LogoutIconButton(compact: true),
         ],
       ),
       body: ResponsiveBody(

@@ -334,11 +334,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: const AppBarLeadingButton(),
         title: const Row(
           children: [
             Icon(Icons.calendar_today_rounded, color: AppTheme.primary, size: 18),
             SizedBox(width: 8),
-            Text('Turnstile Attendance Roll', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            Flexible(
+              child: Text(
+                'Attendance Roll',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -352,7 +359,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
             onPressed: _loadData,
           ),
-          const LogoutIconButton(),
+          const LogoutIconButton(compact: true),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

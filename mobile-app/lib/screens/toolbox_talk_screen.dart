@@ -163,6 +163,7 @@ class _ToolboxTalkScreenState extends State<ToolboxTalkScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: const Row(
           children: [
             Icon(Icons.record_voice_over, color: AppTheme.primary, size: 20),

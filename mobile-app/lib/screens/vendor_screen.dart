@@ -1645,6 +1645,7 @@ class _VendorScreenState extends State<VendorScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1680,7 +1681,7 @@ class _VendorScreenState extends State<VendorScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF06B6D4)))
           : _vendors.isEmpty
-              ? const Center(child: Text('No registered contractors in system', style: TextStyle(color: Colors.white54)))
+              ? const Center(child: Text('No registered contractors in system', style: TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold)))
               : Column(
                   children: [
                     // CONTRACTOR HERO BANNER & QUICK SELECTOR
@@ -2175,9 +2176,9 @@ class _VendorScreenState extends State<VendorScreen> {
               padding: EdgeInsets.all(32),
               child: Column(
                 children: [
-                  Icon(Icons.person_search, color: Colors.white38, size: 40),
+                  Icon(Icons.person_search, color: AppTheme.textMuted, size: 40),
                   SizedBox(height: 8),
-                  Text('No workers match the selected criteria', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                  Text('No workers match the selected criteria', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -2541,7 +2542,7 @@ class _VendorScreenState extends State<VendorScreen> {
           const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
-              child: Text('No work permits match filters', style: TextStyle(color: Colors.white54, fontSize: 13)),
+              child: Text('No work permits match filters', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
             ),
           )
         else
@@ -2720,7 +2721,7 @@ class _VendorScreenState extends State<VendorScreen> {
           const Center(
             child: Padding(
               padding: EdgeInsets.all(24),
-              child: Text('No muster entries match shift / status filter', style: TextStyle(color: Colors.white54, fontSize: 12)),
+              child: Text('No muster entries match shift / status filter', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
             ),
           )
         else
@@ -2906,7 +2907,7 @@ class _VendorScreenState extends State<VendorScreen> {
           const Center(
             child: Padding(
               padding: EdgeInsets.all(32),
-              child: Text('No material delivery passes found', style: TextStyle(color: Colors.white54, fontSize: 13)),
+              child: Text('No material delivery passes found', style: TextStyle(color: AppTheme.textSecondary, fontSize: 13, fontWeight: FontWeight.bold)),
             ),
           )
         else

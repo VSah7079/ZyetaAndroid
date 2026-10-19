@@ -408,6 +408,7 @@ class _VisitorScreenState extends State<VisitorScreen> {
               backgroundColor: Colors.white,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
+              leading: const AppBarLeadingButton(),
               title: const Text('Visitor Pass Management', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               actions: [
                 IconButton(

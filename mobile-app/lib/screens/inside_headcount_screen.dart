@@ -148,6 +148,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: const AppBarLeadingButton(),
         title: Row(
           children: [
             FadeTransition(
@@ -165,7 +166,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
             const Expanded(
               child: Text(
                 'Live Headcount Telemetry',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, letterSpacing: 0.3),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textPrimary, letterSpacing: 0.3),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -184,7 +185,7 @@ class _InsideHeadcountScreenState extends State<InsideHeadcountScreen> with Sing
             icon: const Icon(Icons.refresh_rounded, color: AppTheme.textSecondary),
             onPressed: _fetchInside,
           ),
-          const LogoutIconButton(),
+          const LogoutIconButton(compact: true),
         ],
       ),
       body: ResponsiveBody(

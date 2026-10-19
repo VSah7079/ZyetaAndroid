@@ -36,6 +36,7 @@ class _GatePassesHubScreenState extends State<GatePassesHubScreen> with SingleTi
         backgroundColor: Colors.white,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+        leading: const AppBarLeadingButton(),
         title: const Text('Gate Passes Hub', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         actions: const [
           LogoutIconButton(),

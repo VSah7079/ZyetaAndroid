@@ -537,6 +537,7 @@ class _MaterialScreenState extends State<MaterialScreen> {
               backgroundColor: Colors.white,
               elevation: 0,
               surfaceTintColor: Colors.transparent,
+              leading: const AppBarLeadingButton(),
               title: const Text('Material Gate Pass (DC)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
               actions: [
                 IconButton(

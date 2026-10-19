@@ -609,6 +609,7 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: const Text('Site Admin: Contractor Hub', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
         actions: [
           IconButton(

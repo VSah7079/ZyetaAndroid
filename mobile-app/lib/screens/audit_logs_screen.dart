@@ -148,11 +148,18 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: const AppBarLeadingButton(),
         title: const Row(
           children: [
             Icon(Icons.history_toggle_off, color: AppTheme.primary, size: 20),
             SizedBox(width: 8),
-            Text('Security Audit Trail', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
+            Flexible(
+              child: Text(
+                'Security Audit Trail',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textPrimary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
