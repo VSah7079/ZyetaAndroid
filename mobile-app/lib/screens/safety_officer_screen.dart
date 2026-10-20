@@ -77,12 +77,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 22),
-                        SizedBox(width: 8),
-                        Text('Worker Health & KYC', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 22),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Worker Health & KYC',
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(icon: const Icon(Icons.close, color: Colors.white54, size: 20), onPressed: () => Navigator.pop(ctx)),
                   ],
@@ -315,31 +323,37 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: accentColor.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.gps_fixed, color: accentColor, size: 22),
                             ),
-                            child: Icon(Icons.gps_fixed, color: accentColor, size: 22),
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Record Safety Punch',
-                                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Record Safety Punch',
+                                    style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    '3-Color Severity: Red / Yellow / Green',
+                                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '3-Color Severity: Red / Yellow / Green',
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close, color: Colors.white54),
@@ -571,15 +585,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.camera_alt, color: Color(0xFF06B6D4), size: 16),
-                          SizedBox(width: 6),
-                          Text(
-                            'PHOTO EVIDENCE ATTACHMENT *',
-                            style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                          ),
-                        ],
+                      const Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.camera_alt, color: Color(0xFF06B6D4), size: 16),
+                            SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'PHOTO EVIDENCE ATTACHMENT *',
+                                style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       TextButton.icon(
                         onPressed: () {
@@ -764,9 +783,12 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                               children: [
                                 const Icon(Icons.save, color: Colors.white, size: 20),
                                 const SizedBox(width: 8),
-                                Text(
-                                  'SUBMIT $selectedColor SAFETY PUNCH',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                                Flexible(
+                                  child: Text(
+                                    'SUBMIT $selectedColor SAFETY PUNCH',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
@@ -815,15 +837,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.verified_user, color: Color(0xFFF59E0B), size: 24),
-                        SizedBox(width: 8),
-                        Text(
-                          'HSE Permit Endorsement',
-                          style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.verified_user, color: Color(0xFFF59E0B), size: 24),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'HSE Permit Endorsement',
+                              style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
                   ],
@@ -962,12 +989,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
-                        SizedBox(width: 8),
-                        Text('Report Safety Hazard / Near-Miss', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Report Safety Hazard / Near-Miss',
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
                   ],
@@ -1108,12 +1143,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.checklist, color: Color(0xFF10B981)),
-                        SizedBox(width: 8),
-                        Text('Conduct Site Safety Audit', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.checklist, color: Color(0xFF10B981)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Conduct Site Safety Audit',
+                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(icon: const Icon(Icons.close, color: Colors.white54), onPressed: () => Navigator.pop(ctx)),
                   ],
@@ -1395,16 +1438,22 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.health_and_safety, color: Color(0xFFF59E0B), size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'WORKER MEDICAL & HSE CLEARANCES',
-                            style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                        ],
+                      const Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.health_and_safety, color: Color(0xFFF59E0B), size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'WORKER MEDICAL & HSE CLEARANCES',
+                                style: TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(color: const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(10)),
@@ -1455,7 +1504,16 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text('Blood: ${emp['blood_group'] ?? 'O+'}', style: const TextStyle(color: Colors.white70, fontSize: 11)),
-                                  Text('Medical: ${emp['medical_cert'] ?? 'Fit'}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'Medical: ${emp['medical_cert'] ?? 'Fit'}',
+                                      style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                   Text('Exp: ${emp['medical_validity'] ?? '2027'}', style: const TextStyle(color: Colors.white54, fontSize: 10)),
                                 ],
                               ),
@@ -1520,15 +1578,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.gps_fixed, color: Color(0xFF06B6D4), size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'SAFETY PUNCH SYSTEM',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
-                        ),
-                      ],
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.gps_fixed, color: Color(0xFF06B6D4), size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'SAFETY PUNCH SYSTEM',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     TextButton.icon(
                       onPressed: () => _tabController.animateTo(1),
@@ -1843,16 +1906,22 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Icon(badgeIcon, size: 16, color: borderAccent),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        badgeText,
-                                        style: TextStyle(color: borderAccent, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                                      ),
-                                    ],
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Icon(badgeIcon, size: 16, color: borderAccent),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            badgeText,
+                                            style: TextStyle(color: borderAccent, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
@@ -1889,9 +1958,12 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                                           children: [
                                             Row(
                                               children: [
-                                                Text(
-                                                  p['worker_name'] ?? 'Worker',
-                                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                                Flexible(
+                                                  child: Text(
+                                                    p['worker_name'] ?? 'Worker',
+                                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
                                                 ),
                                                 const SizedBox(width: 6),
                                                 Container(
@@ -1993,13 +2065,17 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                                             const Positioned(
                                               bottom: 8,
                                               left: 10,
+                                              right: 10,
                                               child: Row(
                                                 children: [
                                                   Icon(Icons.zoom_in, color: Colors.white, size: 16),
                                                   SizedBox(width: 6),
-                                                  Text(
-                                                    '🔍 Tap to inspect photographic evidence',
-                                                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                                  Expanded(
+                                                    child: Text(
+                                                      '🔍 Tap to inspect photographic evidence',
+                                                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -2037,12 +2113,20 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.location_on, size: 13, color: Colors.white38),
-                                          const SizedBox(width: 4),
-                                          Text(p['zone'] ?? '', style: const TextStyle(color: Colors.white54, fontSize: 11)),
-                                        ],
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.location_on, size: 13, color: Colors.white38),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                p['zone'] ?? '',
+                                                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       IconButton(
                                         tooltip: 'Delete Punch',
@@ -2291,7 +2375,14 @@ class _SafetyOfficerScreenState extends State<SafetyOfficerScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Inspector: ${item['inspector']}', style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                    Expanded(
+                      child: Text(
+                        'Inspector: ${item['inspector']}',
+                        style: const TextStyle(color: Colors.white38, fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text('Date: ${item['date']}', style: const TextStyle(color: Colors.white38, fontSize: 11)),
                   ],
                 ),
