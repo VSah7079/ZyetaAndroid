@@ -11,7 +11,11 @@ const getVendors = async (req, res) => {
       const insideCount = employees.filter((e) => e.currently_inside === 1).length;
       const activePermits = db.permits.count((p) => Number(p.vendor_id) === Number(v.id) && p.status === 'Active');
       const pendingPermits = db.permits.count((p) => Number(p.vendor_id) === Number(v.id) && p.status === 'Pending');
-      const pendingApprovals = employees.filter((e) => e.status === 'Pending Approval' || e.status === 'Pending').length;
+      const pendingApprovals = employees.filter((e) => 
+        ['Pending Approval', 'Pending', 'Pending ID Clearance'].includes(e.status) ||
+        e.id_card_status === 'Awaiting Approvals' ||
+        (e.approval_stage && e.approval_stage !== 'Completed')
+      ).length;
       const totalDc = db.materials.count((m) => Number(m.vendor_id) === Number(v.id));
 
       // Real or calculated yesterday baseline (e.g. 80-90% attendance)
@@ -44,7 +48,10 @@ const getVendorById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Vendor not found' });
     }
 
-    const employees = db.employees.find((e) => Number(e.vendor_id) === Number(vendor.id));
+    const employees = db.employees.find((e) => Number(e.vendor_id) === Number(vendor.id)).map((e) => ({
+      ...e,
+      vendor_name: vendor.company_name
+    }));
     const permits = db.permits.find((p) => Number(p.vendor_id) === Number(vendor.id));
     const materials = db.materials.find((m) => Number(m.vendor_id) === Number(vendor.id));
     const documents = db.vendor_documents.find((d) => Number(d.vendor_id) === Number(vendor.id));
@@ -65,7 +72,11 @@ const getVendorById = async (req, res) => {
 
     const insideNow = employees.filter((e) => e.currently_inside === 1).length;
     const activeWorkers = employees.filter((e) => e.status !== 'Deactivated').length;
-    const pendingWorkers = employees.filter((e) => e.status === 'Pending Approval' || e.status === 'Pending');
+    const pendingWorkers = employees.filter((e) => 
+      ['Pending Approval', 'Pending', 'Pending ID Clearance'].includes(e.status) ||
+      e.id_card_status === 'Awaiting Approvals' ||
+      (e.approval_stage && e.approval_stage !== 'Completed')
+    );
     const yesterdayCount = Math.max(0, Math.round(activeWorkers * 0.88));
     const todayCount = insideNow > 0 ? insideNow : Math.max(0, Math.round(activeWorkers * 0.92));
 

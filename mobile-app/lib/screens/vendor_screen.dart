@@ -1360,6 +1360,9 @@ class _VendorScreenState extends State<VendorScreen> {
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+          ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF0F172A), Color(0xFF090D16)],
@@ -1376,223 +1379,229 @@ class _VendorScreenState extends State<VendorScreen> {
               )
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Top Hologram Header
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(23)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Top Hologram Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(23)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.nfc, color: Color(0xFF06B6D4), size: 20),
-                        const SizedBox(width: 8),
-                        Text('ZYETA SMART PASS • NFC/QR', style: TextStyle(color: Colors.cyan.shade200, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                        Row(
+                          children: [
+                            const Icon(Icons.nfc, color: Color(0xFF06B6D4), size: 20),
+                            const SizedBox(width: 8),
+                            Text('ZYETA SMART PASS • NFC/QR', style: TextStyle(color: Colors.cyan.shade200, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color(0xFF10B981)),
+                          ),
+                          child: const Text('GATE PASS VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                        ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: const Color(0xFF10B981)),
-                      ),
-                      child: const Text('GATE PASS VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
 
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    // Avatar & Details with Photo Support
-                    Row(
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
                       children: [
+                        // Avatar & Details with Photo Support
+                        Row(
+                          children: [
+                            Container(
+                              width: 68,
+                              height: 68,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                                boxShadow: [
+                                  BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 12)
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: (emp['photo_url'] != null || emp['profile_photo'] != null)
+                                    ? Image.network(
+                                        emp['photo_url'] ?? emp['profile_photo'],
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          color: const Color(0xFF6366F1),
+                                          child: Center(
+                                            child: Text((emp['full_name'] ?? 'W')[0].toUpperCase(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: const Color(0xFF6366F1),
+                                        child: Center(
+                                          child: Text((emp['full_name'] ?? 'W')[0].toUpperCase(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(emp['full_name'] ?? 'Worker', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  const SizedBox(height: 2),
+                                  Text('ID: ${emp['employee_id'] ?? "EMP-100"}', style: const TextStyle(fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
+                                  Text('${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
+                                  Text('Vendor: ${emp['vendor_name'] ?? _selectedVendorDetails?['company_name'] ?? "Contractor"}', style: const TextStyle(fontSize: 10, color: Colors.white38), overflow: TextOverflow.ellipsis),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // QR Code Card
                         Container(
-                          width: 68,
-                          height: 68,
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
                             boxShadow: [
-                              BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 12)
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 10,
+                              ),
                             ],
                           ),
-                          child: ClipOval(
-                            child: (emp['photo_url'] != null || emp['profile_photo'] != null)
-                                ? Image.network(
-                                    emp['photo_url'] ?? emp['profile_photo'],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
-                                      color: const Color(0xFF6366F1),
-                                      child: Center(
-                                        child: Text((emp['full_name'] ?? 'W')[0].toUpperCase(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                                      ),
-                                    ),
-                                  )
-                                : Container(
-                                    color: const Color(0xFF6366F1),
-                                    child: Center(
-                                      child: Text((emp['full_name'] ?? 'W')[0].toUpperCase(), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-                                    ),
-                                  ),
+                          child: QrImageView(
+                            data: 'ZYETA-EMP-${emp['employee_id'] ?? emp['id']}-${emp['full_name']}',
+                            version: QrVersions.auto,
+                            size: 135.0,
+                            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF0F172A)),
+                            dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.circle, color: Color(0xFF0F172A)),
                           ),
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
+
+                        const SizedBox(height: 14),
+
+                        // Attached Verified Documents Row
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(emp['full_name'] ?? 'Worker', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                              const SizedBox(height: 2),
-                              Text('ID: ${emp['employee_id'] ?? "EMP-100"}', style: const TextStyle(fontSize: 12, color: Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
-                              Text('${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}', style: const TextStyle(fontSize: 11, color: Colors.white60)),
-                              Text('Vendor: ${emp['vendor_name'] ?? _selectedVendorDetails?['company_name'] ?? "Contractor"}', style: const TextStyle(fontSize: 10, color: Colors.white38), overflow: TextOverflow.ellipsis),
+                              const Row(
+                                children: [
+                                  Icon(Icons.attachment, color: Color(0xFF06B6D4), size: 14),
+                                  SizedBox(width: 4),
+                                  Text('Verified Onboarding Attachments (Active on ID):', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(6)),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.credit_card, color: Color(0xFF6366F1), size: 12),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              emp['aadhaar_doc'] ?? 'aadhaar_verified.pdf',
+                                              style: const TextStyle(color: Colors.white70, fontSize: 9),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 10),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(6)),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 12),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              emp['medical_doc'] ?? 'medical_cert.pdf',
+                                              style: const TextStyle(color: Colors.white70, fontSize: 9),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 10),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Compliance Badges Row
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildHoloBadge(Icons.bloodtype, 'Blood', emp['blood_group'] ?? 'O+', Colors.redAccent),
+                              _buildHoloBadge(Icons.health_and_safety, 'Medical', 'Grade A', Colors.greenAccent),
+                              _buildHoloBadge(Icons.shield, 'Safety', 'Inducted', Colors.amberAccent),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF06B6D4),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('CLOSE PASS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                           ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 16),
-
-                    // QR Code Card
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: QrImageView(
-                        data: 'ZYETA-EMP-${emp['employee_id'] ?? emp['id']}-${emp['full_name']}',
-                        version: QrVersions.auto,
-                        size: 135.0,
-                        eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF0F172A)),
-                        dataModuleStyle: const QrDataModuleStyle(dataModuleShape: QrDataModuleShape.circle, color: Color(0xFF0F172A)),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // Attached Verified Documents Row
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.attachment, color: Color(0xFF06B6D4), size: 14),
-                              SizedBox(width: 4),
-                              Text('Verified Onboarding Attachments (Active on ID):', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(6)),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.credit_card, color: Color(0xFF6366F1), size: 12),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          emp['aadhaar_doc'] ?? 'aadhaar_verified.pdf',
-                                          style: const TextStyle(color: Colors.white70, fontSize: 9),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 10),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(6)),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 12),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          emp['medical_doc'] ?? 'medical_cert.pdf',
-                                          style: const TextStyle(color: Colors.white70, fontSize: 9),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 10),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Compliance Badges Row
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildHoloBadge(Icons.bloodtype, 'Blood', emp['blood_group'] ?? 'O+', Colors.redAccent),
-                          _buildHoloBadge(Icons.health_and_safety, 'Medical', 'Grade A', Colors.greenAccent),
-                          _buildHoloBadge(Icons.shield, 'Safety', 'Inducted', Colors.amberAccent),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF06B6D4),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('CLOSE PASS', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

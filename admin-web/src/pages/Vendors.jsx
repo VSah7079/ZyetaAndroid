@@ -3,9 +3,10 @@ import {
   Building2, Plus, Phone, Mail, FileText, CheckCircle2, XCircle, AlertTriangle,
   Users, Calendar, Clock, Truck, Package, ShieldAlert, ShieldCheck, Flame,
   Check, X, RefreshCw, ChevronDown, UserCheck, ArrowUpRight, TrendingUp, TrendingDown,
-  MapPin, Hash, Award, AlertCircle, Copy, Key
+  MapPin, Hash, Award, AlertCircle, Copy, Key, CreditCard
 } from 'lucide-react';
 import { api } from '../services/api';
+import { DigitalIdCard } from '../components/DigitalIdCard';
 
 export const Vendors = () => {
   const [vendors, setVendors] = useState([]);
@@ -22,6 +23,7 @@ export const Vendors = () => {
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [selectedEmployeeForCard, setSelectedEmployeeForCard] = useState(null);
 
   // Forms State
   const [vendorForm, setVendorForm] = useState({
@@ -157,10 +159,14 @@ export const Vendors = () => {
     }
   };
 
-  // 1-Click Approve Worker
+  // 1-Click Approve Worker & Issue Digital Gate ID Card
   const handleApproveWorker = async (empId) => {
     try {
-      const res = await api.updateEmployee(empId, { status: 'Active' });
+      const res = await api.updateEmployee(empId, { 
+        status: 'Active',
+        id_card_status: 'Issued',
+        approval_stage: 'Completed'
+      });
       if (res.success) {
         fetchVendorDetails(selectedVendorId);
         fetchVendors();
@@ -762,15 +768,29 @@ export const Vendors = () => {
                   {/* PENDING APPROVALS QUEUE */}
                   {selectedVendorDetails?.pending_employees && selectedVendorDetails.pending_employees.length > 0 && (
                     <div className="glass-card" style={{ padding: '20px', border: '1px solid rgba(245, 158, 11, 0.4)', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.6))' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                         <div>
                           <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                             <AlertCircle size={18} />
                             Pending Workforce Approvals ({selectedVendorDetails.pending_employees.length})
                           </h4>
                           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
-                            New workers submitted by contractor awaiting Site Admin verification and gate badge issuance
+                            New workers submitted by contractor awaiting multi-tier clearance before ID card is issued
                           </p>
+                        </div>
+                        <div style={{
+                          background: 'rgba(99, 102, 241, 0.15)',
+                          border: '1px solid rgba(99, 102, 241, 0.3)',
+                          borderRadius: '8px',
+                          padding: '6px 12px',
+                          fontSize: '0.72rem',
+                          color: '#a5b4fc',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <ShieldCheck size={14} color="#818cf8" />
+                          <span><strong>Approval Flow:</strong> 1. Site Admin KYC → 2. Safety (HSE) → 3. Super Admin ID Card</span>
                         </div>
                       </div>
 
@@ -784,6 +804,7 @@ export const Vendors = () => {
                               <th>Mobile</th>
                               <th>Aadhaar / PVC</th>
                               <th>Blood Group</th>
+                              <th>Approval Stage</th>
                               <th style={{ textAlign: 'right' }}>Admin Action</th>
                             </tr>
                           </thead>
@@ -812,15 +833,28 @@ export const Vendors = () => {
                                   </span>
                                 </td>
                                 <td><span className="mono" style={{ color: '#f87171', fontWeight: 700 }}>{emp.blood_group || 'O+'}</span></td>
+                                <td>
+                                  <span style={{
+                                    fontSize: '0.72rem',
+                                    color: '#fbbf24',
+                                    fontWeight: 700,
+                                    background: 'rgba(245, 158, 11, 0.1)',
+                                    padding: '3px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid rgba(245, 158, 11, 0.25)'
+                                  }}>
+                                    ⏳ {emp.approval_stage || 'Pending Admin'}
+                                  </span>
+                                </td>
                                 <td style={{ textAlign: 'right' }}>
                                   <div style={{ display: 'inline-flex', gap: '6px' }}>
                                     <button
                                       onClick={() => handleApproveWorker(emp.id)}
                                       className="btn btn-primary"
                                       style={{ padding: '4px 10px', fontSize: '0.75rem', background: '#10b981', borderColor: '#10b981' }}
-                                      title="Approve and issue gate access"
+                                      title="Approve worker & immediately issue Official ID Badge"
                                     >
-                                      <Check size={14} /> Approve
+                                      <Check size={14} /> Approve & Issue ID
                                     </button>
                                     <button
                                       onClick={() => handleRejectWorker(emp.id)}
@@ -913,13 +947,48 @@ export const Vendors = () => {
                                   </span>
                                 </td>
                                 <td style={{ textAlign: 'right' }}>
-                                  <div style={{ display: 'inline-flex', gap: '4px' }}>
+                                  <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                                    {emp.status === 'Active' ? (
+                                      <button
+                                        onClick={() => setSelectedEmployeeForCard(emp)}
+                                        className="btn btn-secondary"
+                                        style={{
+                                          padding: '4px 9px',
+                                          fontSize: '0.72rem',
+                                          color: '#818cf8',
+                                          borderColor: 'rgba(99, 102, 241, 0.4)',
+                                          background: 'rgba(99, 102, 241, 0.12)',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '5px'
+                                        }}
+                                        title="View Official Digital ID Badge & QR Code"
+                                      >
+                                        <CreditCard size={13} />
+                                        <span>View ID Pass</span>
+                                      </button>
+                                    ) : (
+                                      <span style={{
+                                        fontSize: '0.7rem',
+                                        color: '#fbbf24',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: 'rgba(245, 158, 11, 0.1)',
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        border: '1px solid rgba(245, 158, 11, 0.2)'
+                                      }}>
+                                        <Clock size={11} />
+                                        <span>Pending Clearance</span>
+                                      </span>
+                                    )}
                                     {emp.status !== 'Active' && (
-                                      <button onClick={() => handleApproveWorker(emp.id)} className="btn btn-secondary" style={{ padding: '3px 8px', fontSize: '0.7rem', color: '#34d399' }} title="Approve">
+                                      <button onClick={() => handleApproveWorker(emp.id)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.7rem', color: '#34d399', borderColor: 'rgba(52, 211, 153, 0.3)' }} title="Approve & Issue ID Badge">
                                         <Check size={12} />
                                       </button>
                                     )}
-                                    <button onClick={() => handleRejectWorker(emp.id)} className="btn btn-secondary" style={{ padding: '3px 8px', fontSize: '0.7rem', color: '#f87171' }} title="Deactivate">
+                                    <button onClick={() => handleRejectWorker(emp.id)} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.7rem', color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.3)' }} title="Deactivate">
                                       <X size={12} />
                                     </button>
                                   </div>
@@ -1923,6 +1992,13 @@ export const Vendors = () => {
           </div>
         </div>
       )}
+
+      {/* Official Digital ID Card Preview / Print Modal */}
+      <DigitalIdCard
+        employee={selectedEmployeeForCard}
+        isOpen={!!selectedEmployeeForCard}
+        onClose={() => setSelectedEmployeeForCard(null)}
+      />
     </div>
   );
 };

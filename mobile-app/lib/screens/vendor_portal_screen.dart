@@ -1000,9 +1000,12 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Container(
-          width: 340,
-          padding: const EdgeInsets.all(22),
+          width: 350,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.88,
+          ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF1E293B), Color(0xFF0B1120), Color(0xFF030712)],
@@ -1019,191 +1022,211 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
               )
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Top Lanyard Hole Visual
-              Container(
-                width: 48,
-                height: 8,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(6)),
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Row(
+                  // Top Lanyard Hole Visual
+                  Container(
+                    width: 48,
+                    height: 6,
+                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(6)),
+                  ),
+                  const SizedBox(height: 10),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(Icons.shield, color: Color(0xFF06B6D4), size: 22),
-                      SizedBox(width: 6),
-                      Text('ZYETA SMART PASS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2)),
+                      const Row(
+                        children: [
+                          Icon(Icons.shield, color: Color(0xFF06B6D4), size: 20),
+                          SizedBox(width: 6),
+                          Text('ZYETA SMART PASS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1.2)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: emp['currently_inside'] == 1 ? Colors.green.withValues(alpha: 0.25) : Colors.white10,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white24),
+                        ),
+                        child: Text(
+                          emp['currently_inside'] == 1 ? '● INSIDE SITE' : 'OUTSIDE',
+                          style: TextStyle(
+                            color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+
+                  // Avatar with glowing border
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: emp['currently_inside'] == 1 ? Colors.green.withValues(alpha: 0.25) : Colors.white10,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white24),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                      boxShadow: [
+                        BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 15)
+                      ],
                     ),
-                    child: Text(
-                      emp['currently_inside'] == 1 ? '● INSIDE SITE' : 'OUTSIDE',
-                      style: TextStyle(
-                        color: emp['currently_inside'] == 1 ? Colors.greenAccent : Colors.white54,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: CircleAvatar(
+                      radius: 36,
+                      backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    emp['full_name'] ?? 'Worker',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11.5, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Attached Documents Showcase Pills
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B132B),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(Icons.assignment_turned_in, color: Color(0xFF06B6D4), size: 13),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Aadhaar: ${emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'}',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 13),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Medical: ${emp['medical_doc'] ?? emp['medical_cert'] ?? 'medical_fitness_apollo_cert.pdf'}',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 9.5),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Details Grid
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildPassDetailRow('Pass / Badge ID', emp['employee_id'] ?? ''),
+                        _buildPassDetailRow('Contractor Company', emp['vendor_name'] ?? 'Contractor'),
+                        _buildPassDetailRow('Aadhaar Number', emp['aadhaar_no'] ?? 'N/A'),
+                        _buildPassDetailRow('Aadhaar Document', emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'),
+                        _buildPassDetailRow('Medical Fitness', emp['medical_doc'] ?? emp['medical_cert'] ?? 'Grade A Certified'),
+                        _buildPassDetailRow('Blood Group', emp['blood_group'] ?? 'O+'),
+                        _buildPassDetailRow('Gate Permissions', 'All Turnstiles & Optical Portals'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // 3-Tier Stamped Clearances Status Banner
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 11), SizedBox(width: 3), Text('Site Admin KYC', style: TextStyle(color: Color(0xFF10B981), fontSize: 8.5, fontWeight: FontWeight.bold))]),
+                        Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 11), SizedBox(width: 3), Text('Safety HSE', style: TextStyle(color: Color(0xFF10B981), fontSize: 8.5, fontWeight: FontWeight.bold))]),
+                        Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 11), SizedBox(width: 3), Text('Super Admin', style: TextStyle(color: Color(0xFF10B981), fontSize: 8.5, fontWeight: FontWeight.bold))]),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // QR Code Box
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)],
+                    ),
+                    child: Column(
+                      children: [
+                        QrImageView(
+                          data: emp['employee_id'] ?? 'EMP-101',
+                          version: QrVersions.auto,
+                          size: 88.0,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          emp['employee_id'] ?? '',
+                          style: const TextStyle(color: Colors.black87, fontSize: 10.5, fontWeight: FontWeight.bold, letterSpacing: 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text('Encrypted NFC & Optical Turnstile Badge', style: TextStyle(color: Colors.white38, fontSize: 9.5)),
+                  const SizedBox(height: 10),
+
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      minimumSize: const Size(double.infinity, 40),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('Close ID Pass', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-
-              // Avatar with glowing border
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF06B6D4), width: 2),
-                  boxShadow: [
-                    BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 15)
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: NetworkImage(emp['photo_url'] ?? emp['profile_photo'] ?? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(emp['full_name'] ?? 'Worker', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              Text('${emp['designation'] ?? 'Technician'} • ${emp['skill'] ?? 'General'}', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 12),
-
-              // Attached Documents Showcase Pills
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B132B),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(Icons.assignment_turned_in, color: Color(0xFF06B6D4), size: 14),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Aadhaar: ${emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'}',
-                              style: const TextStyle(color: Colors.white70, fontSize: 9.5),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 14),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Medical: ${emp['medical_doc'] ?? emp['medical_cert'] ?? 'medical_fitness_apollo_cert.pdf'}',
-                              style: const TextStyle(color: Colors.white70, fontSize: 9.5),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Details Grid
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Column(
-                  children: [
-                    _buildPassDetailRow('Pass / Badge ID', emp['employee_id'] ?? ''),
-                    _buildPassDetailRow('Contractor Company', emp['vendor_name'] ?? 'Contractor'),
-                    _buildPassDetailRow('Aadhaar Number', emp['aadhaar_no'] ?? 'N/A'),
-                    _buildPassDetailRow('Aadhaar Document', emp['aadhaar_doc'] ?? 'aadhaar_card_front_back.pdf'),
-                    _buildPassDetailRow('Medical Fitness', emp['medical_doc'] ?? emp['medical_cert'] ?? 'Grade A Certified'),
-                    _buildPassDetailRow('Blood Group', emp['blood_group'] ?? 'O+'),
-                    _buildPassDetailRow('Gate Permissions', 'All Turnstiles & Optical Portals'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // 3-Tier Stamped Clearances Status Banner
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Site Admin KYC', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
-                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Safety HSE', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
-                    Row(children: [Icon(Icons.check_circle, color: Color(0xFF10B981), size: 12), SizedBox(width: 3), Text('Super Admin', style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold))]),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // QR Code Box
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 10)],
-                ),
-                child: Column(
-                  children: [
-                    QrImageView(
-                      data: emp['employee_id'] ?? 'EMP-101',
-                      version: QrVersions.auto,
-                      size: 100.0,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      emp['employee_id'] ?? '',
-                      style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text('Encrypted NFC & Optical Turnstile Badge', style: TextStyle(color: Colors.white38, fontSize: 10)),
-              const SizedBox(height: 12),
-
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
-                  minimumSize: const Size(double.infinity, 44),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('Close ID Pass', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1212,12 +1235,20 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
 
   Widget _buildPassDetailRow(String label, String val) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
+      padding: const EdgeInsets.symmetric(vertical: 2.2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11)),
-          Text(val, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10.5)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              val,
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+            ),
+          ),
         ],
       ),
     );

@@ -142,6 +142,37 @@ export const Employees = () => {
         </button>
       </div>
 
+      {/* 3-Tier Pipeline Banner for Vendors */}
+      {user?.role === 'Vendor' && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.08))',
+          border: '1px solid rgba(99, 102, 241, 0.3)',
+          borderRadius: '12px',
+          padding: '12px 18px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Shield size={20} color="#818cf8" />
+            </div>
+            <div>
+              <strong style={{ color: '#fff', fontSize: '0.85rem' }}>ID Badge Issuance Pipeline</strong>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#cbd5e1' }}>
+                1. Site Admin KYC (Aadhaar & Contract) ➔ 2. Safety (Medical & HSE) ➔ 3. Super Admin Gate ID Card Issuance
+              </p>
+            </div>
+          </div>
+          <span style={{ fontSize: '0.72rem', color: '#34d399', background: 'rgba(52, 211, 153, 0.12)', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '4px 10px', borderRadius: '20px', fontWeight: 600 }}>
+            ● Approved Workers get Instant Digital ID & QR Pass
+          </span>
+        </div>
+      )}
+
       {/* Filter Bar */}
       <div className="glass-panel" style={{ padding: '16px', marginBottom: '20px', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
@@ -261,15 +292,39 @@ export const Employees = () => {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button
-                            onClick={() => setSelectedEmployeeForCard(emp)}
-                            className="btn btn-secondary"
-                            title="Digital ID Card"
-                            style={{ padding: '6px 8px', fontSize: '0.7rem' }}
-                          >
-                            <CreditCard size={14} />
-                          </button>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {emp.status === 'Active' ? (
+                            <button
+                              onClick={() => setSelectedEmployeeForCard(emp)}
+                              className="btn btn-secondary"
+                              title="Official Digital ID Card & Gate Pass"
+                              style={{
+                                padding: '5px 9px',
+                                fontSize: '0.72rem',
+                                color: '#818cf8',
+                                borderColor: 'rgba(99, 102, 241, 0.4)',
+                                background: 'rgba(99, 102, 241, 0.12)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <CreditCard size={13} />
+                              <span>ID Card</span>
+                            </button>
+                          ) : (
+                            <span style={{
+                              fontSize: '0.68rem',
+                              color: '#fbbf24',
+                              background: 'rgba(245, 158, 11, 0.1)',
+                              border: '1px solid rgba(245, 158, 11, 0.25)',
+                              padding: '3px 7px',
+                              borderRadius: '4px',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              ⏳ In Approval
+                            </span>
+                          )}
                           <button
                             onClick={() => open360View(emp.id)}
                             className="btn btn-secondary"

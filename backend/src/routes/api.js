@@ -15,6 +15,10 @@ const dashboardController = require('../controllers/dashboardController');
 const reportController = require('../controllers/reportController');
 const notificationController = require('../controllers/notificationController');
 const safetyController = require('../controllers/safetyController');
+const uploadController = require('../controllers/uploadController');
+
+// --- 0. File & Document Upload ---
+router.post('/upload', uploadController.uploadMiddleware, uploadController.handleFileUpload);
 
 // --- 1. Auth Endpoints ---
 router.post('/auth/login', authController.login);

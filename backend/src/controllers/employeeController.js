@@ -152,32 +152,37 @@ const createEmployee = async (req, res) => {
       joining_date: data.joining_date || new Date().toISOString().split('T')[0],
       shift_id: data.shift_id ? Number(data.shift_id) : 1,
       aadhaar_no: data.aadhaar_no || '',
+      aadhaar_doc: data.aadhaar_doc || data.aadhaar_file || 'aadhaar_card_front_back.pdf',
       pan_no: data.pan_no || '',
       police_verification_doc: data.police_verification_doc || 'pending_pvc.pdf',
       police_verification_expiry: data.police_verification_expiry || '2027-12-31',
-      profile_photo: data.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      profile_photo: data.profile_photo || data.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      photo_url: data.photo_url || data.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      medical_doc: data.medical_doc || 'medical_fitness_cert.pdf',
+      medical_cert: data.medical_cert || 'General Fitness',
+      medical_validity: data.medical_validity || '2027-12-31',
       qr_code_data: qrCodeData,
-      status: req.user.role === 'Vendor' ? 'Pending ID Clearance' : 'Active',
-      id_card_status: req.user.role === 'Vendor' ? 'Awaiting Approvals' : 'Issued',
-      approval_stage: req.user.role === 'Vendor' ? 'Pending Admin' : 'Completed',
+      status: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Active' : 'Pending ID Clearance',
+      id_card_status: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Issued' : 'Awaiting Approvals',
+      approval_stage: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Completed' : 'Pending Admin & Safety',
       approvals: {
         admin: {
-          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
-          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
-          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
-          remarks: req.user.role === 'Vendor' ? 'Awaiting KYC & Contract verification' : 'Pre-approved'
+          status: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Approved' : 'Pending',
+          approved_by: (req.user.role === 'Super Admin' && data.pre_approved) ? req.user.full_name : null,
+          approved_at: (req.user.role === 'Super Admin' && data.pre_approved) ? new Date().toISOString() : null,
+          remarks: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Pre-approved' : 'Awaiting Site Admin KYC & Aadhaar Verification'
         },
         safety: {
-          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
-          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
-          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
-          remarks: req.user.role === 'Vendor' ? 'Awaiting Medical & Safety induction clearance' : 'Pre-cleared'
+          status: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Approved' : 'Pending',
+          approved_by: (req.user.role === 'Super Admin' && data.pre_approved) ? req.user.full_name : null,
+          approved_at: (req.user.role === 'Super Admin' && data.pre_approved) ? new Date().toISOString() : null,
+          remarks: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Pre-cleared' : 'Awaiting HSE Medical & Safety Clearance'
         },
         super_admin: {
-          status: req.user.role === 'Vendor' ? 'Pending' : 'Approved',
-          approved_by: req.user.role === 'Vendor' ? null : req.user.full_name,
-          approved_at: req.user.role === 'Vendor' ? null : new Date().toISOString(),
-          remarks: req.user.role === 'Vendor' ? 'Awaiting Super Admin final ID badge issuance' : 'Badge Generated'
+          status: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Approved' : 'Pending',
+          approved_by: (req.user.role === 'Super Admin' && data.pre_approved) ? req.user.full_name : null,
+          approved_at: (req.user.role === 'Super Admin' && data.pre_approved) ? new Date().toISOString() : null,
+          remarks: (req.user.role === 'Super Admin' && data.pre_approved) ? 'Badge Generated' : 'Awaiting Dual Admin & Safety Clearances'
         }
       },
       currently_inside: 0,
@@ -185,17 +190,32 @@ const createEmployee = async (req, res) => {
     });
 
     // Add Aadhaar doc record
-    if (data.aadhaar_no) {
+    if (data.aadhaar_no || data.aadhaar_doc) {
       db.employee_documents.create({
         employee_id: newEmp.id,
         document_type: 'Aadhaar Card',
-        document_number: data.aadhaar_no,
-        document_file: `aadhaar_${empId}.pdf`,
+        document_number: data.aadhaar_no || 'Pending Entry',
+        document_file: data.aadhaar_doc || `aadhaar_${empId}.pdf`,
         issue_date: '2020-01-01',
         expiry_date: '2099-12-31',
-        verification_status: 'Verified',
-        verified_by: req.user.full_name,
-        verified_at: new Date().toISOString()
+        verification_status: 'Pending',
+        verified_by: null,
+        verified_at: null
+      });
+    }
+
+    // Add Medical fitness certificate doc record
+    if (data.medical_doc) {
+      db.employee_documents.create({
+        employee_id: newEmp.id,
+        document_type: 'Medical Fitness Certificate',
+        document_number: `MED-${empId}`,
+        document_file: data.medical_doc,
+        issue_date: new Date().toISOString().split('T')[0],
+        expiry_date: data.medical_validity || '2027-12-31',
+        verification_status: 'Pending',
+        verified_by: null,
+        verified_at: null
       });
     }
 
@@ -206,15 +226,15 @@ const createEmployee = async (req, res) => {
       actionType: 'CREATE',
       module: 'Employee',
       affectedRecordId: newEmp.id,
-      details: `Created employee record ${newEmp.full_name} (${newEmp.employee_id})`,
+      details: `Created worker registration ${newEmp.full_name} (${newEmp.employee_id}) - Pending Site Admin & Safety HSE Clearance`,
       ipAddress: req.ip
     });
 
     // 1. Notify Site Admin
     notify({
       recipientRole: 'Admin',
-      title: 'New Worker Registered - Admin Clearance Required',
-      message: `${newEmp.full_name} (${newEmp.employee_id}) registered under ${vendorObj ? vendorObj.company_name : 'Direct'}. Verify Aadhaar & employment contract.`,
+      title: 'New Worker Registered - KYC & Aadhaar Clearance Required',
+      message: `${newEmp.full_name} (${newEmp.employee_id}) registered under ${vendorObj ? vendorObj.company_name : 'Direct'}. Verify Aadhaar doc: ${newEmp.aadhaar_doc}.`,
       eventType: 'NEW_EMPLOYEE_ADMIN_CLEARANCE',
       relatedId: newEmp.id
     });
@@ -222,8 +242,8 @@ const createEmployee = async (req, res) => {
     // 2. Notify Safety Officer (Safety Wala)
     notify({
       recipientRole: 'Safety Officer',
-      title: 'Worker Medical & Safety Clearance Request',
-      message: `${newEmp.full_name} requires HSE clearance (Medical fitness cert & safety induction check).`,
+      title: 'Worker Medical & Safety HSE Clearance Required',
+      message: `${newEmp.full_name} requires HSE clearance. Verify Medical Certificate: ${newEmp.medical_doc}.`,
       eventType: 'NEW_EMPLOYEE_SAFETY_CLEARANCE',
       relatedId: newEmp.id
     });
@@ -297,27 +317,50 @@ const approveEmployeeStage = async (req, res) => {
       const safetyOk = approvals.safety?.status === 'Approved';
       const superOk = approvals.super_admin?.status === 'Approved';
 
-      if (adminOk && safetyOk && superOk) {
+      if (adminOk && safetyOk) {
         status = 'Active';
         idCardStatus = 'Issued';
         nextStage = 'Completed';
-      } else if (adminOk && safetyOk) {
-        nextStage = 'Pending Super Admin';
-        idCardStatus = 'Awaiting Super Admin Badge Issue';
+        if (!approvals.super_admin || approvals.super_admin.status !== 'Approved') {
+          approvals.super_admin = {
+            status: 'Approved',
+            approved_by: req.user.full_name || 'System Gate Authority',
+            approved_at: new Date().toISOString(),
+            remarks: 'Authorized & Active upon Site Admin KYC & Safety HSE Clearances'
+          };
+        }
       } else if (adminOk) {
         nextStage = 'Pending Safety';
-        idCardStatus = 'Awaiting Safety Clearance';
+        idCardStatus = 'Awaiting Safety HSE Clearance';
+      } else if (safetyOk) {
+        nextStage = 'Pending Site Admin';
+        idCardStatus = 'Awaiting Site Admin KYC';
       } else {
-        nextStage = 'Pending Admin';
-        idCardStatus = 'Awaiting Admin Verification';
+        nextStage = 'Pending Admin & Safety';
+        idCardStatus = 'Awaiting Approvals';
       }
+    }
+
+    let qrCode = emp.qr_code_data;
+    if (status === 'Active' && !qrCode) {
+      const vendorObj = emp.vendor_id ? db.vendors.findById(emp.vendor_id) : null;
+      const qrPayload = JSON.stringify({
+        empId: emp.employee_id,
+        name: emp.full_name,
+        vendor: vendorObj ? vendorObj.company_name : 'Direct',
+        type: emp.employee_type || 'Contractor',
+        bloodGroup: emp.blood_group || 'O+',
+        validUntil: '2027-12-31'
+      });
+      qrCode = await QRCode.toDataURL(qrPayload);
     }
 
     const updated = db.employees.update(emp.id, {
       approvals,
       approval_stage: nextStage,
       status,
-      id_card_status: idCardStatus
+      id_card_status: idCardStatus,
+      ...(qrCode ? { qr_code_data: qrCode } : {})
     });
 
     logAudit({
@@ -330,6 +373,16 @@ const approveEmployeeStage = async (req, res) => {
       details: `${req.user.role} (${req.user.full_name}) marked stage "${stage}" as ${action} for ${emp.full_name} (${emp.employee_id})`,
       ipAddress: req.ip
     });
+
+    if (status === 'Active') {
+      notify({
+        recipientRole: 'Vendor',
+        title: 'Worker ID Card Approved & Issued',
+        message: `ID badge for ${emp.full_name} (${emp.employee_id}) is officially approved and issued. You can now view and print the ID card from your Vendor Portal.`,
+        eventType: 'WORKER_ID_ISSUED',
+        relatedId: emp.id
+      });
+    }
 
     res.json({
       success: true,
@@ -349,7 +402,35 @@ const updateEmployee = async (req, res) => {
     }
 
     const oldValues = { ...emp };
-    const updated = db.employees.update(emp.id, req.body);
+    const updates = { ...req.body };
+
+    // When fast-approved or activated
+    if (updates.status === 'Active') {
+      updates.id_card_status = 'Issued';
+      updates.approval_stage = 'Completed';
+      if (!emp.qr_code_data && !updates.qr_code_data) {
+        const vendorObj = emp.vendor_id ? db.vendors.findById(emp.vendor_id) : null;
+        const qrPayload = JSON.stringify({
+          empId: emp.employee_id,
+          name: updates.full_name || emp.full_name,
+          vendor: vendorObj ? vendorObj.company_name : 'Direct',
+          type: updates.employee_type || emp.employee_type || 'Contractor',
+          bloodGroup: updates.blood_group || emp.blood_group || 'O+',
+          validUntil: '2027-12-31'
+        });
+        updates.qr_code_data = await QRCode.toDataURL(qrPayload);
+      }
+
+      notify({
+        recipientRole: 'Vendor',
+        title: 'Worker ID Card Approved & Issued',
+        message: `ID badge for ${emp.full_name} (${emp.employee_id}) is approved. ID card is now available on your Vendor Portal.`,
+        eventType: 'WORKER_ID_ISSUED',
+        relatedId: emp.id
+      });
+    }
+
+    const updated = db.employees.update(emp.id, updates);
 
     logAudit({
       userId: req.user.id,
