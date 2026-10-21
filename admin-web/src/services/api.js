@@ -37,6 +37,21 @@ export const api = {
   updateUser: (id, userData) => request(`/auth/users/${id}`, { method: 'PUT', body: JSON.stringify(userData) }),
   deleteUser: (id) => request(`/auth/users/${id}`, { method: 'DELETE' }),
 
+  // Upload
+  uploadFile: async (file) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: formData
+    });
+    return res.json();
+  },
+
   // Dashboard
   getDashboardStats: () => request('/dashboard/stats'),
 

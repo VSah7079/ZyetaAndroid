@@ -33,6 +33,7 @@ export const Employees = () => {
   const [viewEmployeeDrawer, setViewEmployeeDrawer] = useState(null);
 
   // New Employee Form State
+  const [uploadingField, setUploadingField] = useState(null);
   const [formData, setFormData] = useState({
     full_name: '',
     father_name: '',
@@ -49,8 +50,10 @@ export const Employees = () => {
     emergency_relation: 'Parent',
     emergency_phone: '',
     blood_group: 'B+',
-    medical_cert: 'Fit for Construction & Height Work',
+    medical_cert: 'Fit for Construction & Height Work (Grade A)',
     medical_validity: '2027-12-31',
+    medical_doc: '',
+    aadhaar_doc: '',
     vendor_id: '',
     department_id: '1',
     designation: 'Specialist Technician',
@@ -87,6 +90,42 @@ export const Employees = () => {
   useEffect(() => {
     fetchData();
   }, [search, selectedVendor, selectedStatus]);
+
+  const handleManualUpload = async (field, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingField(field);
+      const res = await api.uploadFile(file);
+      if (res.success) {
+        if (field === 'profile_photo') {
+          setFormData(prev => ({ ...prev, profile_photo: `http://localhost:5000${res.data.url}` }));
+        } else if (field === 'aadhaar_doc') {
+          setFormData(prev => ({ ...prev, aadhaar_doc: res.data.filename }));
+        } else if (field === 'medical_doc') {
+          setFormData(prev => ({ ...prev, medical_doc: res.data.filename }));
+        }
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const handleApproveStage = async (id, stage, action) => {
+    try {
+      const res = await api.approveEmployeeStage(id, stage, action, `${stage === 'admin' ? 'Site Admin KYC' : 'Safety HSE Clearance'} approved by ${user?.fullName || user?.role}`);
+      if (res.success) {
+        fetchData();
+        if (viewEmployeeDrawer && viewEmployeeDrawer.id === id) {
+          open360View(id);
+        }
+      }
+    } catch (err) {
+      alert(err.message || 'Approval action failed');
+    }
+  };
 
   const handleCreateEmployee = async (e) => {
     e.preventDefault();
@@ -313,17 +352,54 @@ export const Employees = () => {
                               <span>ID Card</span>
                             </button>
                           ) : (
-                            <span style={{
-                              fontSize: '0.68rem',
-                              color: '#fbbf24',
-                              background: 'rgba(245, 158, 11, 0.1)',
-                              border: '1px solid rgba(245, 158, 11, 0.25)',
-                              padding: '3px 7px',
-                              borderRadius: '4px',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              ⏳ In Approval
-                            </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <span style={{
+                                  fontSize: '0.65rem',
+                                  color: emp.approvals?.admin?.status === 'Approved' ? '#34d399' : '#fbbf24',
+                                  background: emp.approvals?.admin?.status === 'Approved' ? 'rgba(52, 211, 153, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                  border: `1px solid ${emp.approvals?.admin?.status === 'Approved' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                                  padding: '2px 5px',
+                                  borderRadius: '4px'
+                                }}>
+                                  KYC: {emp.approvals?.admin?.status || 'Pending'}
+                                </span>
+                                <span style={{
+                                  fontSize: '0.65rem',
+                                  color: emp.approvals?.safety?.status === 'Approved' ? '#34d399' : '#fbbf24',
+                                  background: emp.approvals?.safety?.status === 'Approved' ? 'rgba(52, 211, 153, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                  border: `1px solid ${emp.approvals?.safety?.status === 'Approved' ? 'rgba(52, 211, 153, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                                  padding: '2px 5px',
+                                  borderRadius: '4px'
+                                }}>
+                                  HSE: {emp.approvals?.safety?.status || 'Pending'}
+                                </span>
+                              </div>
+                              {user?.role !== 'Vendor' && (
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  {(user?.role === 'Admin' || user?.role === 'Super Admin') && emp.approvals?.admin?.status !== 'Approved' && (
+                                    <button
+                                      onClick={() => handleApproveStage(emp.id, 'admin', 'Approved')}
+                                      className="btn btn-primary"
+                                      style={{ padding: '2px 6px', fontSize: '0.65rem', background: '#059669', borderColor: '#059669' }}
+                                      title="Approve Site Admin KYC"
+                                    >
+                                      ✓ KYC
+                                    </button>
+                                  )}
+                                  {(user?.role === 'Safety Officer' || user?.role === 'Admin' || user?.role === 'Super Admin') && emp.approvals?.safety?.status !== 'Approved' && (
+                                    <button
+                                      onClick={() => handleApproveStage(emp.id, 'safety', 'Approved')}
+                                      className="btn btn-primary"
+                                      style={{ padding: '2px 6px', fontSize: '0.65rem', background: '#0891b2', borderColor: '#0891b2' }}
+                                      title="Approve Medical HSE"
+                                    >
+                                      ✓ HSE
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           )}
                           <button
                             onClick={() => open360View(emp.id)}
@@ -365,6 +441,30 @@ export const Employees = () => {
 
             <form onSubmit={handleCreateEmployee} style={{ padding: '20px' }}>
               <div className="grid-responsive-1-1" style={{ marginBottom: '14px' }}>
+                {/* 1. MANUAL PROFILE PHOTO UPLOAD */}
+                <div className="form-group" style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <label className="form-label" style={{ color: '#38bdf8', fontWeight: 700 }}>1. Worker Profile Photo (Choose File / फ़ोटो चुनें) *</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <img
+                      src={formData.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
+                      alt="preview"
+                      style={{ width: '56px', height: '56px', borderRadius: '10px', objectFit: 'cover', border: '2px solid #06b6d4' }}
+                    />
+                    <div style={{ flex: 1, minWidth: '220px' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleManualUpload('profile_photo', e)}
+                        className="form-control"
+                        style={{ padding: '6px' }}
+                      />
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                        {uploadingField === 'profile_photo' ? '⏳ Uploading photo...' : 'Select custom portrait or capture camera photo'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Full Name *</label>
                   <input
@@ -443,8 +543,9 @@ export const Employees = () => {
                   </select>
                 </div>
 
+                {/* 2. MANUAL AADHAAR CARD UPLOAD */}
                 <div className="form-group">
-                  <label className="form-label">Aadhaar Card No.</label>
+                  <label className="form-label">Aadhaar Card No. (12 Digits)</label>
                   <input
                     type="text"
                     className="form-control"
@@ -452,6 +553,61 @@ export const Employees = () => {
                     value={formData.aadhaar_no}
                     onChange={(e) => setFormData({ ...formData, aadhaar_no: e.target.value })}
                   />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ color: '#06b6d4', fontWeight: 600 }}>2. Aadhaar Document Upload (Choose File / फ़ाइल चुनें) *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => handleManualUpload('aadhaar_doc', e)}
+                    className="form-control"
+                    style={{ padding: '6px' }}
+                  />
+                  {formData.aadhaar_doc ? (
+                    <span style={{ fontSize: '0.72rem', color: '#10b981', display: 'block', marginTop: '3px' }}>
+                      ✓ Attached: {formData.aadhaar_doc}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                      {uploadingField === 'aadhaar_doc' ? '⏳ Uploading Aadhaar...' : 'Upload front & back scanned copy'}
+                    </span>
+                  )}
+                </div>
+
+                {/* 3. MANUAL MEDICAL FITNESS CERTIFICATE UPLOAD */}
+                <div className="form-group">
+                  <label className="form-label">Medical Fitness Scope</label>
+                  <select
+                    className="form-control"
+                    value={formData.medical_cert}
+                    onChange={(e) => setFormData({ ...formData, medical_cert: e.target.value })}
+                  >
+                    <option value="Fit for Construction & Height Work (Grade A)">Fit for Height Work & Scaffolding (Grade A)</option>
+                    <option value="Fit for Heavy Rigging & Equipment Operator">Fit for Heavy Rigging & Operator</option>
+                    <option value="Fit for Confined Space & Hot Work">Fit for Confined Space & Hot Work</option>
+                    <option value="Fit for General Labour & Civil Works">Fit for General Labour & Civil Works</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ color: '#10b981', fontWeight: 600 }}>3. Medical Fitness Certificate (Choose File / फ़ाइल चुनें) *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => handleManualUpload('medical_doc', e)}
+                    className="form-control"
+                    style={{ padding: '6px' }}
+                  />
+                  {formData.medical_doc ? (
+                    <span style={{ fontSize: '0.72rem', color: '#10b981', display: 'block', marginTop: '3px' }}>
+                      ✓ Attached: {formData.medical_doc}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                      {uploadingField === 'medical_doc' ? '⏳ Uploading Medical...' : 'Upload occupational health fitness certificate'}
+                    </span>
+                  )}
                 </div>
 
                 <div className="form-group">
@@ -469,8 +625,8 @@ export const Employees = () => {
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Generate ID & Save
+                <button type="submit" className="btn btn-primary" style={{ background: '#06b6d4', borderColor: '#06b6d4' }}>
+                  Submit for Dual Admin & Safety Clearance
                 </button>
               </div>
             </form>
@@ -494,7 +650,7 @@ export const Employees = () => {
                 <img
                   src={viewEmployeeDrawer.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
                   alt="emp"
-                  style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
+                  style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover', border: '2px solid #06b6d4' }}
                 />
                 <div>
                   <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{viewEmployeeDrawer.full_name}</h4>
@@ -503,11 +659,53 @@ export const Employees = () => {
                 </div>
               </div>
 
+              {/* DUAL APPROVAL PIPELINE BANNER */}
+              <div style={{ background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
+                <strong style={{ fontSize: '0.85rem', color: '#fff', display: 'block', marginBottom: '8px' }}>
+                  Multi-Tier Clearance Gate:
+                </strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <span style={{ fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 600 }}>1. Site Admin KYC (Aadhaar & Contract)</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Doc: {viewEmployeeDrawer.aadhaar_doc || 'aadhaar_card_front_back.pdf'}</span>
+                  </div>
+                  {viewEmployeeDrawer.approvals?.admin?.status === 'Approved' ? (
+                    <span style={{ color: '#34d399', fontWeight: 700, fontSize: '0.8rem' }}>✓ Approved by {viewEmployeeDrawer.approvals.admin.approved_by || 'Admin'}</span>
+                  ) : (
+                    (user?.role === 'Admin' || user?.role === 'Super Admin') ? (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => handleApproveStage(viewEmployeeDrawer.id, 'admin', 'Approved')} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.72rem', background: '#059669', borderColor: '#059669' }}>Approve KYC</button>
+                        <button onClick={() => handleApproveStage(viewEmployeeDrawer.id, 'admin', 'Rejected')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.72rem', color: '#f43f5e' }}>Reject</button>
+                      </div>
+                    ) : <span style={{ color: '#fbbf24', fontSize: '0.78rem' }}>⏳ Awaiting Site Admin</span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: '0.82rem', color: '#cbd5e1', fontWeight: 600 }}>2. Safety Officer (Medical & HSE Clearance)</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>Doc: {viewEmployeeDrawer.medical_doc || 'medical_fitness_cert.pdf'}</span>
+                  </div>
+                  {viewEmployeeDrawer.approvals?.safety?.status === 'Approved' ? (
+                    <span style={{ color: '#34d399', fontWeight: 700, fontSize: '0.8rem' }}>✓ Approved by {viewEmployeeDrawer.approvals.safety.approved_by || 'Safety Officer'}</span>
+                  ) : (
+                    (user?.role === 'Safety Officer' || user?.role === 'Admin' || user?.role === 'Super Admin') ? (
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button onClick={() => handleApproveStage(viewEmployeeDrawer.id, 'safety', 'Approved')} className="btn btn-primary" style={{ padding: '4px 10px', fontSize: '0.72rem', background: '#0891b2', borderColor: '#0891b2' }}>Approve HSE</button>
+                        <button onClick={() => handleApproveStage(viewEmployeeDrawer.id, 'safety', 'Rejected')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.72rem', color: '#f43f5e' }}>Reject</button>
+                      </div>
+                    ) : <span style={{ color: '#fbbf24', fontSize: '0.78rem' }}>⏳ Awaiting Safety Officer</span>
+                  )}
+                </div>
+              </div>
+
               <div className="grid-responsive-1-1" style={{ gap: '10px', fontSize: '0.8rem', background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
                 <div><strong>Mobile:</strong> {viewEmployeeDrawer.mobile}</div>
                 <div><strong>Blood Group:</strong> <span style={{ color: '#f43f5e' }}>{viewEmployeeDrawer.blood_group}</span></div>
-                <div><strong>Aadhaar:</strong> {viewEmployeeDrawer.aadhaar_no}</div>
-                <div><strong>Medical Status:</strong> {viewEmployeeDrawer.medical_cert}</div>
+                <div><strong>Aadhaar Number:</strong> {viewEmployeeDrawer.aadhaar_no || 'N/A'}</div>
+                <div><strong>Aadhaar Doc File:</strong> <span style={{ color: '#38bdf8' }}>{viewEmployeeDrawer.aadhaar_doc || 'aadhaar_card_front_back.pdf'}</span></div>
+                <div><strong>Medical Fitness:</strong> {viewEmployeeDrawer.medical_cert}</div>
+                <div><strong>Medical Doc File:</strong> <span style={{ color: '#10b981' }}>{viewEmployeeDrawer.medical_doc || 'medical_fitness_cert.pdf'}</span></div>
                 <div><strong>Police Verification:</strong> {viewEmployeeDrawer.police_verification_expiry}</div>
                 <div><strong>Shift:</strong> {viewEmployeeDrawer.shift_name}</div>
               </div>

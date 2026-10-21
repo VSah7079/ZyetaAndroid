@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../utils/app_theme.dart';
 import '../utils/responsive.dart';
+import '../utils/file_chooser_helper.dart';
 
 class EmployeeScreen extends StatefulWidget {
   final bool showAppBar;
@@ -504,6 +506,12 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     final emergencyPhoneCtrl = TextEditingController();
     String skill = 'Skilled';
     String department = 'Civil';
+    String uploadedPhotoUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80';
+    Uint8List? uploadedPhotoBytes;
+    String uploadedAadhaarDoc = 'aadhaar_card_front_back.pdf';
+    Uint8List? uploadedAadhaarBytes;
+    String uploadedMedicalDoc = 'medical_fitness_apollo_cert.pdf';
+    Uint8List? uploadedMedicalBytes;
     bool isSaving = false;
 
     showModalBottomSheet(
@@ -540,7 +548,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                         ),
                         const SizedBox(width: 8),
                         const Text(
-                          'Onboard Worker & Generate ID Pass',
+                          'Onboard Worker & Attach KYC Docs',
                           style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -549,6 +557,68 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
+
+                // 1. WORKER PHOTO (CHOOSE FILE)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgSurface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppTheme.primary, width: 2),
+                        ),
+                        child: ClipOval(
+                          child: uploadedPhotoBytes != null
+                              ? Image.memory(uploadedPhotoBytes!, width: 56, height: 56, fit: BoxFit.cover)
+                              : Image.network(uploadedPhotoUrl, width: 56, height: 56, fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('1. Worker Photo (फ़ोटो) *', style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.bold)),
+                            const Text('Camera, Gallery, or Choose File', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                            const SizedBox(height: 5),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                final doc = await FileChooserHelper.pickPhoto(context);
+                                if (doc != null) {
+                                  setModalState(() {
+                                    if (doc.bytes != null) uploadedPhotoBytes = doc.bytes;
+                                    if (doc.serverUrl != null) uploadedPhotoUrl = doc.serverUrl!;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('✓ Photo selected: ${doc.name}'), backgroundColor: AppTheme.success),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.add_a_photo, size: 13, color: Colors.white),
+                              label: const Text('CHOOSE PHOTO', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
                 _buildTextField(nameCtrl, 'Full Name *', Icons.person_rounded),
                 const SizedBox(height: 10),
                 _buildTextField(fatherCtrl, 'Father\'s / Guardian Name', Icons.people_rounded),
@@ -556,6 +626,68 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                 _buildTextField(mobileCtrl, 'Mobile Number *', Icons.phone_rounded, keyboardType: TextInputType.phone),
                 const SizedBox(height: 10),
                 _buildTextField(aadhaarCtrl, 'Aadhaar / National ID Number *', Icons.credit_card_rounded, keyboardType: TextInputType.number),
+                const SizedBox(height: 12),
+
+                // 2. AADHAAR CARD DOCUMENT (CHOOSE FILE)
+                FileChooserCard(
+                  title: '2. Aadhaar Document Upload',
+                  subtitle: 'Select Aadhaar copy (PDF or Image Front & Back)',
+                  currentFileName: uploadedAadhaarDoc,
+                  fileBytes: uploadedAadhaarBytes,
+                  accentColor: AppTheme.primary,
+                  defaultIcon: Icons.credit_card,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Aadhaar Card Document',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedAadhaarDoc = doc.name;
+                        uploadedAadhaarBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Aadhaar file attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: AppTheme.success,
+                        ),
+                      );
+                    }
+                  },
+                ),
+
+                // 3. MEDICAL FITNESS CERTIFICATE (CHOOSE FILE)
+                FileChooserCard(
+                  title: '3. Medical Fitness Certificate Upload',
+                  subtitle: 'Select Medical Health report / fitness cert',
+                  currentFileName: uploadedMedicalDoc,
+                  fileBytes: uploadedMedicalBytes,
+                  accentColor: AppTheme.success,
+                  defaultIcon: Icons.health_and_safety,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Medical Fitness Certificate',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedMedicalDoc = doc.name;
+                        uploadedMedicalBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Medical certificate attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: AppTheme.success,
+                        ),
+                      );
+                    }
+                  },
+                ),
+
                 const SizedBox(height: 10),
                 _buildTextField(vendorCtrl, 'Contractor / Vendor Organization *', Icons.business_rounded),
                 const SizedBox(height: 10),
@@ -667,7 +799,12 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                               'full_name': nameCtrl.text.trim(),
                               'father_name': fatherCtrl.text.trim(),
                               'mobile': mobileCtrl.text.trim(),
+                              'aadhaar_no': aadhaarCtrl.text.trim(),
                               'aadhaar_number': aadhaarCtrl.text.trim(),
+                              'aadhaar_doc': uploadedAadhaarDoc,
+                              'medical_doc': uploadedMedicalDoc,
+                              'profile_photo': uploadedPhotoUrl,
+                              'photo_url': uploadedPhotoUrl,
                               'vendor_name': vendorCtrl.text.trim().isEmpty ? 'Direct' : vendorCtrl.text.trim(),
                               'designation': designationCtrl.text.trim().isEmpty ? 'General Worker' : designationCtrl.text.trim(),
                               'skill': skill,
@@ -680,7 +817,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                             if (ok && mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('✓ Worker Registered & Digital Gate Pass Generated!'), backgroundColor: AppTheme.success),
+                                const SnackBar(content: Text('✓ Worker Registered & Digital Gate Pass Generated with Attached KYC!'), backgroundColor: AppTheme.success),
                               );
                               _fetchEmployees();
                             }

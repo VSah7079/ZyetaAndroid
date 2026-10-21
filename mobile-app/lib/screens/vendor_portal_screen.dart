@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../utils/app_theme.dart';
+import '../utils/file_chooser_helper.dart';
 
 class VendorPortalScreen extends StatefulWidget {
   const VendorPortalScreen({super.key});
@@ -408,9 +409,12 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
     String selectedShift = 'General Shift (09:00 - 18:00)';
     String selectedSkillLevel = 'Skilled';
     String selectedPhotoUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80';
+    Uint8List? selectedPhotoBytes;
     String medicalFitnessStatus = 'Fit for Construction & Height Work (Class A)';
     String uploadedAadhaarDoc = 'aadhaar_card_front_back.pdf';
+    Uint8List? uploadedAadhaarBytes;
     String uploadedMedicalDoc = 'medical_fitness_apollo_cert.pdf';
+    Uint8List? uploadedMedicalBytes;
     bool isSaving = false;
 
     final photoPresets = [
@@ -477,85 +481,97 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                 // SECTION 1: PROFILE PHOTO & IDENTITY DETAILS
                 _buildSectionHeader('1. PROFILE PHOTO & IDENTITY DETAILS'),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFF06B6D4), width: 2),
-                        boxShadow: [
-                          BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 10)
-                        ],
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                          boxShadow: [
+                            BoxShadow(color: const Color(0xFF06B6D4).withValues(alpha: 0.3), blurRadius: 10)
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 32,
+                          backgroundImage: selectedPhotoBytes != null
+                              ? MemoryImage(selectedPhotoBytes!) as ImageProvider
+                              : NetworkImage(selectedPhotoUrl),
+                        ),
                       ),
-                      child: CircleAvatar(
-                        radius: 34,
-                        backgroundImage: NetworkImage(selectedPhotoUrl),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Worker Photo (For ID Badges) *', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
-                              InkWell(
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  setModalState(() {
-                                    selectedPhotoUrl = 'https://images.unsplash.com/photo-1540569014015-19a7be504e3a?w=150&auto=format&fit=crop&q=80';
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('📸 Photo uploaded & processed for Smart Pass!'), backgroundColor: Color(0xFF06B6D4)),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: const Color(0xFF06B6D4)),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.camera_alt, color: Color(0xFF06B6D4), size: 12),
-                                      SizedBox(width: 4),
-                                      Text('TAKE PHOTO', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 9.5, fontWeight: FontWeight.bold)),
-                                    ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Worker Photo (For ID Badges) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            const Text('Live Camera, Gallery, or Choose File', style: TextStyle(color: Colors.white54, fontSize: 10.5)),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final doc = await FileChooserHelper.pickPhoto(context);
+                                    if (doc != null) {
+                                      setModalState(() {
+                                        if (doc.bytes != null) selectedPhotoBytes = doc.bytes;
+                                        if (doc.serverUrl != null) selectedPhotoUrl = doc.serverUrl!;
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('📸 Photo attached: ${doc.name}'), backgroundColor: const Color(0xFF06B6D4)),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.add_a_photo, size: 13, color: Colors.black),
+                                  label: const Text('CHOOSE FILE', style: TextStyle(color: Colors.black, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF06B6D4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    elevation: 0,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: photoPresets.map((p) {
-                                final isSelected = selectedPhotoUrl == p['url'];
-                                return InkWell(
-                                  onTap: () => setModalState(() => selectedPhotoUrl = p['url']!),
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent, width: 2),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: photoPresets.map((p) {
+                                        final isSelected = selectedPhotoUrl == p['url'];
+                                        return InkWell(
+                                          onTap: () => setModalState(() {
+                                            selectedPhotoUrl = p['url']!;
+                                            selectedPhotoBytes = null;
+                                          }),
+                                          child: Container(
+                                            margin: const EdgeInsets.only(right: 5),
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: isSelected ? const Color(0xFF06B6D4) : Colors.transparent, width: 2),
+                                            ),
+                                            child: CircleAvatar(radius: 12, backgroundImage: NetworkImage(p['url']!)),
+                                          ),
+                                        );
+                                      }).toList(),
                                     ),
-                                    child: CircleAvatar(radius: 16, backgroundImage: NetworkImage(p['url']!)),
                                   ),
-                                );
-                              }).toList(),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
                 _buildFormTextField(nameCtrl, 'Full Name (As per Aadhaar) *', Icons.person),
@@ -718,140 +734,75 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> with SingleTick
                 const SizedBox(height: 8),
 
                 // AADHAAR CARD UPLOAD BOX
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.35)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
+                FileChooserCard(
+                  title: 'Aadhaar Document Upload (Front + Back)',
+                  subtitle: 'Select Aadhaar scanned copy (PDF or Image)',
+                  currentFileName: uploadedAadhaarDoc,
+                  fileBytes: uploadedAadhaarBytes,
+                  accentColor: const Color(0xFF06B6D4),
+                  defaultIcon: Icons.credit_card,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Aadhaar Card Document',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedAadhaarDoc = doc.name;
+                        uploadedAadhaarBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Aadhaar file attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: const Color(0xFF06B6D4),
                         ),
-                        child: const Icon(Icons.credit_card, color: Color(0xFF06B6D4), size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Aadhaar Document Upload (Front + Back) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text('Attached: $uploadedAadhaarDoc', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
-                          ],
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          setModalState(() {
-                            uploadedAadhaarDoc = 'aadhaar_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}_verified.pdf';
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('✓ Aadhaar Card file selected & attached!'), backgroundColor: Color(0xFF06B6D4)),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF06B6D4)),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.upload_file, size: 14, color: Color(0xFF06B6D4)),
-                              SizedBox(width: 4),
-                              Text('UPLOAD', style: TextStyle(color: Color(0xFF06B6D4), fontSize: 10, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                      );
+                    }
+                  },
                 ),
-                const SizedBox(height: 8),
 
                 _buildFormTextField(panCtrl, 'PAN Card Number (Optional)', Icons.assignment_ind),
                 const SizedBox(height: 8),
 
                 // MEDICAL FITNESS CERTIFICATE UPLOAD BOX
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 20),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Medical Fitness Certificate (Attached) *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                                Text('Attached: $uploadedMedicalDoc', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setModalState(() {
-                                uploadedMedicalDoc = 'medical_clearance_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}.pdf';
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('✓ Medical Fitness Certificate Attached!'), backgroundColor: Color(0xFF10B981)),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFF10B981)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.upload_file, size: 14, color: Color(0xFF10B981)),
-                                  SizedBox(width: 4),
-                                  Text('CHANGE', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(medicalFitnessStatus, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(child: _buildFormTextField(medicalValidityCtrl, 'Medical Validity', Icons.event)),
-                          const SizedBox(width: 8),
-                          Expanded(child: _buildFormTextField(pvcExpiryCtrl, 'Police Verification Valid', Icons.verified_user)),
-                        ],
-                      ),
-                    ],
-                  ),
+                FileChooserCard(
+                  title: 'Medical Fitness Certificate (Attached)',
+                  subtitle: 'Select certified fitness report (PDF or Image)',
+                  currentFileName: uploadedMedicalDoc,
+                  fileBytes: uploadedMedicalBytes,
+                  accentColor: const Color(0xFF10B981),
+                  defaultIcon: Icons.health_and_safety,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Medical Fitness Certificate',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedMedicalDoc = doc.name;
+                        uploadedMedicalBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Medical certificate attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                ),
+                Text(medicalFitnessStatus, style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildFormTextField(medicalValidityCtrl, 'Medical Validity', Icons.event)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildFormTextField(pvcExpiryCtrl, 'Police Verification Valid', Icons.verified_user)),
+                  ],
                 ),
 
                 // SECTION 4: EMERGENCY CONTACT

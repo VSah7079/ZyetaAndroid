@@ -46,8 +46,12 @@ export const Vendors = () => {
     skill: 'General',
     employee_type: 'Contractor',
     aadhaar_no: '',
-    blood_group: 'O+'
+    blood_group: 'O+',
+    profile_photo: '',
+    aadhaar_doc: '',
+    medical_doc: ''
   });
+  const [uploadingWorkerField, setUploadingWorkerField] = useState(null);
 
   const [permitForm, setPermitForm] = useState({
     permit_type: 'Hot Work (Welding/Cutting)',
@@ -218,6 +222,28 @@ export const Vendors = () => {
     }
   };
 
+  const handleWorkerFileUpload = async (field, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingWorkerField(field);
+      const res = await api.uploadFile(file);
+      if (res.success) {
+        if (field === 'profile_photo') {
+          setWorkerForm(prev => ({ ...prev, profile_photo: `http://localhost:5000${res.data.url}` }));
+        } else if (field === 'aadhaar_doc') {
+          setWorkerForm(prev => ({ ...prev, aadhaar_doc: res.data.filename }));
+        } else if (field === 'medical_doc') {
+          setWorkerForm(prev => ({ ...prev, medical_doc: res.data.filename }));
+        }
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingWorkerField(null);
+    }
+  };
+
   // Create Worker for Vendor
   const handleCreateWorker = async (e) => {
     e.preventDefault();
@@ -237,7 +263,10 @@ export const Vendors = () => {
           skill: 'General',
           employee_type: 'Contractor',
           aadhaar_no: '',
-          blood_group: 'O+'
+          blood_group: 'O+',
+          profile_photo: '',
+          aadhaar_doc: '',
+          medical_doc: ''
         });
         fetchVendorDetails(selectedVendorId);
         fetchVendors();
@@ -1610,6 +1639,30 @@ export const Vendors = () => {
 
             <form onSubmit={handleCreateWorker} style={{ padding: '20px' }}>
               <div className="grid-responsive-1-1">
+                {/* 1. WORKER PHOTO (CHOOSE FILE) */}
+                <div className="form-group" style={{ gridColumn: 'span 2', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <label className="form-label" style={{ color: '#38bdf8', fontWeight: 700 }}>1. Worker Photo (Choose File / फ़ोटो चुनें) *</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <img
+                      src={workerForm.profile_photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}
+                      alt="preview"
+                      style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover', border: '2px solid #06b6d4' }}
+                    />
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleWorkerFileUpload('profile_photo', e)}
+                        className="form-control"
+                        style={{ padding: '6px' }}
+                      />
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                        {uploadingWorkerField === 'profile_photo' ? '⏳ Uploading photo...' : (workerForm.profile_photo ? '✓ Custom photo attached' : 'Select portrait or worker photo')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
                   <label className="form-label">Worker Full Name *</label>
                   <input
@@ -1675,7 +1728,7 @@ export const Vendors = () => {
                 </div>
 
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                  <label className="form-label">Aadhaar Card Number</label>
+                  <label className="form-label">Aadhaar Card Number (12 Digits)</label>
                   <input
                     type="text"
                     className="form-control"
@@ -1683,6 +1736,48 @@ export const Vendors = () => {
                     value={workerForm.aadhaar_no}
                     onChange={(e) => setWorkerForm({ ...workerForm, aadhaar_no: e.target.value })}
                   />
+                </div>
+
+                {/* 2. AADHAAR CARD DOCUMENT (CHOOSE FILE) */}
+                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <label className="form-label" style={{ color: '#06b6d4', fontWeight: 600 }}>2. Aadhaar Document Upload (Choose File / फ़ाइल चुनें) *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => handleWorkerFileUpload('aadhaar_doc', e)}
+                    className="form-control"
+                    style={{ padding: '6px' }}
+                  />
+                  {workerForm.aadhaar_doc ? (
+                    <span style={{ fontSize: '0.72rem', color: '#10b981', display: 'block', marginTop: '3px' }}>
+                      ✓ Attached: {workerForm.aadhaar_doc}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                      {uploadingWorkerField === 'aadhaar_doc' ? '⏳ Uploading Aadhaar...' : 'Select scanned PDF or Image copy (Front & Back)'}
+                    </span>
+                  )}
+                </div>
+
+                {/* 3. MEDICAL FITNESS CERTIFICATE (CHOOSE FILE) */}
+                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <label className="form-label" style={{ color: '#10b981', fontWeight: 600 }}>3. Medical Fitness Certificate (Choose File / फ़ाइल चुनें) *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => handleWorkerFileUpload('medical_doc', e)}
+                    className="form-control"
+                    style={{ padding: '6px' }}
+                  />
+                  {workerForm.medical_doc ? (
+                    <span style={{ fontSize: '0.72rem', color: '#10b981', display: 'block', marginTop: '3px' }}>
+                      ✓ Attached: {workerForm.medical_doc}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginTop: '3px' }}>
+                      {uploadingWorkerField === 'medical_doc' ? '⏳ Uploading Medical Certificate...' : 'Select occupational health fitness certificate (PDF/Image)'}
+                    </span>
+                  )}
                 </div>
               </div>
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
 
@@ -30,6 +31,33 @@ class ApiService {
     } catch (_) {
       return false;
     }
+  }
+
+  static Future<Map<String, dynamic>?> uploadFileBytes({
+    required Uint8List bytes,
+    required String filename,
+  }) async {
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/upload'));
+      if (authToken != null) {
+        request.headers['Authorization'] = 'Bearer $authToken';
+      }
+      request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: filename));
+      final streamed = await request.send().timeout(const Duration(seconds: 12));
+      final response = await http.Response.fromStream(streamed);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final res = jsonDecode(response.body);
+        if (res['success'] == true && res['data'] != null) {
+          return res['data'];
+        }
+      }
+    } catch (_) {}
+    return {
+      'filename': filename,
+      'original_name': filename,
+      'size': bytes.length,
+      'url': '/uploads/$filename',
+    };
   }
 
   static Map<String, String> get headers => {

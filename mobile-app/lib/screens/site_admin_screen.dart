@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../utils/app_theme.dart';
 import '../utils/responsive.dart';
+import '../utils/file_chooser_helper.dart';
 import 'employee_screen.dart';
 import 'permit_screen.dart';
 import 'gate_passes_hub_screen.dart';
@@ -322,6 +323,12 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
     final mobileCtrl = TextEditingController();
     final roleCtrl = TextEditingController(text: 'Technician');
     final aadhaarCtrl = TextEditingController();
+    String uploadedPhotoUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80';
+    Uint8List? uploadedPhotoBytes;
+    String uploadedAadhaarDoc = 'aadhaar_card_scanned.pdf';
+    Uint8List? uploadedAadhaarBytes;
+    String uploadedMedicalDoc = 'medical_fitness_cert.pdf';
+    Uint8List? uploadedMedicalBytes;
     bool isSaving = false;
 
     showModalBottomSheet(
@@ -344,13 +351,75 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                       children: [
                         Icon(Icons.person_add, color: AppTheme.primary),
                         SizedBox(width: 8),
-                        Text('Enroll Worker for Contractor', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('Enroll Worker & Attach KYC', style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                       ],
                     ),
                     IconButton(icon: const Icon(Icons.close, color: AppTheme.textSecondary), onPressed: () => Navigator.pop(ctx)),
                   ],
                 ),
                 const SizedBox(height: 14),
+
+                // 1. PHOTO CHOOSE FILE
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgSurface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppTheme.primary, width: 2),
+                        ),
+                        child: ClipOval(
+                          child: uploadedPhotoBytes != null
+                              ? Image.memory(uploadedPhotoBytes!, width: 54, height: 54, fit: BoxFit.cover)
+                              : Image.network(uploadedPhotoUrl, width: 54, height: 54, fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Worker Photo *', style: TextStyle(color: AppTheme.textPrimary, fontSize: 12.5, fontWeight: FontWeight.bold)),
+                            const Text('Camera, Gallery or File', style: TextStyle(color: AppTheme.textSecondary, fontSize: 11)),
+                            const SizedBox(height: 4),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                final doc = await FileChooserHelper.pickPhoto(context);
+                                if (doc != null) {
+                                  setModalState(() {
+                                    if (doc.bytes != null) uploadedPhotoBytes = doc.bytes;
+                                    if (doc.serverUrl != null) uploadedPhotoUrl = doc.serverUrl!;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('✓ Photo selected: ${doc.name}'), backgroundColor: AppTheme.success),
+                                  );
+                                }
+                              },
+                              icon: const Icon(Icons.add_a_photo, size: 13, color: Colors.white),
+                              label: const Text('CHOOSE PHOTO', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
                 _buildTextField(nameCtrl, 'Worker Full Name *', Icons.person),
                 const SizedBox(height: 10),
                 _buildTextField(mobileCtrl, 'Mobile Number *', Icons.phone, keyboardType: TextInputType.phone),
@@ -362,6 +431,68 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                     Expanded(child: _buildTextField(aadhaarCtrl, 'Aadhaar / ID No.', Icons.credit_card)),
                   ],
                 ),
+                const SizedBox(height: 12),
+
+                // 2. AADHAAR CARD DOCUMENT CHOOSE FILE
+                FileChooserCard(
+                  title: 'Aadhaar Card Document Upload',
+                  subtitle: 'Select Aadhaar scanned copy (Front & Back)',
+                  currentFileName: uploadedAadhaarDoc,
+                  fileBytes: uploadedAadhaarBytes,
+                  accentColor: AppTheme.primary,
+                  defaultIcon: Icons.credit_card,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Aadhaar Card Document',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedAadhaarDoc = doc.name;
+                        uploadedAadhaarBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Aadhaar file attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: AppTheme.success,
+                        ),
+                      );
+                    }
+                  },
+                ),
+
+                // 3. MEDICAL FITNESS CERTIFICATE CHOOSE FILE
+                FileChooserCard(
+                  title: 'Medical Fitness Certificate Upload',
+                  subtitle: 'Select certified medical fitness document',
+                  currentFileName: uploadedMedicalDoc,
+                  fileBytes: uploadedMedicalBytes,
+                  accentColor: AppTheme.success,
+                  defaultIcon: Icons.health_and_safety,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Medical Fitness Certificate',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+                    );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedMedicalDoc = doc.name;
+                        uploadedMedicalBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Medical certificate attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: AppTheme.success,
+                        ),
+                      );
+                    }
+                  },
+                ),
+
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -381,13 +512,17 @@ class _SiteAdminScreenState extends State<SiteAdminScreen> {
                               'mobile': mobileCtrl.text.trim(),
                               'designation': roleCtrl.text.trim(),
                               'aadhaar_no': aadhaarCtrl.text.trim(),
+                              'aadhaar_doc': uploadedAadhaarDoc,
+                              'medical_doc': uploadedMedicalDoc,
+                              'profile_photo': uploadedPhotoUrl,
+                              'photo_url': uploadedPhotoUrl,
                               'vendor_id': _selectedVendorId,
                               'vendor_name': _selectedVendorDetails?['company_name'] ?? 'Contractor',
                             });
                             setModalState(() => isSaving = false);
                             if (ok && mounted) {
                               Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Worker enrolled & pass issued!'), backgroundColor: Colors.green));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Worker enrolled & pass issued with KYC files!'), backgroundColor: Colors.green));
                               _fetchVendorDetails(_selectedVendorId!);
                             }
                           },

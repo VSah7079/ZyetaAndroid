@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../services/api_service.dart';
 import '../utils/validators.dart';
 import '../utils/app_theme.dart';
+import '../utils/file_chooser_helper.dart';
 
 class VendorScreen extends StatefulWidget {
   const VendorScreen({super.key});
@@ -729,8 +730,11 @@ class _VendorScreenState extends State<VendorScreen> {
     final emergencyCtrl = TextEditingController();
     String selectedShift = 'General (08:30 - 17:30)';
     String uploadedPhotoUrl = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80';
+    Uint8List? uploadedPhotoBytes;
     String uploadedAadhaarDoc = 'aadhaar_card_front_back.pdf';
+    Uint8List? uploadedAadhaarBytes;
     String uploadedMedicalDoc = 'medical_fitness_apollo_cert.pdf';
+    Uint8List? uploadedMedicalBytes;
     bool isSaving = false;
 
     final photoPresets = [
@@ -781,7 +785,7 @@ class _VendorScreenState extends State<VendorScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Uploaded documents and photo will be embossed on the digital gate pass and verified across 1. Site Admin KYC ➔ 2. Safety Medical ➔ 3. Super Admin Gate Pass.',
+                          'Attach Photo, Aadhaar & Medical Certificate by choosing files from storage or camera. Verified across Site Admin KYC ➔ Safety Medical ➔ Super Admin Gate Pass.',
                           style: TextStyle(color: Color(0xFFC7D2FE), fontSize: 11),
                         ),
                       ),
@@ -790,70 +794,116 @@ class _VendorScreenState extends State<VendorScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // 1. PHOTO UPLOADER WITH PREVIEW
-                Row(
-                  children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: 68,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF06B6D4), width: 2),
-                          ),
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundImage: NetworkImage(uploadedPhotoUrl),
-                          ),
-                        ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(color: Color(0xFF06B6D4), shape: BoxShape.circle),
-                            child: const Icon(Icons.camera_alt, color: Colors.black, size: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                // 1. PHOTO UPLOADER WITH CHOOSE FILE / CAMERA / GALLERY
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.35)),
+                  ),
+                  child: Row(
+                    children: [
+                      Stack(
                         children: [
-                          const Text('Worker Profile Photo *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 2),
-                          const Text('Select portrait for ID badge & Face-ID:', style: TextStyle(color: Colors.white54, fontSize: 10)),
-                          const SizedBox(height: 6),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: photoPresets.map((p) {
-                                final isSel = uploadedPhotoUrl == p['url'];
-                                return InkWell(
-                                  onTap: () => setModalState(() => uploadedPhotoUrl = p['url']!),
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: isSel ? const Color(0xFF06B6D4) : Colors.transparent, width: 2),
-                                    ),
-                                    child: CircleAvatar(radius: 14, backgroundImage: NetworkImage(p['url']!)),
-                                  ),
-                                );
-                              }).toList(),
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFF06B6D4), width: 2),
+                            ),
+                            child: ClipOval(
+                              child: uploadedPhotoBytes != null
+                                  ? Image.memory(uploadedPhotoBytes!, width: 64, height: 64, fit: BoxFit.cover)
+                                  : Image.network(uploadedPhotoUrl, width: 64, height: 64, fit: BoxFit.cover),
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(color: Color(0xFF06B6D4), shape: BoxShape.circle),
+                              child: const Icon(Icons.camera_alt, color: Colors.black, size: 12),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('1. Worker Photo (फ़ोटो) *', style: TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 2),
+                            const Text('Choose from Camera, Gallery or Files:', style: TextStyle(color: Colors.white54, fontSize: 10.5)),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: () async {
+                                    final doc = await FileChooserHelper.pickPhoto(context);
+                                    if (doc != null) {
+                                      setModalState(() {
+                                        if (doc.bytes != null) {
+                                          uploadedPhotoBytes = doc.bytes;
+                                        }
+                                        if (doc.serverUrl != null) {
+                                          uploadedPhotoUrl = doc.serverUrl!;
+                                        }
+                                      });
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('✓ Photo selected: ${doc.name}'), backgroundColor: const Color(0xFF10B981)),
+                                      );
+                                    }
+                                  },
+                                  icon: const Icon(Icons.add_a_photo, size: 13, color: Colors.black),
+                                  label: const Text('CHOOSE FILE', style: TextStyle(color: Colors.black, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF06B6D4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    elevation: 0,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: photoPresets.map((p) {
+                                        final isSel = uploadedPhotoUrl == p['url'];
+                                        return InkWell(
+                                          onTap: () => setModalState(() {
+                                            uploadedPhotoUrl = p['url']!;
+                                            uploadedPhotoBytes = null;
+                                          }),
+                                          child: Container(
+                                            margin: const EdgeInsets.only(right: 5),
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: isSel ? const Color(0xFF06B6D4) : Colors.transparent, width: 2),
+                                            ),
+                                            child: CircleAvatar(radius: 12, backgroundImage: NetworkImage(p['url']!)),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 6),
                 _buildTextField(nameCtrl, 'Worker Full Name (As per Aadhaar) *', Icons.person),
                 const SizedBox(height: 10),
                 Row(
@@ -874,98 +924,64 @@ class _VendorScreenState extends State<VendorScreen> {
 
                 const SizedBox(height: 12),
 
-                // 2. AADHAAR CARD DOCUMENT UPLOAD BOX
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setModalState(() {
-                      uploadedAadhaarDoc = 'aadhaar_verified_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}.pdf';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('✓ Aadhaar Document (Front & Back) Selected & Attached!'), backgroundColor: Color(0xFF10B981)),
+                // 2. AADHAAR CARD DOCUMENT CHOOSE FILE
+                FileChooserCard(
+                  title: '2. Aadhaar Card Document Upload',
+                  subtitle: 'Select Aadhaar copy (Front & Back)',
+                  currentFileName: uploadedAadhaarDoc,
+                  fileBytes: uploadedAadhaarBytes,
+                  accentColor: const Color(0xFF6366F1),
+                  defaultIcon: Icons.credit_card,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Aadhaar Card Document',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                     );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedAadhaarDoc = doc.name;
+                        uploadedAadhaarBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Aadhaar file attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
                   },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.upload_file, color: Color(0xFF818CF8), size: 20),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Aadhaar Card Document Upload *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text('Attached: $uploadedAadhaarDoc • 1.4 MB', style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
-                          child: const Text('ATTACHED ✓', style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
 
-                const SizedBox(height: 12),
-
-                // 3. MEDICAL FITNESS CERTIFICATE UPLOAD BOX
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setModalState(() {
-                      uploadedMedicalDoc = 'medical_clearance_${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}.pdf';
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('✓ Medical Fitness Certificate Attached!'), backgroundColor: Color(0xFF10B981)),
+                // 3. MEDICAL FITNESS CERTIFICATE CHOOSE FILE
+                FileChooserCard(
+                  title: '3. Medical Fitness Certificate Upload',
+                  subtitle: 'Select Medical Health report / fitness cert',
+                  currentFileName: uploadedMedicalDoc,
+                  fileBytes: uploadedMedicalBytes,
+                  accentColor: const Color(0xFF10B981),
+                  defaultIcon: Icons.health_and_safety,
+                  isRequired: true,
+                  onChooseFile: () async {
+                    final doc = await FileChooserHelper.pickDocument(
+                      context,
+                      title: 'Medical Fitness Certificate',
+                      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                     );
+                    if (doc != null) {
+                      setModalState(() {
+                        uploadedMedicalDoc = doc.name;
+                        uploadedMedicalBytes = doc.bytes;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✓ Medical certificate attached: ${doc.name} (${doc.sizeFormatted})'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
                   },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.health_and_safety, color: Color(0xFF10B981), size: 20),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Medical Fitness Certificate Upload *', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text('Attached: $uploadedMedicalDoc • Grade A', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
-                          child: const Text('ATTACHED ✓', style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
 
                 const SizedBox(height: 12),
